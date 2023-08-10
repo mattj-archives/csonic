@@ -1,0 +1,1631 @@
+DECLARE SUB DoDie ()
+DECLARE SUB DoForces ()
+DECLARE SUB tsr (n%)
+DECLARE SUB ReadyMask ()
+DEFINT A-Z
+DECLARE SUB enemy.mgr ()
+DECLARE SUB loadtoact ()
+DECLARE SUB DrawLoadScene (n)
+DECLARE SUB LevelIntro ()
+DECLARE SUB ChangeGFX (p%())
+DECLARE SUB LaserMan ()
+DECLARE SUB GambleHolder (n)
+DECLARE FUNCTION PChk! (n)
+DECLARE SUB PlatDo (n)
+DECLARE SUB DnS ()
+DECLARE FUNCTION OS (tx, ty)
+DECLARE SUB Tman ()
+DECLARE SUB HitSpring (t, tx, ty)
+DECLARE SUB sfx (n)
+DECLARE SUB HitSonic (n)
+DECLARE SUB Expman (n, ttx, tty)
+DECLARE FUNCTION ChkAhead (tx, ty)
+DECLARE SUB GotItem (t)
+DECLARE SUB DrawGfx (n)
+DECLARE SUB AnmMan ()
+DECLARE SUB SonicMan ()
+DECLARE SUB Lt (n)
+DECLARE SUB Jump ()
+DECLARE SUB UMan ()
+DECLARE SUB Up (n)
+DECLARE SUB Rt (n)
+DECLARE SUB Dn (n)
+DECLARE SUB Die (n)
+DECLARE SUB MainLoop ()
+DECLARE SUB DrawSonic (ttx, tty)
+DECLARE SUB SetScr ()
+DECLARE SUB ReDrawObj (tx, ty, ttx, tty, n)
+DECLARE SUB DrawAllScr ()
+DECLARE SUB LoadLevel (t$)
+DECLARE SUB LGFX ()
+'Cool Sonic Ver 1.0
+' $DYNAMIC
+TYPE badguy
+x AS INTEGER
+y AS INTEGER
+x1 AS INTEGER
+x2 AS INTEGER
+y1 AS INTEGER
+y2 AS INTEGER
+t AS LONG
+f1 AS INTEGER
+f2 AS INTEGER
+f3 AS INTEGER
+state AS INTEGER
+last AS INTEGER
+num AS INTEGER
+step AS INTEGER
+END TYPE
+
+COMMON SHARED bg11%(), bg12%(), bg13%(), bg14%()
+COMMON SHARED bg21%(), bg22%(), bg23%(), bg24%()
+COMMON SHARED bp%(), gfx%()
+COMMON SHARED a(), x, y
+COMMON SHARED p%(), bcnt()
+COMMON SHARED bpot() AS badguy, mosqu() AS badguy, back%(), rm() AS badguy
+COMMON SHARED stage, SonicDir
+COMMON SHARED act, strx, stry
+DIM a(168, 54)
+DIM p(168, 54)
+
+RANDOMIZE TIMER
+'CLEAR , , 20000
+DIM SHARED ssx, ssy, stax, stay
+DIM SHARED sx, sy
+stage = 1: act = 1
+'**************************
+DIM SHARED SRS%(209), SLS%(209), SR1%(209), SR2%(209), SL1%(209), SL2%(209), SWAIT1%(209), SWAIT2%(209)
+DIM SHARED SPIN1%(209), SPIN2%(209):
+DIM SHARED CHILI1%(209), CHILI2%(209), CHILI3%(209), CHILI4%(209), CHILI5%(209): DIM SHARED CHILI6%(209):
+DIM SHARED RING1%(209), RING2%(209), RING3%(209), RING4%(209), RING5%(209), RING6%(209):
+DIM SHARED BOXRNG%(209), BOXSHI%(209), BOXSPI%(209), BOXBUB%(209), BOXFIR%(209)
+DIM SHARED e1%(209), e2%(209), e3%(209), e4%(209), e5%(209)
+DIM SHARED BOXST%(209), SPRINGR1%(209), SPRINGR2%(209), SPRINGL1%(209), SPRINGL2%(209)
+DIM SHARED SPIKEUP%(209), SPIKEDN%(209), SPIKELT%(209), SPIKERT%(209), SDIE%(209)
+DIM SHARED FSPIKE%(209), AFSPIKE%(209), MPL%(209), MPR%(209), MPLAT%(209), BPLAT%(209)
+DIM SHARED LFLIP1%(209), RFLIP1%(209), LFLIP2%(209), RFLIP2%(209), GAMBLE%(209)
+DIM SHARED LAVA1%(209), LAVA2%(209), LAVA3%(209), ELL%(209), ELR%(209), EL1%(209), EL2%(209), EL3%(209)
+DIM SHARED CFP%(209), WFP%(209), LUP%(209), LDN%(209), LLT%(209), LRT%(209), LHOR%(209), LVER%(209)
+DIM SHARED gfx%(209), gfx2%(24, 24), PASSER1%(209), PASSER2%(209), PASSER3%(209), PASSER4%(209)
+
+DIM bg11%(209), bg12%(209), bg13%(209), bg14%(209)
+DIM bg21%(209), bg22%(209), bg23%(209), bg24%(209)
+DIM bp%(209), back%(209)
+'**************************
+DIM SHARED SonicMode, SonicFrame: SonicMode = 3: SonicFrame = 1
+DIM SHARED Upforce, StartForce, sti!, jt!: Upforce = 0
+DIM SHARED rings, rf!, rc: rings = 0: rc = 4: rf! = INT(TIMER)
+DIM SHARED rfr, cfr, rft, cft!: rfr = 1: cfr = 1: rft = 0: cft! = INT(TIMER)
+DIM SHARED boxs!, bb, CDP: boxs! = INT(TIMER): bb = 1: CDP = 0
+DIM SHARED ex(15), ey(15), ef(15), et(15)
+DIM SHARED sc, so, s3, sht!, sht2!, sfxf: sfxf = 1'shield color,onflag,timer
+DIM SHARED nos1, nos2, s1s(20), s2s(20), s1t!(20), s2t!(20), spx1(20), spy1(20), spx2(20), spy2(20)
+DIM SHARED tempa, Breath, brt!: Breath = 99
+DIM SHARED fs, fsx(20), fsy(20), fss(20), afs, afsx(20), afsy(20), afss(20)
+DIM SHARED fp, fps(40), fpx(40), fpy(40)
+DIM SHARED nof1, nof2, flf(20), frf(20), flt!(20), frt!(20), frx(20), fry(20), flx(20), fly(20)
+DIM SHARED tttt$(6), Lives, score, LavaState, LavaTimer: Lives = 3: LavaState = 1
+DIM SHARED ElState, Eltimer, GameTime AS LONG: ElState = 1
+DIM SHARED fc, fcs(40), fcx(40), fcy(40), stat0
+DIM SHARED fw, fws(40), fwx(40), fwy(40), fds: fds = 0
+DIM SHARED TmanT!: TmanT! = TIMER
+DIM SHARED force$, gothit!, ght!, ghs, forcet!, forcep      '0=No hurt 1=on 2=off
+DIM SHARED DieTimer!, youaredead
+DIM SHARED passerstate, passertime!, passertime2!, passerframe, passerspin 'STATE
+DIM SHARED passx, passy                                                             '0=none 1=spin
+stage = 1: act = 1                                            '2=done
+DIM SHARED tlsx, tlf, ltf:                                    'FRAME
+DIM bcnt(18)                                                  'SAME 12131213
+DIM SHARED OnScreen(24, 24), OldOnScreen(24, 24)     '12,9
+TYPE MP
+x1 AS INTEGER
+x2 AS INTEGER
+y1 AS INTEGER
+y2 AS INTEGER
+t AS LONG
+d AS INTEGER
+x AS INTEGER
+y AS INTEGER
+s AS INTEGER
+Mved AS INTEGER
+END TYPE
+TYPE lsr
+x AS INTEGER
+y AS INTEGER
+ltype AS INTEGER
+lx AS INTEGER
+ly AS INTEGER
+ldir AS INTEGER
+Lt AS LONG
+et AS LONG
+END TYPE
+DIM SHARED M(40) AS MP, cm, ocm
+DIM SHARED laser(30) AS lsr, lsrs
+'Bad guy DIMs
+DIM SHARED scr%(30000)
+DIM bpot(30) AS badguy, mosqu(30) AS badguy, rm(30) AS badguy
+DIM SHARED screenmode: screenmode = 7
+'**********************
+SonicDir = 4
+SCREEN 0, 0, 0: WIDTH 80
+SCREEN screenmode
+DEF SEG = VARSEG(back%(0)): BLOAD "c:\csonic\gfx\back1.gfx", VARPTR(back%(0))
+ReadyMask
+LGFX
+l$ = "c:\csonic\test3"
+LoadLevel l$
+LevelIntro
+FOR z = 0 TO 24: FOR z2 = 0 TO 24: OldOnScreen(z2, z) = 999: OnScreen(z2, z) = 999: NEXT: NEXT
+MainLoop
+
+REM $STATIC
+SUB AnmMan
+rft = rft + 1
+'IF TIMER - rft! >= .1 THEN
+IF rft >= 8 THEN
+ rfr = rfr + 1: IF rfr = 7 THEN rfr = 1
+ rft = 0
+ DrawGfx 43
+END IF
+IF TIMER - cft! >= .1 THEN
+ cfr = cfr + 1: IF cfr = 7 THEN cfr = 1
+ cft! = TIMER
+ DrawGfx 44
+END IF
+IF bb = 1 AND TIMER - boxs! >= .9 THEN
+ IF bb = 1 THEN bb = 2 ELSE bb = 1
+ boxs! = TIMER
+ FOR z = 38 TO 42: DrawGfx z: NEXT
+GOTO r1
+END IF
+IF bb = 2 AND TIMER - boxs! >= .3 THEN
+ IF bb = 1 THEN bb = 2 ELSE bb = 1
+ boxs! = TIMER
+ FOR z = 38 TO 42: DrawGfx z: NEXT
+END IF
+r1:
+FOR z = 1 TO nos1
+IF s1s(z) = 1 AND TIMER - s1t!(z) >= .5 THEN s1s(z) = 0: DrawGfx 17
+NEXT
+FOR z = 1 TO nos2
+IF s2s(z) = 1 AND TIMER - s2t!(z) >= .5 THEN s2s(z) = 0: DrawGfx 18
+NEXT
+
+r2:
+FOR z = 1 TO nof1
+IF flf(z) = 1 AND TIMER - flt!(z) >= .5 THEN flf(z) = 0: DrawGfx 21
+NEXT
+FOR z = 1 TO nof2
+IF frf(z) = 1 AND TIMER - frt!(z) >= .5 THEN frf(z) = 0: DrawGfx 22
+NEXT
+IF TIMER - TmanT! > .1 THEN Tman: TmanT! = TIMER
+LavaTimer = LavaTimer + 1
+IF LavaTimer >= 12 THEN
+LavaState = LavaState + 1: IF LavaState = 4 THEN LavaState = 1
+LavaTimer = 0
+DrawGfx 28
+END IF
+Eltimer = Eltimer + 1
+IF Eltimer >= 8 THEN
+ElState = ElState + 1: IF ElState = 4 THEN ElState = 1
+Eltimer = 0
+DrawGfx 31
+END IF
+FOR z = 1 TO 15
+ IF ef(z) <> 0 THEN
+ et(z) = et(z) + 1
+ IF et(z) >= 8 THEN ef(z) = ef(z) + 1: et(z) = 0
+ IF OS(ex(z), ey(z)) = 1 THEN ReDrawObj ex(z), ey(z), ex(z) - strx, ey(z) - stry, 0
+ IF ef(z) = 5 THEN
+ ef(z) = 0: a(ex(z), ey(z)) = 0
+ IF OS(ex(z), ey(z)) = 1 THEN ReDrawObj ex(z), ey(z), ex(z) - strx, ey(z) - stry, 0
+ END IF
+ END IF
+NEXT
+LaserMan
+IF passerstate = 1 THEN
+ IF TIMER - passertime2! < 4 THEN
+  IF TIMER - passertime! > .1 THEN
+   IF passerspin = 1 THEN               'on spin
+    passerframe = passerframe + 1
+    IF passerframe = 3 THEN passerframe = 0
+    passerspin = 0
+    passertime! = TIMER
+   ELSE
+    passerspin = 1
+    passertime! = TIMER
+   END IF
+  IF OS(passx, passy) = 1 THEN ReDrawObj passx, passy, passx - strx, passy - stry, 0
+  END IF
+ ELSE
+ passerstate = 2: passerframe = INT(RND * 3) + 1
+ END IF
+IF OS(passx, passy) = 1 THEN ReDrawObj passx, passy, passx - strx, passy - stry, 0
+END IF
+END SUB
+
+SUB ChangeGFX (p%())
+DEF SEG = &HB800
+FOR z = 0 TO 209: p%(z) = gfx%(z): NEXT
+PUT (160, 100), p%, PSET
+o& = 100 * 320 + 160
+FOR yy = 0 TO 24
+ o& = (100 + yy) * 320& + 160
+ FOR xx = 0 TO 24
+
+'IF POINT(160 + xx, 100 + yy) = 0 THEN PSET (160 + xx, 100 + yy), gfx2%(xx, yy)
+IF PEEK(o&) = 0 THEN POKE o&, gfx2%(xx, yy)
+o& = o& + 1
+NEXT
+NEXT
+GET (160, 100)-(160 + 24, 100 + 24), p%
+LINE (160, 100)-(160 + 24, 100 + 24), 0, BF
+
+END SUB
+
+FUNCTION ChkAhead (tx, ty)
+SELECT CASE a(tx, ty)
+CASE 0
+ChkAhead = 0: EXIT FUNCTION
+CASE 1: ChkAhead = 1: EXIT FUNCTION
+CASE 2, 3: ChkAhead = 0: EXIT FUNCTION
+CASE 4, 5
+IF ty > y THEN Upforce = 2: Up 1
+IF ty < y THEN Upforce = 0
+ChkAhead = 1: HitSonic 0: EXIT FUNCTION
+CASE 6, 7
+ChkAhead = 0: HitSonic 0: EXIT FUNCTION
+CASE 9, 10: ChkAhead = 1: EXIT FUNCTION
+CASE 11, 12: ChkAhead = 1: EXIT FUNCTION
+CASE 13: ChkAhead = 1: EXIT FUNCTION
+CASE 8: IF x = tx AND ty < y THEN HitSonic 0: ChkAhead = 1: EXIT FUNCTION
+ChkAhead = 1: EXIT FUNCTION
+CASE 17, 18
+IF ty > y AND SonicMode = 4 THEN SonicMode = 1: Upforce = 0: EXIT FUNCTION
+ChkAhead = 1: HitSpring a(tx, ty), tx, ty: EXIT FUNCTION
+CASE 21, 22: ChkAhead = 1: EXIT FUNCTION
+CASE 25
+IF ty > y THEN Upforce = 2
+ChkAhead = 1
+EXIT FUNCTION
+CASE 26, 27: ChkAhead = 0: EXIT FUNCTION
+CASE 28: HitSonic 28: ChkAhead = 1: EXIT FUNCTION
+CASE 29, 30: ChkAhead = 1: EXIT FUNCTION
+CASE 31: ChkAhead = 0: HitSonic 31: EXIT FUNCTION
+CASE 32, 33: ChkAhead = 1: EXIT FUNCTION
+CASE 38 TO 42
+IF a(tx, ty) > 37 AND a(tx, ty) < 43 THEN IF SonicMode <> 4 THEN ChkAhead = 1: EXIT FUNCTION
+GotItem a(tx, ty)
+a(tx, ty) = 0
+Expman 1, tx, ty
+ChkAhead = 0: EXIT FUNCTION
+
+CASE 43, 44
+GotItem a(tx, ty)
+a(tx, ty) = 0
+ChkAhead = 0: EXIT FUNCTION
+
+CASE 70
+FOR z = 1 TO bcnt(2)
+IF rm(z).x = tx AND rm(z).y = ty THEN
+ IF SonicMode = 4 THEN
+  Expman 1, tx, ty: Upforce = 3: score = score + 100
+  rm(z).state = 0
+  sfx 12
+ ELSE
+ HitSonic 1
+ END IF
+END IF
+NEXT
+
+CASE 71
+FOR z = 1 TO bcnt(1)
+IF mosqu(z).x = tx AND mosqu(z).y = ty THEN
+ IF SonicMode = 4 THEN
+  Expman 1, tx, ty: Upforce = 3: score = score + 100
+  mosqu(z).state = 0
+  sfx 12
+ ELSE
+ HitSonic 1
+ END IF
+END IF
+NEXT
+
+CASE 72
+FOR z = 1 TO bcnt(3)
+IF bpot(z).x = tx AND bpot(z).y = ty THEN
+ IF SonicMode = 4 THEN
+  Expman 1, tx, ty: Upforce = 3: score = score + 100
+  bpot(z).state = 0
+  sfx 12
+ ELSE
+ HitSonic 1
+ END IF
+END IF
+NEXT
+
+CASE 100: ChkAhead = 0: EXIT FUNCTION
+CASE 103: ChkAhead = 0
+IF passerstate = 0 THEN
+ passerstate = 1: passertime! = TIMER: passertime2! = TIMER
+END IF
+
+EXIT FUNCTION
+END SELECT
+END FUNCTION
+
+SUB Die (n)
+'EXIT SUB
+IF n = 1 THEN
+DieTimer! = TIMER
+force$ = "X"
+youaredead = 1
+EXIT SUB
+END IF
+IF n = 2 THEN
+DO UNTIL strx = 0 OR stry = 0
+strx = strx - 1
+stry = stry - 1
+IF strx < 0 THEN strx = 0
+IF stry < 0 THEN stry = 0
+DrawAllScr
+LOOP
+
+IF strx > 0 THEN
+ DO UNTIL strx = 0
+ strx = strx - 1
+ IF strx < 0 THEN strx = 0
+ DrawAllScr
+ LOOP
+END IF
+
+IF stry > 0 THEN
+ DO UNTIL stry = 0
+ stry = stry - 1
+ IF stry < 0 THEN stry = 0
+ DrawAllScr
+ LOOP
+END IF
+a(x, y) = tempa
+sy = ssy: sx = ssx: x = stax: y = stay
+tempa = 0
+a(x, y) = -1
+youaredead = 0
+WHILE INKEY$ <> "": WEND
+END IF
+END SUB
+
+SUB Dn (n)
+IF y + 1 = 55 THEN Die 1
+IF n <> 2 THEN IF ChkAhead(x, y + 1) = 1 THEN s3 = 0: EXIT SUB
+IF tempa = 0 THEN IF a(x, y + 1) = 2 OR a(x, y + 1) = 3 THEN sfx 9
+y = y + 1
+IF stry = 0 AND sy < 4 THEN sy = sy + 1: GOTO dnr
+IF stry = 48 THEN sy = sy + 1: GOTO dnr
+stry = stry + 1
+
+dnr:
+IF tempa = 100 THEN tempa = 0
+a(x, y - 1) = tempa
+tempa = a(x, y)
+a(x, y) = -1
+jt! = TIMER
+sti! = TIMER
+DrawAllScr
+
+END SUB
+
+SUB DnS
+IF so = 2 AND Upforce = 0 AND ChkAhead(x, y + 1) = 1 THEN
+ 'IF s3 = 0 THEN
+ FOR z = .9 TO .1 STEP -.1
+ CIRCLE (sx * 24 + 10, sy * 24 + 12 + 10), 12, sc, , , z
+ 'FOR p = 1 TO 800: NEXT
+ t! = TIMER: WHILE TIMER - t! < .01: WEND
+ CIRCLE (sx * 24 + 10, sy * 24 + 12 + 10), 12, 0, , , z
+ NEXT
+s3 = 1
+Upforce = 6
+'END IF
+END IF
+
+END SUB
+
+SUB DoDie
+dieta:
+dx = INT(RND * 6) + strx + 4
+dy = INT(RND * 3) + stry + 4
+  IF a(dx, dy) <> 0 OR a(dx, dy) = 100 THEN EXIT SUB
+  Expman 1, dx, dy
+ 
+' ELSE
+' GOTO dieta
+' END IF
+'ELSE
+'GOTO dieta
+'END IF
+END SUB
+
+SUB DoForces
+forcet! = TIMER
+forcep = forcep + 1
+IF forcep > LEN(force$) AND force$ <> "X" THEN force$ = "": EXIT SUB
+IF MID$(force$, forcep, 1) = "U" THEN Up 1
+IF MID$(force$, forcep, 1) = "L" THEN Lt 1
+IF MID$(force$, forcep, 1) = "R" THEN Rt 1
+
+END SUB
+
+SUB DrawAllScr
+trx = 0: try = 0
+IF screenmode = 7 THEN smy = 6: smx = 12
+IF screenmode = 12 THEN smy = 12: smx = 24
+FOR z = stry TO stry + smy      '6     12
+FOR z2 = strx TO strx + smx     '12    24
+IF a(z2, z) = 17 OR a(z2, z) = 18 THEN GOSUB springd
+IF a(z2, z) = 21 OR a(z2, z) = 22 THEN GOSUB flipd
+IF a(z2, z) = 71 OR a(z2, z) = 70 THEN GOSUB botdo
+OnScreen(trx, try) = a(z2, z)
+IF OldOnScreen(trx, try) <> OnScreen(trx, try) THEN ReDrawObj z2, z, trx, try, 0
+IF a(z2, z) = -1 OR a(z2, z) = -2 THEN ReDrawObj z2, z, trx, try, 0
+nc2:
+trx = trx + 1
+NEXT
+trx = 0
+try = try + 1
+NEXT
+
+IF screenmode = 7 THEN FOR z = 0 TO 6: FOR z2 = 0 TO 12: OldOnScreen(z2, z) = OnScreen(z2, z): NEXT: NEXT
+IF screenmode = 12 THEN FOR z = 0 TO 12: FOR z2 = 0 TO 24: OldOnScreen(z2, z) = OnScreen(z2, z): NEXT: NEXT
+
+EXIT SUB
+
+springd:
+ FOR z3 = 1 TO nos1
+ IF spx1(z3) = z2 AND spy1(z3) = z THEN ReDrawObj z2, z, trx, try, z3
+ NEXT
+ FOR z3 = 1 TO nos2
+ IF spx2(z3) = z2 AND spy2(z3) = z THEN ReDrawObj z2, z, trx, try, z3
+ NEXT
+RETURN
+flipd:
+ FOR z3 = 1 TO nof1
+ IF flx(z3) = z2 AND fly(z3) = z THEN ReDrawObj z2, z, trx, try, z3
+ NEXT
+ FOR z3 = 1 TO nof2
+ IF frx(z3) = z2 AND fry(z3) = z THEN ReDrawObj z2, z, trx, try, z3
+ NEXT
+ GOTO nc2
+RETURN
+botdo:
+SELECT CASE a(z2, z)
+CASE 70
+ FOR z3 = 1 TO bcnt(2)
+ IF rm(z3).x = z2 AND rm(z3).y = z THEN ReDrawObj z2, z, trx, try, z3
+ NEXT
+CASE 71
+ FOR z3 = 1 TO mosqu(1).last
+ IF mosqu(z3).x = z2 AND mosqu(z3).y = z THEN ReDrawObj z2, z, trx, try, z3
+ NEXT
+END SELECT
+RETURN
+END SUB
+
+SUB DrawGfx (n)
+trx = 0: try = 0
+IF screenmode = 7 THEN smy = 6: smx = 12
+IF screenmode = 12 THEN smy = 12: smx = 24
+FOR z = stry TO stry + smy      '6     12
+FOR z2 = strx TO strx + smx     '12    24
+IF n = 17 OR n = 18 THEN
+IF a(z2, z) = 17 OR a(z2, z) = 18 THEN
+ FOR z3 = 1 TO nos1
+ IF spx1(z3) = z2 AND spy1(z3) = z THEN ReDrawObj z2, z, trx, try, z3
+ NEXT
+ FOR z3 = 1 TO nos2
+ IF spx2(z3) = z2 AND spy2(z3) = z THEN ReDrawObj z2, z, trx, try, z3
+ NEXT
+ GOTO nc3
+END IF
+END IF
+IF a(z2, z) = n THEN ReDrawObj z2, z, trx, try, 0
+
+nc3:
+
+trx = trx + 1
+NEXT
+trx = 0
+try = try + 1
+NEXT
+
+END SUB
+
+SUB DrawSonic (ttx, tty)
+IF ghs = 2 THEN
+' IF tempa <> 0 THEN
+'  a(tx, ty) = tempa
+'  redrawobj x, y, ttx, tty, 0
+' ELSE
+  PUT (ttx * 24, tty * 24 + 12), back%, PSET
+' END IF
+ EXIT SUB
+END IF
+
+SELECT CASE SonicMode
+
+CASE 1, 4: IF SonicFrame = 1 THEN SonicFrame = 2 ELSE SonicFrame = 1
+END SELECT
+
+SELECT CASE SonicMode
+
+CASE 1
+
+ SELECT CASE SonicDir
+
+ CASE 3
+ SELECT CASE SonicFrame
+ CASE 1
+ PUT (ttx * 24, tty * 24 + 12), SL1%, PSET
+ CASE 2
+ PUT (ttx * 24, tty * 24 + 12), SL2%, PSET
+ END SELECT
+
+ CASE 4
+ SELECT CASE SonicFrame
+ CASE 1
+ PUT (ttx * 24, tty * 24 + 12), SR1%, PSET
+ CASE 2
+ PUT (ttx * 24, tty * 24 + 12), SR2%, PSET
+ END SELECT
+ END SELECT
+CASE 2                      'Waiting
+
+ SELECT CASE SonicFrame
+ CASE 1
+ PUT (ttx * 24, tty * 24 + 12), SWAIT1%, PSET
+ CASE 2
+ PUT (ttx * 24, tty * 24 + 12), SWAIT2%, PSET
+ END SELECT
+
+CASE 3                     'Standing
+
+ SELECT CASE SonicDir
+ CASE 3
+ PUT (ttx * 24, tty * 24 + 12), SLS%, PSET
+ CASE 4
+ PUT (ttx * 24, tty * 24 + 12), SRS%, PSET
+ END SELECT
+
+CASE 4                     'Jumping
+ SELECT CASE SonicFrame
+ CASE 1
+ PUT (ttx * 24, tty * 24 + 12), SPIN1%, PSET
+ CASE 2
+ PUT (ttx * 24, tty * 24 + 12), SPIN2%, PSET
+ END SELECT
+END SELECT
+END SUB
+
+SUB Expman (n, ttx, tty)
+SELECT CASE n
+CASE 1
+FOR z = 1 TO 15
+IF ef(z) = 0 THEN GOTO makeexp
+NEXT
+a(ttx, tty) = 0
+EXIT SUB
+makeexp:
+a(ttx, tty) = 100
+ex(z) = ttx: ey(z) = tty
+ef(z) = 1
+et(z) = 0
+CASE 2
+DrawGfx 100
+END SELECT
+
+END SUB
+
+SUB GambleHolder (n)
+'ring
+'spike
+'jackpot
+'sonic
+'tails
+'bar
+tttt$(1) = "o": tttt$(2) = "*": tttt$(3) = "-": tttt$(4) = "SONIC"
+tttt$(5) = "TAILS": tttt$(6) = "BAR"
+
+SELECT CASE n
+CASE 26
+LINE (0, 0)-(320, 11), 0, BF
+FOR z = 1 TO 10
+tttt1 = INT(RND * 3) + 1: tttt2 = INT(RND * 3) + 1: tttt3 = INT(RND * 3) + 1:
+COLOR 6: LOCATE 1, 19: PRINT tttt$(tttt1): LOCATE 1, 20: PRINT tttt$(tttt2): LOCATE 1, 21: PRINT tttt$(tttt3)
+SOUND 500, .5: t! = TIMER: WHILE TIMER - t! < .1: WEND
+NEXT
+SOUND 800, 5
+COLOR 14: LOCATE 1, 19: PRINT tttt$(tttt1): LOCATE 1, 20: PRINT tttt$(tttt2): LOCATE 1, 21: PRINT tttt$(tttt3)
+LINE (0, 0)-(320, 11), 0, BF
+IF tttt1 = 1 AND tttt2 = 1 AND tttt3 = 1 THEN FOR z = 1 TO 125: GotItem 43: NEXT
+IF tttt1 = 2 AND tttt2 = 2 AND tttt3 = 2 THEN HitSonic 0
+IF tttt1 = 3 AND tttt2 = 3 AND tttt3 = 3 THEN FOR z = 1 TO 25: GotItem 43: NEXT
+
+CASE 27
+FOR z = 1 TO 6
+score = score + 1000
+sfx 11
+SetScr
+t = TIMER: WHILE TIMER - t < .4: WEND
+NEXT
+END SELECT
+
+END SUB
+
+SUB GotItem (t)
+SELECT CASE t
+CASE 38: Upforce = 3: rings = rings + 10: rc = 14: sfx 4: LOCATE 1, 1: COLOR 14: PRINT "RINGS:"; rings
+CASE 39: Upforce = 3: so = 1: sc = 1: sht! = TIMER: sfx 5: sht2! = TIMER
+CASE 40: Upforce = 3: HitSonic 0: sfx 8
+CASE 41: Upforce = 3: so = 2: sc = 2: sht! = TIMER: sht2! = TIMER: sfx 7
+CASE 42: Upforce = 3: so = 3: sc = 4: sht! = TIMER: sht2! = TIMER: sfx 6
+
+CASE 43
+rings = rings + 1: rc = 14: sfx 2
+LOCATE 1, 1: COLOR 14: PRINT "RINGS:"; rings
+
+CASE 44
+sfx 3
+IF CDP + 2 > 50 THEN CDP = 48
+CDP = CDP + 2
+LINE (270, 0)-(270 + CDP, 5), 6, BF
+SetScr
+END SELECT
+
+END SUB
+
+SUB HitSonic (n)
+'EXIT SUB
+IF gothit! <> 0 THEN EXIT SUB
+IF n = 28 THEN GOTO LHIT
+IF n = 31 THEN GOTO EHit
+MHIT:
+IF so <> 0 THEN so = 0: EXIT SUB
+IF rings = 0 THEN Die 1: EXIT SUB
+rings = 0
+sfx 13:
+forcep = 0
+SELECT CASE SonicDir
+CASE 3  'Facing Left
+force$ = "RUURR"
+CASE 4
+force$ = "LUULL"
+END SELECT
+gothit! = TIMER: ght! = 0: ghs = 1
+LOCATE 1, 1: COLOR 14: PRINT "RINGS:"; rings
+EXIT SUB
+
+LHIT:
+IF so = 3 THEN EXIT SUB
+GOTO MHIT
+
+EHit:
+IF so = 1 THEN EXIT SUB
+GOTO MHIT
+END SUB
+
+SUB HitSpring (t, tx, ty)
+SELECT CASE t
+CASE 17
+FOR z = 1 TO nos1
+IF spx1(z) = tx AND spy1(z) = ty THEN GOTO hs17
+NEXT
+EXIT SUB
+hs17:
+IF tx > x THEN Rt 2
+IF tx < x THEN Lt 2
+IF ty > y THEN Dn 2
+Up 2
+Upforce = 10
+s1s(z) = 1: s1t!(z) = TIMER: DrawGfx 17
+CASE 18
+t18:
+FOR z = 1 TO nos2
+IF spx2(z) = tx AND spy2(z) = ty THEN GOTO hs18
+NEXT
+EXIT SUB
+hs18:
+IF tx > x THEN Rt 2
+IF tx < x THEN Lt 2
+IF ty > y THEN Dn 2
+Up 2
+Upforce = 6
+s2s(z) = 1: s2t!(z) = TIMER: DrawGfx 18
+
+CASE 21
+t21:
+FOR z = 1 TO nof1
+IF flx(z) = tx AND fly(z) = ty THEN GOTO hs21
+NEXT
+EXIT SUB
+hs21:
+Upforce = 10
+SonicMode = 4: SonicFrame = 1
+flf(z) = 1: flt!(z) = TIMER: DrawGfx 21
+CASE 22
+t22:
+FOR z = 1 TO nof2
+IF frx(z) = tx AND fry(z) = ty THEN GOTO hs22
+NEXT
+EXIT SUB
+hs22:
+Upforce = 10
+SonicMode = 4: SonicFrame = 1
+frf(z) = 1: frt!(z) = TIMER: DrawGfx 21
+
+END SELECT
+END SUB
+
+SUB Jump
+IF a(x, y + 1) = 21 OR a(x, y + 1) = 22 THEN HitSpring a(x, y + 1), x, y + 1: sfx 10: EXIT SUB
+IF Upforce = 0 AND ChkAhead(x, y + 1) = 1 THEN
+sfx 1
+Upforce = 4: SonicMode = 4: SonicFrame = 1: StartForce = 3
+jt! = TIMER
+END IF
+
+END SUB
+
+SUB LaserMan
+FOR z = 1 TO lsrs
+ IF laser(z).ldir = 0 AND TIMER - laser(z).et >= 1 THEN GOSUB firelaser
+ IF TIMER - laser(z).Lt >= .2 THEN GOSUB movelaser
+NEXT
+DrawGfx 61
+DrawGfx 62
+
+EXIT SUB
+firelaser:
+ SELECT CASE laser(z).ltype
+ CASE 1
+ laser(z).ldir = 1: laser(z).lx = laser(z).x: laser(z).ly = laser(z).y - 1
+ laser(z).Lt = TIMER: a(laser(z).lx, laser(z).ly) = 62
+ CASE 2
+ laser(z).ldir = 2: laser(z).lx = laser(z).x: laser(z).ly = laser(z).y + 1
+ laser(z).Lt = TIMER: a(laser(z).lx, laser(z).ly) = 62
+ CASE 3
+ laser(z).ldir = 3: laser(z).lx = laser(z).x - 1: laser(z).ly = laser(z).y
+ laser(z).Lt = INT(TIMER): a(laser(z).lx, laser(z).ly) = 61
+ CASE 4
+ laser(z).ldir = 4: laser(z).lx = laser(z).x + 1: laser(z).ly = laser(z).y
+ laser(z).Lt = INT(TIMER): a(laser(z).lx, laser(z).ly) = 61
+
+ END SELECT
+temp1 = laser(z).lx: temp2 = laser(z).ly
+IF OS(temp1, temp2) = 1 THEN ReDrawObj temp1, temp2, temp1 - strx, temp2 - stry, 0
+RETURN
+
+movelaser:
+ temp1 = laser(z).lx: temp2 = laser(z).ly
+ SELECT CASE laser(z).ldir
+ CASE 1
+ IF a(laser(z).lx, laser(z).ly - 1) = 1 THEN Expman 1, temp1, temp2: laser(z).ldir = 0: laser(z).et = INT(TIMER): RETURN
+ laser(z).ly = laser(z).ly - 1: laser(z).Lt = INT(TIMER)
+ a(laser(z).lx, laser(z).ly + 1) = 0
+ a(laser(z).lx, laser(z).ly) = 62
+ temp1 = laser(z).lx: temp2 = laser(z).ly
+ ReDrawObj temp1, temp2 + 1, temp1 - strx, temp2 - stry + 1, 0
+ CASE 2
+ IF a(laser(z).lx, laser(z).ly + 1) = 1 THEN Expman 1, temp1, temp2: laser(z).ldir = 0: laser(z).et = INT(TIMER): RETURN
+ laser(z).ly = laser(z).ly + 1: laser(z).Lt = INT(TIMER)
+ a(laser(z).lx, laser(z).ly - 1) = 0
+ a(laser(z).lx, laser(z).ly) = 62
+ temp1 = laser(z).lx: temp2 = laser(z).ly
+ ReDrawObj temp1, temp2 - 1, temp1 - strx, temp2 - stry - 1, 0
+ CASE 3
+ IF a(laser(z).lx - 1, laser(z).ly) = 1 THEN Expman 1, temp1, temp2: laser(z).ldir = 0: laser(z).et = INT(TIMER): RETURN
+ laser(z).lx = laser(z).lx - 1: laser(z).Lt = INT(TIMER)
+ a(laser(z).lx + 1, laser(z).ly) = 0
+ a(laser(z).lx, laser(z).ly) = 61
+ temp1 = laser(z).lx: temp2 = laser(z).ly
+ ReDrawObj temp1 + 1, temp2, temp1 - strx + 1, temp2 - stry, 0
+ CASE 4
+ IF a(laser(z).lx + 1, laser(z).ly) = 1 THEN Expman 1, temp1, temp2: laser(z).ldir = 0: laser(z).et = INT(TIMER): RETURN
+ laser(z).lx = laser(z).lx + 1: laser(z).Lt = INT(TIMER)
+ a(laser(z).lx - 1, laser(z).ly) = 0
+ a(laser(z).lx, laser(z).ly) = 61
+ temp1 = laser(z).lx: temp2 = laser(z).ly
+ ReDrawObj temp1 - 1, temp2, temp1 - strx - 1, temp2 - stry, 0
+ END SELECT
+'temp1 = laser(z).lx: temp2 = laser(z).ly
+
+RETURN
+
+
+
+
+
+END SUB
+
+SUB LevelIntro
+EXIT SUB
+CLS
+s1$ = " Rabid Mushroom zone"
+s2$ = "1"
+s3$ = "Act "
+t1 = 0 - LEN(s1$)
+BF = 0
+t2 = 40
+t3 = 25
+WHILE BF <> 1
+IF t1 + 1 > 9 THEN GOTO npli2
+t1 = t1 + 1     'beginning of string x
+COLOR 2
+FOR z = 1 TO LEN(s1$)        'letter pointer
+ IF t1 + z - 1 < 1 THEN GOTO npli1
+ LOCATE 10, t1 + z: PRINT MID$(s1$, z, 1)
+npli1:
+NEXT
+
+npli2:
+IF t2 = 14 THEN GOTO npli4
+t2 = t2 - 1
+COLOR 3
+FOR z = 1 TO 4
+ IF t2 + z - 1 > 40 THEN GOTO npli3
+ LOCATE 11, t2 + z - 1: PRINT MID$(s3$, z, 1)
+npli3:
+NEXT
+
+npli4:
+IF t2 <= 25 THEN
+IF t3 = 11 THEN BF = 1: GOTO npli5
+t3 = t3 - 1
+LOCATE t3, 18: COLOR 14: PRINT s2$;
+LOCATE t3 + 1, 18: COLOR 14: PRINT " ";
+END IF
+
+npli5:
+t! = TIMER: WHILE TIMER - t! < .05: WEND
+WEND
+t! = TIMER: WHILE TIMER - t! < .3: WEND
+COLOR 15: LOCATE 20, 12: PRINT "Cool Sonic 1"
+t! = TIMER: WHILE TIMER - t! < 1: WEND
+END SUB
+
+SUB LGFX
+CLS
+LOCATE 1, 1: COLOR 7: PRINT "Loading standard graphics";
+OPEN "C:\CSONIC\GFX\GFX.LST" FOR INPUT AS #1
+oa = 74
+DO UNTIL a = oa
+INPUT #1, GFXFILE$
+                IF GFXFILE$ = "" THEN GOTO SL
+                MGFXFILE$ = "C:\CSONIC\GFX\" + GFXFILE$ + ".GFX"
+                DEF SEG = VARSEG(gfx%(0))
+                BLOAD MGFXFILE$, VARPTR(gfx%(0))
+IF GFXFILE$ = "SLS" THEN ChangeGFX SLS%()
+IF GFXFILE$ = "SRS" THEN ChangeGFX SRS%()
+IF GFXFILE$ = "SL1" THEN ChangeGFX SL1%()
+IF GFXFILE$ = "SR1" THEN ChangeGFX SR1%()
+IF GFXFILE$ = "SL2" THEN ChangeGFX SL2%()
+IF GFXFILE$ = "SR2" THEN ChangeGFX SR2%()
+IF GFXFILE$ = "SWAIT1" THEN ChangeGFX SWAIT1%()
+IF GFXFILE$ = "SWAIT2" THEN ChangeGFX SWAIT2%()
+IF GFXFILE$ = "SPIN1" THEN ChangeGFX SPIN1%()
+IF GFXFILE$ = "SPIN2" THEN ChangeGFX SPIN2%()
+IF GFXFILE$ = "CHILI1" THEN ChangeGFX CHILI1%()
+IF GFXFILE$ = "CHILI2" THEN ChangeGFX CHILI2%()
+IF GFXFILE$ = "CHILI3" THEN ChangeGFX CHILI3%()
+IF GFXFILE$ = "CHILI4" THEN ChangeGFX CHILI4%()
+IF GFXFILE$ = "CHILI5" THEN ChangeGFX CHILI5%()
+IF GFXFILE$ = "CHILI6" THEN ChangeGFX CHILI6%()
+IF GFXFILE$ = "RING1" THEN ChangeGFX RING1%()
+IF GFXFILE$ = "RING2" THEN ChangeGFX RING2%()
+IF GFXFILE$ = "RING3" THEN ChangeGFX RING3%()
+IF GFXFILE$ = "RING4" THEN ChangeGFX RING4%()
+IF GFXFILE$ = "RING5" THEN ChangeGFX RING5%()
+IF GFXFILE$ = "RING6" THEN ChangeGFX RING6%()
+IF GFXFILE$ = "BOX-RNG" THEN ChangeGFX BOXRNG%()
+IF GFXFILE$ = "BOX-SHI" THEN ChangeGFX BOXSHI%()
+IF GFXFILE$ = "BOX-SPI" THEN ChangeGFX BOXSPI%()
+IF GFXFILE$ = "BOX-BUB" THEN ChangeGFX BOXBUB%()
+IF GFXFILE$ = "BOX-FIR" THEN ChangeGFX BOXFIR%()
+IF GFXFILE$ = "BOX-ST" THEN ChangeGFX BOXST%()
+IF GFXFILE$ = "E1" THEN ChangeGFX e1%()
+IF GFXFILE$ = "E2" THEN ChangeGFX e2%()
+IF GFXFILE$ = "E3" THEN ChangeGFX e3%()
+IF GFXFILE$ = "E4" THEN ChangeGFX e4%()
+IF GFXFILE$ = "E5" THEN ChangeGFX e5%()
+IF GFXFILE$ = "SPRINGR1" THEN ChangeGFX SPRINGR1%()
+IF GFXFILE$ = "SPRINGR2" THEN ChangeGFX SPRINGR2%()
+IF GFXFILE$ = "SPRINGL1" THEN ChangeGFX SPRINGL1%()
+IF GFXFILE$ = "SPRINGL2" THEN ChangeGFX SPRINGL2%()
+IF GFXFILE$ = "SPIKEUP" THEN ChangeGFX SPIKEUP%()
+IF GFXFILE$ = "SPIKEDN" THEN ChangeGFX SPIKEDN%()
+IF GFXFILE$ = "SPIKELT" THEN ChangeGFX SPIKELT%()
+IF GFXFILE$ = "SPIKERT" THEN ChangeGFX SPIKERT%()
+IF GFXFILE$ = "SDIE" THEN ChangeGFX SDIE%()
+IF GFXFILE$ = "FSPIKE" THEN ChangeGFX FSPIKE%()
+IF GFXFILE$ = "AFSPIKE" THEN ChangeGFX AFSPIKE%()
+IF GFXFILE$ = "MPL" THEN ChangeGFX MPL%()
+IF GFXFILE$ = "MPR" THEN ChangeGFX MPR%()
+IF GFXFILE$ = "MPLAT" THEN ChangeGFX MPLAT%()
+IF GFXFILE$ = "BPLAT" THEN ChangeGFX BPLAT%()
+IF GFXFILE$ = "LFLIP1" THEN ChangeGFX LFLIP1%()
+IF GFXFILE$ = "LFLIP2" THEN ChangeGFX LFLIP2%()
+IF GFXFILE$ = "RFLIP1" THEN ChangeGFX RFLIP1%()
+IF GFXFILE$ = "RFLIP2" THEN ChangeGFX RFLIP2%()
+IF GFXFILE$ = "GAMBLE" THEN ChangeGFX GAMBLE%()
+IF GFXFILE$ = "LAVA1" THEN ChangeGFX LAVA1%()
+IF GFXFILE$ = "LAVA2" THEN ChangeGFX LAVA2%()
+IF GFXFILE$ = "LAVA3" THEN ChangeGFX LAVA3%()
+IF GFXFILE$ = "ELL" THEN ChangeGFX ELL%()
+IF GFXFILE$ = "ELR" THEN ChangeGFX ELR%()
+IF GFXFILE$ = "EL1" THEN ChangeGFX EL1%()
+IF GFXFILE$ = "EL2" THEN ChangeGFX EL2%()
+IF GFXFILE$ = "EL3" THEN ChangeGFX EL3%()
+IF GFXFILE$ = "CFP" THEN ChangeGFX CFP%()
+IF GFXFILE$ = "WFP" THEN ChangeGFX WFP%()
+IF GFXFILE$ = "P1" THEN ChangeGFX bp%()
+IF GFXFILE$ = "LUP" THEN ChangeGFX LUP%()
+IF GFXFILE$ = "LDN" THEN ChangeGFX LDN%()
+IF GFXFILE$ = "LLT" THEN ChangeGFX LLT%()
+IF GFXFILE$ = "LRT" THEN ChangeGFX LRT%()
+IF GFXFILE$ = "LHOR" THEN ChangeGFX LHOR%()
+IF GFXFILE$ = "LVER" THEN ChangeGFX LVER%()
+IF GFXFILE$ = "PASSER1" THEN ChangeGFX PASSER1%()
+IF GFXFILE$ = "PASSER2" THEN ChangeGFX PASSER2%()
+IF GFXFILE$ = "PASSER3" THEN ChangeGFX PASSER3%()
+IF GFXFILE$ = "PASSER4" THEN ChangeGFX PASSER4%()
+
+'LOCATE 11, 10: PRINT "Free memory:"; FRE(-1)
+PRINT ".";
+CLOSE #2
+a = a + 1
+LOOP
+SL:
+CLOSE #1
+CLS
+
+END SUB
+
+SUB LoadLevel (t$)
+passerstate = 0: passerframe = 0
+'stat0 = 9295
+IF act = 1 THEN loadtoact
+tlsx = 25
+x = 0: y = 0: a(0, 0) = -1
+t$ = "c:\csonic\levels\1_3.lev"
+OPEN t$ FOR INPUT AS #1
+DO UNTIL EOF(1)
+INPUT #1, tx, ty, tn, tc
+SELECT CASE tn
+CASE -1
+a(tx, ty) = -1
+sx = tx: sy = ty: x = tx: y = ty
+ssx = tx: ssy = ty: stax = tx: stay = ty
+CASE 0
+CASE 1
+a(tx, ty) = 1
+p(tx, ty) = tc
+CASE 10: fp = fp + 1: fpx(fp) = tx: fpy(fp) = ty: a(tx, ty) = tn: p(tx, ty) = tc
+CASE 17: nos1 = nos1 + 1: spx1(nos1) = tx: spy1(nos1) = ty: a(tx, ty) = tn
+CASE 18: nos2 = nos2 + 1: spx2(nos2) = tx: spy2(nos2) = ty: a(tx, ty) = tn
+
+CASE 2 TO 7, 11, 12, 25 TO 31, 38 TO 44: a(tx, ty) = tn
+CASE 8: fs = fs + 1: fsx(fs) = tx: fsy(fs) = ty: a(tx, ty) = tn
+CASE 9: afs = afs + 1: afsx(afs) = tx: afsy(afs) = ty: a(tx, ty) = tn
+CASE 32: fc = fc + 1: fcx(fc) = tx: fcy(fc) = ty: a(tx, ty) = tn
+CASE 33: fw = fw + 1: fwx(fw) = tx: fwy(fw) = ty: a(tx, ty) = tn
+CASE 34: a(tx, ty) = 34: lsrs = lsrs + 1: laser(lsrs).x = tx: laser(lsrs).y = ty: laser(lsrs).ltype = 1
+CASE 35: a(tx, ty) = 35: lsrs = lsrs + 1: laser(lsrs).x = tx: laser(lsrs).y = ty: laser(lsrs).ltype = 2
+CASE 36: a(tx, ty) = 36: lsrs = lsrs + 1: laser(lsrs).x = tx: laser(lsrs).y = ty: laser(lsrs).ltype = 3
+CASE 37: a(tx, ty) = 37: lsrs = lsrs + 1: laser(lsrs).x = tx: laser(lsrs).y = ty: laser(lsrs).ltype = 4
+
+CASE 13
+a(tx, ty) = tn
+INPUT #1, tcm
+INPUT #1, M(tcm).x1, M(tcm).y1, M(tcm).x2, M(tcm).y2
+IF tcm > cm THEN cm = tcm
+CASE 21: nof1 = nof1 + 1: flx(nof1) = tx: fly(nof1) = ty: a(tx, ty) = tn
+CASE 22: nof2 = nof2 + 1: frx(nof2) = tx: fry(nof2) = ty: a(tx, ty) = tn
+
+'********************
+CASE 70
+bcnt(2) = bcnt(2) + 1: rm(bcnt(2)).x = tx: rm(bcnt(2)).y = ty
+rm(bcnt(2)).state = 2
+rm(bcnt(2)).f1 = 0
+rm(bcnt(2)).t = INT(TIMER)
+a(tx, ty) = tn
+
+CASE 71              'Mosquitoes
+a(tx, ty) = tn
+bcnt(1) = bcnt(1) + 1
+mosqu(1).last = mosqu(1).last + 1
+INPUT #1, temp
+INPUT #1, mosqu(bcnt(1)).x1, mosqu(bcnt(1)).y1, mosqu(bcnt(1)).x2, mosqu(bcnt(1)).y2
+IF tx > mosqu(bcnt(1)).x2 THEN mosqu(bcnt(1)).f1 = 1 ELSE mosqu(bcnt(1)).f1 = 2
+mosqu(bcnt(1)).x = mosqu(bcnt(1)).x1: mosqu(bcnt(1)).y = mosqu(bcnt(1)).y1: mosqu(bcnt(1)).state = 1
+mosqu(bcnt(1)).step = 2
+
+
+CASE 72
+bcnt(3) = bcnt(3) + 1: bpot(bcnt(3)).x = tx: bpot(bcnt(3)).y = ty
+bpot(bcnt(3)).state = 1
+bpot(bcnt(3)).f1 = 1: bpot(bcnt(3)).f2 = 0
+bpot(bcnt(3)).t = INT(TIMER)
+a(tx, ty) = tn
+CASE 103: passx = tx: passy = ty: a(tx, ty) = tn
+END SELECT
+COLOR 7: LOCATE 1, 1: PRINT "Loading..."
+LINE (74, 95)-(127, 105), 10, B
+LINE (74 + ty, 96)-(74 + ty, 104), 2
+'stat0 = stat0 + 1: LOCATE 22, 1: PRINT stat0; "/9295"
+'DrawLoadScene ty * 5
+LOOP
+LOCATE 1, 1: PRINT STRING$(80, " ")
+CLOSE
+
+strx = 0: stry = 0: 'DrawAllScr
+LavaTimer! = TIMER
+SetScr
+PlatDo 1
+GameTime = INT(TIMER)
+END SUB
+
+SUB Lt (n)
+IF x - 1 = -1 THEN EXIT SUB
+IF n <> 2 THEN IF ChkAhead(x - 1, y) = 1 THEN EXIT SUB
+x = x - 1
+IF strx = 0 THEN sx = sx - 1: GOTO dnr4
+IF strx = 156 AND sx >= 6 THEN sx = sx - 1: GOTO dnr4
+strx = strx - 1
+dnr4:
+IF tempa = 100 THEN tempa = 0
+a(x + 1, y) = tempa
+tempa = a(x, y)
+IF a(x, y) <> 17 OR a(x, y) <> 18 THEN a(x, y) = -1
+sti! = TIMER
+IF SonicMode <> 4 THEN SonicMode = 1
+IF SonicMode = 1 THEN SonicDir = 3
+DrawAllScr
+
+END SUB
+
+SUB MainLoop
+M:
+
+a$ = INKEY$
+FOR z = 1 TO 100: NEXT
+'IF a$ = CHR$(0) + "M" THEN Rt 1
+IF INP(96) = 77 AND force$ = "" THEN Rt 1
+IF INP(96) = 75 AND force$ = "" THEN Lt 1
+IF a$ = "\" THEN HitSonic 0
+'IF a$ = CHR$(0) + "K" THEN Lt 1
+IF a$ = CHR$(0) + "P" THEN DnS
+'IF a$ = " " THEN Jump
+IF INP(96) = 57 THEN Jump
+IF a$ = "0" THEN SYSTEM
+IF a$ = CHR$(13) THEN GOSUB systat
+IF Upforce <> 0 AND TIMER - jt! >= .1 THEN UMan
+IF Upforce = 0 THEN IF ChkAhead(x, y + 1) = 0 AND TIMER - jt! >= .1 THEN Dn 1
+IF Upforce <> 0 THEN IF a(x, y + 1) = 25 THEN Upforce = 2
+IF a(x, y + 1) = 11 THEN Lt 1
+IF a(x, y + 1) = 12 THEN Rt 1
+IF y + 1 = 55 THEN Die 1
+IF Upforce = 0 THEN IF ChkAhead(x, y + 1) = 1 AND SonicMode = 4 THEN SonicMode = 1: s3 = 0: DrawGfx -1
+IF tempa = 2 OR tempa = 3 THEN
+ IF so <> 2 THEN IF TIMER - brt! >= 1 THEN brt! = TIMER: Breath = Breath - 1
+END IF
+SetScr
+IF tempa = 26 OR tempa = 27 THEN GambleHolder tempa
+Expman 2, 0, 0
+AnmMan
+SonicMan
+PlatDo 2
+enemy.mgr
+IF force$ <> "" AND TIMER - forcet! > .1 THEN DoForces
+IF youaredead THEN IF TIMER - DieTimer! < 8 THEN DoDie
+IF youaredead AND TIMER - DieTimer! > 8 THEN Die 2: DieTimer! = 0: force$ = ""
+GOTO M
+'***************************************
+systat:
+LINE (100, 100)-(268, 154), 0, BF: LINE (99, 99)-(269, 155), 15, B
+FOR z = 0 TO 54: FOR z2 = 0 TO 168
+SELECT CASE a(z2, z)
+CASE -1, -2: cc = 14
+CASE 0: cc = 0
+CASE 1, 10: cc = 3
+CASE 2: cc = 1
+CASE 3: cc = 12
+CASE 4 TO 7: cc = 4
+CASE 13: cc = 8
+CASE 17, 18: cc = 6
+CASE 38, 39, 42, 43, 44: cc = 10
+CASE 40: cc = 4
+CASE 100: cc = 4
+END SELECT
+PSET (100 + z2, 100 + z), cc
+ cc = 0
+ NEXT: NEXT
+WHILE INKEY$ <> "": WEND
+ff = 0
+WHILE INKEY$ = ""
+IF ff = 0 THEN ff = 1 ELSE ff = 0
+IF ff = 0 THEN PSET (100 + x, 100 + y), 0
+IF ff = 1 THEN PSET (100 + x, 100 + y), 14
+t! = TIMER: WHILE TIMER - t! <= .5: WEND
+WEND
+DrawAllScr
+RETURN
+'*****************************************
+END SUB
+
+FUNCTION OS (tx, ty)
+IF tx >= strx AND tx <= strx + 12 THEN
+ IF ty >= stry AND ty < stry + 7 THEN
+  OS = 1: EXIT FUNCTION
+ END IF
+END IF
+
+
+
+END FUNCTION
+
+SUB PlatDo (n)
+SELECT CASE n
+CASE 1        '**************Set up platforms
+FOR z = 1 TO cm
+ IF M(z).x2 < M(z).x1 THEN M(z).d = 3
+ IF M(z).x2 > M(z).x1 THEN M(z).d = 4
+ IF M(z).y2 < M(z).y1 THEN M(z).d = 1
+ IF M(z).y2 > M(z).y1 THEN M(z).d = 2
+ M(z).t = TIMER - .5
+ M(z).x = M(z).x1: M(z).y = M(z).y1
+ M(z).s = 2
+NEXT
+EXIT SUB
+CASE 2
+FOR z = 1 TO cm
+ SELECT CASE M(z).d
+ CASE 1
+ IF M(z).s = 2 THEN IF M(z).y = M(z).y2 THEN M(z).s = 1: M(z).t = TIMER + 1: M(z).d = 2: GOTO NePlat
+ IF M(z).s = 1 THEN IF M(z).y = M(z).y1 THEN M(z).s = 2: M(z).t = TIMER + 1: M(z).d = 2: GOTO NePlat
+mp1:
+IF TIMER - M(z).t < .5 THEN M(z).Mved = 0
+IF TIMER - M(z).t >= .5 THEN
+ IF a(M(z).x, M(z).y - 1) = -1 THEN Up 1
+ M(z).y = M(z).y - 1
+ a(M(z).x, M(z).y + 1) = 0: a(M(z).x, M(z).y) = 13
+ M(z).t = TIMER
+ M(z).Mved = 1
+END IF
+
+ CASE 2
+ IF M(z).s = 2 THEN IF M(z).y = M(z).y2 THEN M(z).s = 1: M(z).t = TIMER + 1: M(z).d = 1: GOTO NePlat
+ IF M(z).s = 1 THEN IF M(z).y = M(z).y1 THEN M(z).s = 2: M(z).t = TIMER + 1: M(z).d = 1: GOTO NePlat
+mp2:
+IF TIMER - M(z).t < .5 THEN M(z).Mved = 0
+IF TIMER - M(z).t >= .5 THEN
+ IF a(M(z).x, M(z).y - 1) = -1 THEN Up 1
+ M(z).y = M(z).y + 1
+ a(M(z).x, M(z).y - 1) = 0: a(M(z).x, M(z).y) = 13
+ M(z).t = TIMER
+ M(z).Mved = 1
+END IF
+ '****************
+ CASE 3
+ IF M(z).s = 2 THEN IF M(z).x = M(z).x2 THEN M(z).s = 1: M(z).t = TIMER + 1: M(z).d = 4: GOTO NePlat
+ IF M(z).s = 1 THEN IF M(z).x = M(z).x1 THEN M(z).s = 2: M(z).t = TIMER + 1: M(z).d = 4: GOTO NePlat
+mp3:
+IF TIMER - M(z).t < .5 THEN M(z).Mved = 0
+IF TIMER - M(z).t >= .5 THEN
+ IF a(M(z).x, M(z).y - 1) = -1 THEN Lt 1
+ M(z).x = M(z).x - 1
+ a(M(z).x + 1, M(z).y) = 0: a(M(z).x, M(z).y) = 13
+ M(z).t = TIMER
+ M(z).Mved = 1
+END IF
+
+ CASE 4
+ IF M(z).s = 2 THEN IF M(z).x = M(z).x2 THEN M(z).s = 1: M(z).t = TIMER + 1: M(z).d = 3: GOTO NePlat
+ IF M(z).s = 1 THEN IF M(z).x = M(z).x1 THEN M(z).s = 2: M(z).t = TIMER + 1: M(z).d = 3: GOTO NePlat
+mp4:
+IF TIMER - M(z).t < .5 THEN M(z).Mved = 0
+IF TIMER - M(z).t >= .5 THEN
+ IF a(M(z).x, M(z).y - 1) = -1 THEN Rt 1
+ M(z).x = M(z).x + 1
+ a(M(z).x - 1, M(z).y) = 0: a(M(z).x, M(z).y) = 13
+ M(z).t = TIMER
+ M(z).Mved = 1
+END IF
+END SELECT
+NePlat:
+
+NEXT
+END SELECT
+FOR z = 1 TO cm
+IF M(z).Mved = 1 THEN
+ttt1 = M(z).x: ttt2 = M(z).y
+IF OS(ttt1, ttt2) = 1 THEN ReDrawObj ttt1, ttt2, ttt1 - strx, ttt2 - stry, 0
+IF OS(ttt1 - 1, ttt2) = 1 THEN ReDrawObj ttt1 - 1, ttt2, (ttt1 - 1) - strx, ttt2 - stry, 0
+IF OS(ttt1 + 1, ttt2) = 1 THEN ReDrawObj ttt1 + 1, ttt2, (ttt1 + 1) - strx, ttt2 - stry, 0
+IF OS(ttt1, ttt2 - 1) = 1 THEN ReDrawObj ttt1, ttt2 - 1, ttt1 - strx, (ttt2 - 1) - stry, 0
+IF OS(ttt1, ttt2 + 1) = 1 THEN ReDrawObj ttt1, ttt2 + 1, ttt1 - strx, (ttt2 + 1) - stry, 0
+M(z).Mved = 0
+END IF
+NEXT
+END SUB
+
+SUB ReadyMask
+PUT (0, 0), back%, PSET
+FOR yy = 0 TO 24: FOR xx = 0 TO 24: gfx2%(xx, yy) = POINT(xx, yy): NEXT: NEXT
+END SUB
+
+SUB ReDrawAround (tx, ty)
+IF OS(tx - 1, ty - 1) = 1 THEN ReDrawObj tx - 1, ty - 1, tx - 1 - strx, ty - 1 - stry, 0
+IF OS(tx, ty - 1) = 1 THEN ReDrawObj tx, ty - 1, tx - strx, ty - 1 - stry, 0
+IF OS(tx + 1, ty - 1) = 1 THEN ReDrawObj tx + 1, ty - 1, tx + 1 - strx, ty - 1 - stry, 0
+IF OS(tx - 1, ty) = 1 THEN ReDrawObj tx - 1, ty, tx - 1 - strx, ty - stry, 0
+IF OS(tx + 1, ty) = 1 THEN ReDrawObj tx + 1, ty, tx + 1 - strx, ty - stry, 0
+
+IF OS(tx - 1, ty + 1) = 1 THEN ReDrawObj tx - 1, ty + 1, tx - 1 - strx, ty + 1 - stry, 0
+IF OS(tx, ty + 1) = 1 THEN ReDrawObj tx, ty + 1, tx - strx, ty + 1 - stry, 0
+IF OS(tx + 1, ty + 1) = 1 THEN ReDrawObj tx + 1, ty + 1, tx + 1 - strx, ty + 1 - stry, 0
+
+END SUB
+
+SUB ReDrawObj (tx, ty, ttx, tty, n)
+IF screenmode = 7 THEN
+IF ttx * 24 <= 295 AND tty * 24 + 12 <= 182 AND ttx > -1 AND tty >= 0 THEN OldOnScreen(ttx, tty) = a(tx, ty)
+IF ttx * 24 <= 295 AND tty * 24 + 12 <= 178 AND ttx > -1 AND tty >= 0 THEN GOTO doredraw ELSE EXIT SUB
+END IF
+IF screenmode = 12 THEN
+IF ttx * 24 <= 620 AND tty * 24 + 12 <= 300 AND ttx > -1 AND tty >= 0 THEN OldOnScreen(ttx, tty) = a(tx, ty)
+IF ttx * 24 <= 620 AND tty * 24 + 12 <= 300 AND ttx > -1 AND tty >= 0 THEN GOTO doredraw ELSE EXIT SUB
+END IF
+
+EXIT SUB
+doredraw:
+SELECT CASE a(tx, ty)
+CASE 0
+'LINE (ttx * 24, tty * 24 + 12)-(ttx * 24 + 24, tty * 24 + 12 + 24), 0, BF
+'IF ttx * 24 <= 295 AND tty * 24 + 12 <= 178 AND ttx > -1 AND tty >= 0 THEN PUT (ttx * 24, tty * 24 + 12), back%, PSET
+PUT (ttx * 24, tty * 24 + 12), back%, PSET
+END SELECT
+
+SELECT CASE a(tx, ty)
+CASE -1, -2
+DrawSonic ttx, tty
+CASE 0
+CASE 1: LINE (ttx * 24, tty * 24 + 13)-(ttx * 24 + 24, tty * 24 + 12 + 24), p(tx, ty), BF
+CASE 2: LINE (ttx * 24, tty * 24 + 12)-(ttx * 24 + 24, tty * 24 + 12 + 24), 1, BF
+CASE 3: LINE (ttx * 24, tty * 24 + 12)-(ttx * 24 + 24, tty * 24 + 12 + 24), 12, BF
+CASE 4: PUT (ttx * 24, tty * 24 + 12), SPIKEUP%, PSET
+CASE 5: PUT (ttx * 24, tty * 24 + 12), SPIKEDN%, PSET
+CASE 6: PUT (ttx * 24, tty * 24 + 12), SPIKELT%, PSET
+CASE 7: PUT (ttx * 24, tty * 24 + 12), SPIKERT%, PSET
+CASE 8: PUT (ttx * 24, tty * 24 + 12), FSPIKE%, PSET
+CASE 9: PUT (ttx * 24, tty * 24 + 12), AFSPIKE%, PSET
+CASE 10: LINE (ttx * 24, tty * 24 + 12)-(ttx * 24 + 24, tty * 24 + 12 + 24), p(tx, ty), BF
+CASE 11: PUT (ttx * 24, tty * 24 + 12), MPL%, PSET
+CASE 12: PUT (ttx * 24, tty * 24 + 12), MPR%, PSET
+CASE 13: PUT (ttx * 24, tty * 24 + 12), MPLAT%, PSET
+CASE 21
+IF flf(n) = 0 THEN PUT (ttx * 24, tty * 24 + 12), LFLIP1%
+IF flf(n) = 1 THEN PUT (ttx * 24, tty * 24 + 12), LFLIP2%
+CASE 22
+IF frf(n) = 0 THEN PUT (ttx * 24, tty * 24 + 12), RFLIP1%
+IF frf(n) = 1 THEN PUT (ttx * 24, tty * 24 + 12), RFLIP2%
+CASE 25: PUT (ttx * 24, tty * 24 + 12), BPLAT%, PSET
+CASE 26, 27: PUT (ttx * 24, tty * 24 + 12), GAMBLE%, PSET
+CASE 28
+IF LavaState = 1 THEN PUT (ttx * 24, tty * 24 + 12), LAVA1%, PSET
+IF LavaState = 2 THEN PUT (ttx * 24, tty * 24 + 12), LAVA2%, PSET
+IF LavaState = 3 THEN PUT (ttx * 24, tty * 24 + 12), LAVA3%, PSET
+CASE 29: PUT (ttx * 24, tty * 24 + 12), ELL%, PSET
+CASE 30: PUT (ttx * 24, tty * 24 + 12), ELR%, PSET
+CASE 31
+IF ElState = 1 THEN PUT (ttx * 24, tty * 24 + 12), EL1%, PSET
+IF ElState = 2 THEN PUT (ttx * 24, tty * 24 + 12), EL2%, PSET
+IF ElState = 3 THEN PUT (ttx * 24, tty * 24 + 12), EL3%, PSET
+CASE 32: PUT (ttx * 24, tty * 24 + 12), CFP%, PSET
+CASE 33: PUT (ttx * 24, tty * 24 + 12), WFP%, PSET
+CASE 34: PUT (ttx * 24, tty * 24 + 12), LUP%, PSET
+CASE 35: PUT (ttx * 24, tty * 24 + 12), LDN%, PSET
+CASE 36: PUT (ttx * 24, tty * 24 + 12), LLT%, PSET
+CASE 37: PUT (ttx * 24, tty * 24 + 12), LRT%, PSET
+CASE 38: IF bb = 1 THEN PUT (ttx * 24, tty * 24 + 11), BOXRNG%, PSET ELSE PUT (ttx * 24, tty * 24 + 11), BOXST%, PSET
+CASE 39: IF bb = 1 THEN PUT (ttx * 24, tty * 24 + 11), BOXSHI%, PSET ELSE PUT (ttx * 24, tty * 24 + 11), BOXST%, PSET
+CASE 40: IF bb = 1 THEN PUT (ttx * 24, tty * 24 + 11), BOXSPI%, PSET ELSE PUT (ttx * 24, tty * 24 + 11), BOXST%, PSET
+CASE 41: IF bb = 1 THEN PUT (ttx * 24, tty * 24 + 11), BOXBUB%, PSET ELSE PUT (ttx * 24, tty * 24 + 11), BOXST%, PSET
+CASE 42: IF bb = 1 THEN PUT (ttx * 24, tty * 24 + 11), BOXFIR%, PSET ELSE PUT (ttx * 24, tty * 24 + 11), BOXST%, PSET
+CASE 61: PUT (ttx * 24, tty * 24 + 12), LHOR%, PSET
+CASE 62: PUT (ttx * 24, tty * 24 + 12), LVER%, PSET
+
+CASE 17
+IF s1s(n) = 1 THEN PUT (ttx * 24, tty * 24 + 12), SPRINGR2%, PSET
+IF s1s(n) = 0 THEN PUT (ttx * 24, tty * 24 + 12), SPRINGR1%, PSET
+CASE 18
+IF s2s(n) = 1 THEN PUT (ttx * 24, tty * 24 + 12), SPRINGL2%, PSET
+IF s2s(n) = 0 THEN PUT (ttx * 24, tty * 24 + 12), SPRINGL1%, PSET
+CASE 43
+IF rfr = 1 THEN PUT (ttx * 24, tty * 24 + 12), RING1%, PSET
+IF rfr = 2 THEN PUT (ttx * 24, tty * 24 + 12), RING2%, PSET
+IF rfr = 3 THEN PUT (ttx * 24, tty * 24 + 12), RING3%, PSET
+IF rfr = 4 THEN PUT (ttx * 24, tty * 24 + 12), RING4%, PSET
+IF rfr = 5 THEN PUT (ttx * 24, tty * 24 + 12), RING5%, PSET
+IF rfr = 6 THEN PUT (ttx * 24, tty * 24 + 12), RING6%, PSET
+CASE 44
+IF cfr = 1 THEN PUT (ttx * 24, tty * 24 + 12), CHILI1%, PSET
+IF cfr = 2 THEN PUT (ttx * 24, tty * 24 + 12), CHILI2%, PSET
+IF cfr = 3 THEN PUT (ttx * 24, tty * 24 + 12), CHILI3%, PSET
+IF cfr = 4 THEN PUT (ttx * 24, tty * 24 + 12), CHILI4%, PSET
+IF cfr = 5 THEN PUT (ttx * 24, tty * 24 + 12), CHILI5%, PSET
+IF cfr = 6 THEN PUT (ttx * 24, tty * 24 + 12), CHILI6%, PSET
+CASE 70
+ IF rm(n).state = 1 THEN
+  IF rm(n).f1 = 2 THEN PUT (ttx * 24, tty * 24 + 12), bg12%, PSET
+  IF rm(n).f1 = 1 THEN PUT (ttx * 24, tty * 24 + 12), bg13%, PSET
+ END IF
+ IF rm(n).state = 2 THEN PUT (ttx * 24, tty * 24 + 12), bg11%, PSET
+CASE 71
+ SELECT CASE mosqu(n).state
+ CASE 1, 2
+  IF mosqu(n).f1 = 1 THEN PUT (ttx * 24, tty * 24 + 12), bg21%, PSET
+  IF mosqu(n).f1 = 2 THEN PUT (ttx * 24, tty * 24 + 12), bg22%, PSET
+ CASE 3, 4, 5
+  IF mosqu(n).f2 = 1 THEN PUT (ttx * 24, tty * 24 + 12), bg23%, PSET
+  IF mosqu(n).f2 = 2 THEN PUT (ttx * 24, tty * 24 + 12), bg24%, PSET
+ END SELECT
+ 
+
+CASE 72: PUT (ttx * 24, tty * 24 + 12), bp%, PSET
+CASE 100
+FOR z = 1 TO 15
+ IF ef(z) <> 0 THEN
+ IF ex(z) = tx AND ey(z) = ty THEN
+ IF ef(z) = 1 THEN PUT (ttx * 24, tty * 24 + 12), e5%, PSET
+ IF ef(z) = 2 THEN PUT (ttx * 24, tty * 24 + 12), e4%, PSET
+ IF ef(z) = 3 THEN PUT (ttx * 24, tty * 24 + 12), e2%, PSET
+ IF ef(z) = 4 THEN PUT (ttx * 24, tty * 24 + 12), e1%, PSET
+ END IF
+ END IF
+NEXT
+CASE 103
+SELECT CASE passerframe
+ CASE 0: PUT (ttx * 24, tty * 24 + 12), PASSER1%, PSET
+ CASE 1: PUT (ttx * 24, tty * 24 + 12), PASSER2%, PSET
+ CASE 2: PUT (ttx * 24, tty * 24 + 12), PASSER3%, PSET
+END SELECT
+IF passerspin = 1 THEN PUT (ttx * 24, tty * 24 + 12), PASSER4%, PSET
+END SELECT
+
+END SUB
+
+SUB Rt (n)
+IF x + 1 = 169 THEN EXIT SUB
+IF n <> 2 THEN IF ChkAhead(x + 1, y) = 1 THEN EXIT SUB
+x = x + 1
+IF strx = 0 AND sx < 6 THEN sx = sx + 1: GOTO dnr2
+IF strx = 156 THEN sx = sx + 1: GOTO dnr2
+strx = strx + 1
+dnr2:
+sti! = TIMER
+IF tempa = 100 THEN tempa = 0
+a(x - 1, y) = tempa
+tempa = a(x, y)
+a(x, y) = -1
+IF SonicMode <> 4 THEN SonicMode = 1
+IF SonicMode = 1 THEN SonicDir = 4
+DrawAllScr
+
+END SUB
+
+SUB SetScr
+LINE (270, 0)-(270 + CDP, 5), 6, BF
+LINE (0, 11)-(320, 11), 9
+LOCATE 1, 1: COLOR rc: PRINT "RINGS:"; rings
+IF Breath <= 15 AND tempa <> 0 THEN COLOR 9: LOCATE 1, 14: PRINT "Breath:"; Breath
+IF so = 2 THEN Breath = 99
+IF Breath = 0 THEN Die 1: Breath = 99: LOCATE 1, 14: PRINT "           ": EXIT SUB
+'IF tempa = 0 THEN LOCATE 1, 14: PRINT "             ": Breath = 99
+LOCATE 25, 1: COLOR 9: PRINT "Score:"; score;
+LOCATE 25, 20: PRINT "Time"; 360 - INT((TIMER - GameTime));
+IF rings = 0 AND TIMER - rf! >= .4 THEN
+ IF rc = 14 THEN rc = 4 ELSE rc = 14
+ rf! = TIMER
+END IF
+
+END SUB
+
+SUB sfx (n)
+IF n = 9 THEN Breath = 15: brt! = TIMER
+'IF sfxf = 0 THEN EXIT SUB
+SELECT CASE n
+CASE 1: PLAY "mb t255l64 n30n32n34n36n38n40t120" 'Jump
+CASE 2: IF PLAY(n) = 0 THEN PLAY "MB O4 L32CEL8G"  'Ring
+CASE 3: IF PLAY(n) = 0 THEN PLAY "mb o0 t255l64 n0n1n2n3n4n5n6n7n8n9n10t120" 'Chilidog
+CASE 4: PLAY "mbl64t255n37n38n39n40n38n36n34n32n30t120O4 L32CEL8G" 'RingBox
+CASE 5: PLAY "mbl64t255n37n38n39n40n38n36n34n32n30 t255 l64o0 n1n2n3n4n5n6n7n8n7n6n5t120l8n4" 'shield
+CASE 6: PLAY "mbl64t255n37n38n39n40n38n36n34n32n30 t255 l64o0 n1n2n1n3n1n4n1n5n1n6n1n7n1n8n1t120l16n3" 'fire
+CASE 7: PLAY "mbl64t255n37n38n39n40n38n36n34n32n30"
+PLAY "t255 l64 n5n6n7n8n9n10n11n12n13n14n15n8n9n10n11n12n13n14n15n10n11n12n13n14n15"
+PLAY "n12n13n14n15n14n15n20t120" 'bub
+CASE 8: PLAY "mbl64t255n37n38n39n40n38n36n34n32n30t255l64n42n46n24n22n12n6n55n16n43n55t120" 'spikes
+CASE 9: PLAY "t255 l64 n0n81o0n81n0n81n0n81"
+CASE 10: PLAY "mb o0 t255 l16 gl64cc+dd+ef+gg+aa+bo1cc+dd+t120" 'Flipper
+CASE 11: PLAY "mbt255l64 o3gggggp64ggggp64ggggp64ggp64gt120"'Points
+CASE 12: PLAY "mbl64t255n37n38n39n40n38n36n34n32n30t120" 'explode
+CASE 13: PLAY "o4mbl50ecgcecgeGcececgg"                 'lose rings
+
+END SELECT
+
+END SUB
+
+SUB SonicMan
+IF gothit! <> 0 AND TIMER - gothit! < 3 THEN
+ ght! = ght! + 1
+ IF ght! >= 10 THEN
+  IF ghs = 1 THEN ghs = 2 ELSE ghs = 1
+  ght! = 0: DrawGfx -1
+ END IF
+ELSE
+gothit! = 0: ghs = 0
+END IF
+
+IF SonicMode = 1 THEN
+ IF TIMER - sti! >= 1 THEN SonicMode = 3: SonicFrame = 1: sti! = TIMER: DrawGfx -1: DrawGfx 1
+END IF
+
+IF SonicMode = 3 THEN
+ IF TIMER - sti! >= 2 THEN SonicMode = 2: SonicFrame = 1: sti! = TIMER: DrawGfx -1: DrawGfx 1
+END IF
+
+IF SonicMode = 2 THEN
+ IF TIMER - sti! >= .5 THEN
+ IF SonicFrame = 1 THEN SonicFrame = 2 ELSE SonicFrame = 1
+ sti! = TIMER: DrawGfx -1: REM DrawGFX 1: EXIT SUB
+ END IF
+END IF
+SELECT CASE so
+CASE 1
+IF TIMER - sht! >= .2 THEN sht! = TIMER: IF sc = 1 THEN sc = 9 ELSE sc = 1
+CIRCLE (sx * 24 + 12, sy * 24 + 12 + 11), 12, sc
+CASE 2
+IF TIMER - sht! >= .2 THEN sht! = TIMER: IF sc = 2 THEN sc = 10 ELSE sc = 2
+CIRCLE (sx * 24 + 12, sy * 24 + 12 + 11), 12, sc
+CASE 3
+IF TIMER - sht! >= .2 THEN sht! = TIMER: IF sc = 4 THEN sc = 12 ELSE sc = 4
+CIRCLE (sx * 24 + 12, sy * 24 + 12 + 11), 12, sc
+END SELECT
+END SUB
+
+SUB Tman
+FOR z = 1 TO afs
+ IF afss(z) = 0 THEN IF afsx(z) - x = 1 OR afsx(z) - x = -1 THEN afss(z) = 1: GOTO nafs
+ IF afss(z) = 1 THEN GOSUB fg
+nafs:
+NEXT
+GOTO fs2
+fg:
+IF afss(z) = 3 THEN RETURN
+IF afsx(z) = x AND afsy(z) + 1 = y THEN Die 1: RETURN
+IF afsy(z) + 1 = 55 THEN afss(z) = 3: DrawGfx 9: RETURN
+IF a(afsx(z), afsy(z) + 1) = 1 THEN afss(z) = 3: DrawGfx 9: RETURN
+afsy(z) = afsy(z) + 1
+a(afsx(z), afsy(z) - 1) = 0
+a(afsx(z), afsy(z)) = 9
+IF OS(afsx(z), afsy(z)) = 1 THEN ReDrawObj afsx(z), afsy(z), afsx(z) - strx, afsy(z) - stry, 0
+ReDrawObj afsx(z), afsy(z) - 1, afsx(z) - strx, afsy(z) - stry - 1, 0
+RETURN
+fs2:
+FOR z = 1 TO fs
+ IF fss(z) = 0 THEN IF fsx(z) = x AND fsy(z) - y = 1 THEN fss(z) = 1: GOTO nfs
+ IF fss(z) = 1 THEN GOSUB fg2
+nfs:
+NEXT
+GOTO fpp
+fg2:
+IF fss(z) = 3 THEN RETURN
+IF fsx(z) = x AND fsy(z) + 1 = y THEN Die 1: RETURN
+IF fsy(z) + 1 = 55 THEN fss(z) = 3: DrawGfx 8: RETURN
+IF a(fsx(z), fsy(z) + 1) = 1 THEN fss(z) = 3: DrawGfx 8: RETURN
+fsy(z) = fsy(z) + 1
+a(fsx(z), fsy(z) - 1) = 0
+a(fsx(z), fsy(z)) = 8
+IF OS(fsx(z), fsy(z)) = 1 THEN ReDrawObj fsx(z), fsy(z), fsx(z) - strx, fsy(z) - stry, 0
+ReDrawObj fsx(z), fsy(z) - 1, fsx(z) - strx, fsy(z) - stry - 1, 0
+
+RETURN
+
+fpp:
+FOR z = 1 TO fp
+ IF fps(z) = 0 THEN IF fpx(z) = x AND fpy(z) - y = 1 THEN fps(z) = 1: GOTO nfp
+ IF fps(z) = 1 THEN GOSUB fp2
+nfp:
+NEXT
+GOTO fcc
+fp2:
+IF fps(z) = 3 THEN RETURN
+IF fpx(z) = x AND fpy(z) + 1 = y THEN Die 1: RETURN
+IF fpy(z) + 1 = 55 THEN fps(z) = 3: DrawGfx 10: RETURN
+IF a(fpx(z), fpy(z) + 1) = 1 THEN fps(z) = 3: DrawGfx 10: RETURN
+fpy(z) = fpy(z) + 1
+tp = p(fpx(z), fpy(z) - 1)
+a(fpx(z), fpy(z) - 1) = 0: p(fpx(z), fpy(z) - 1) = 0
+a(fpx(z), fpy(z)) = 10: p(fpx(z), fpy(z)) = tp
+IF OS(fpx(z), fpy(z)) = 1 THEN ReDrawObj fpx(z), fpy(z), fpx(z) - strx, fpy(z) - stry, 0
+ReDrawObj fpx(z), fpy(z) - 1, fpx(z) - strx, fpy(z) - stry - 1, 0
+RETURN
+
+fcc:
+FOR z = 1 TO fc
+ IF fcs(z) = 0 THEN IF fcx(z) = x AND fcy(z) - y = 1 THEN fcs(z) = 1: GOTO ncp
+ IF fcs(z) = 1 THEN GOSUB fc2
+ncp:
+NEXT
+GOTO fww
+fc2:
+IF fcs(z) = 3 THEN RETURN
+IF fcx(z) = x AND fcy(z) + 1 = y THEN Die 1: RETURN
+IF fcy(z) + 1 = 55 THEN fcs(z) = 3: DrawGfx 32: RETURN
+IF a(fcx(z), fcy(z) + 1) = 1 THEN fcs(z) = 3: DrawGfx 32: RETURN
+fcy(z) = fcy(z) + 1
+a(fcx(z), fcy(z) - 1) = 0
+a(fcx(z), fcy(z)) = 32
+IF OS(fcx(z), fcy(z)) = 1 THEN ReDrawObj fcx(z), fcy(z), fcx(z) - strx, fcy(z) - stry, 0
+ReDrawObj fcx(z), fcy(z) - 1, fcx(z) - strx, fcy(z) - stry - 1, 0
+RETURN
+
+fww:
+FOR z = 1 TO fw
+ IF fws(z) = 0 THEN IF fwx(z) = x AND fwy(z) - y = 1 THEN fws(z) = 1: GOTO nwp
+ IF fws(z) = 1 THEN GOSUB fw2
+nwp:
+NEXT
+EXIT SUB
+fw2:
+IF fws(z) = 3 THEN RETURN
+IF fwx(z) = x AND fwy(z) + 1 = y THEN Die 1: RETURN
+IF fwy(z) + 1 = 55 THEN fws(z) = 3: DrawGfx 33: RETURN
+IF a(fwx(z), fwy(z) + 1) = 1 THEN fws(z) = 3: DrawGfx 33: RETURN
+fwy(z) = fwy(z) + 1
+a(fwx(z), fwy(z) - 1) = 0
+a(fwx(z), fwy(z)) = 33
+IF OS(fwx(z), fwy(z)) = 1 THEN ReDrawObj fwx(z), fwy(z), fwx(z) - strx, fwy(z) - stry, 0
+ReDrawObj fwx(z), fwy(z) - 1, fwx(z) - strx, fwy(z) - stry - 1, 0
+RETURN
+
+END SUB
+
+SUB UMan
+Upforce = Upforce - 1
+IF Upforce < 0 THEN Upforce = 0: EXIT SUB
+IF Upforce <> 0 THEN Up 1
+END SUB
+
+SUB Up (n)
+IF y - 1 = -1 THEN EXIT SUB
+IF n <> 2 THEN IF ChkAhead(x, y - 1) = 1 THEN EXIT SUB
+IF tempa = 2 OR tempa = 3 THEN IF a(x, y - 1) = 0 THEN sfx 9
+y = y - 1
+IF stry = 0 THEN sy = sy - 1: GOTO dnr3
+IF stry = 46 THEN
+ IF sy <= 4 THEN stry = stry - 1: GOTO dnr3
+ IF sy > 4 THEN sy = sy - 1: GOTO dnr3
+END IF
+stry = stry - 1
+
+dnr3:
+IF tempa = 100 THEN tempa = 0
+a(x, y + 1) = tempa
+tempa = a(x, y)
+a(x, y) = -1
+
+jt! = TIMER
+sti! = TIMER
+DrawAllScr
+
+END SUB
+
