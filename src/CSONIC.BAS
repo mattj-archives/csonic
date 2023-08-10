@@ -1,3 +1,4 @@
+DECLARE SUB Startup ()
 DEFINT A-Z
 DECLARE SUB message (n, ty, stx, c, ms$)
 DECLARE SUB PassLevel ()
@@ -157,7 +158,10 @@ DIM bpot(30) AS badguy, mosqu(30) AS badguy, rm(30) AS badguy
 DIM SHARED screenmode: screenmode = 7
 '**********************
 SonicDir = 4
-SCREEN 0, 0, 0: WIDTH 80
+
+Startup
+
+
 SCREEN screenmode
 DEF SEG = VARSEG(back%(0)): BLOAD "gfx\back1.gfx", VARPTR(back%(0))
 ReadyMask
