@@ -1,7 +1,23 @@
+DECLARE SUB Player.Down (self AS ANY, n%)
+DECLARE FUNCTION SpawnEntity% (x AS INTEGER, y AS INTEGER, entityType AS INTEGER)
+DECLARE SUB DrawState (x AS INTEGER, y AS INTEGER, stateNum AS INTEGER)
+DECLARE SUB Console ()
 DECLARE SUB PUT2 (x AS INTEGER, y AS INTEGER, index AS INTEGER)
 DECLARE SUB PUT3 (x AS INTEGER, y AS INTEGER, index AS INTEGER)
 '$STATIC
 '$INCLUDE: 'src/res/CONST.BI'
+TYPE TEntity
+ x AS INTEGER
+ y AS INTEGER
+
+ flags AS INTEGER       ' 1 = in use
+ t AS INTEGER           ' Type
+ idx AS INTEGER         ' Index into other array
+
+ stateNum AS INTEGER
+ stateFrames AS INTEGER
+END TYPE
+
 DECLARE SUB Startup ()
 DEFINT A-Z
 DECLARE SUB message (n, ty, stx, c, ms$)
@@ -36,7 +52,7 @@ DECLARE SUB Jump ()
 DECLARE SUB UMan ()
 DECLARE SUB Up (n)
 DECLARE SUB Rt (n)
-DECLARE SUB Dn (n)
+DECLARE SUB dn (self AS TEntity, n)
 DECLARE SUB Die (n)
 DECLARE SUB MainLoop ()
 DECLARE SUB DrawSonic (ttx, tty)
@@ -45,8 +61,10 @@ DECLARE SUB ReDrawObj (tx, ty, ttx, tty, n)
 DECLARE SUB DrawAllScr ()
 DECLARE SUB LoadLevel (t$)
 DECLARE SUB LGFX ()
+
 'Cool Sonic Ver 1.0
-' $DYNAMIC
+
+
 TYPE badguy
 x AS INTEGER
 y AS INTEGER
@@ -58,7 +76,7 @@ t AS LONG
 f1 AS INTEGER
 f2 AS INTEGER
 f3 AS INTEGER
-state AS INTEGER
+STATE AS INTEGER
 last AS INTEGER
 num AS INTEGER
 step AS INTEGER
@@ -71,11 +89,45 @@ stopx AS INTEGER
 t AS LONG
 col AS INTEGER
 END TYPE
+
+TYPE THUD
+ redraw AS INTEGER
+END TYPE
+
+TYPE SPRITE
+        offs AS INTEGER
+        bufNum AS INTEGER
+END TYPE
+
+TYPE spriteState
+        Sprites(0 TO 1) AS INTEGER
+END TYPE
+
+TYPE STATE
+        duration AS INTEGER
+        nextState AS INTEGER
+        spriteState AS INTEGER
+
+        ' Function to call on state...
+
+END TYPE
+
+TYPE TRes
+        Sprites(0 TO 85) AS SPRITE
+        SpriteStates(0 TO 2) AS spriteState
+        States(0 TO 1) AS STATE
+END TYPE
+
 COMMON SHARED a(), x, y
 COMMON SHARED p%(), bcnt()
 COMMON SHARED bpot() AS badguy, mosqu() AS badguy, rm() AS badguy
 COMMON SHARED stage, SonicDir
 COMMON SHARED act, strx, stry
+COMMON SHARED HUD AS THUD
+COMMON SHARED Res AS TRes
+COMMON SHARED entities() AS TEntity
+
+DIM entities(0 TO 64) AS TEntity
 DIM a(168, 54)
 DIM p(168, 54)
 
@@ -99,6 +151,9 @@ DIM SHARED gfx%(209), gfx2%(24, 24), PASSER1%(209), PASSER2%(209), PASSER3%(209)
 DIM SHARED GraphicsBuf(0 TO 27064) AS INTEGER
 
 '**************************
+
+DIM SHARED playerIdx AS INTEGER
+
 DIM SHARED SonicMode, SonicFrame: SonicMode = 3: SonicFrame = 1
 DIM SHARED Upforce, StartForce, sti!, jt!: Upforce = 0
 DIM SHARED rings, rf!, rc: rings = 0: rc = 4: rf! = INT(TIMER)
@@ -121,6 +176,7 @@ DIM SHARED DieTimer!, youaredead
 DIM SHARED passerstate, passertime!, passertime2!, passerframe, passerspin, passerdest'STATE
 DIM SHARED passx, passy                                                             '0=none 1=spin
 DIM SHARED msg(10) AS mess
+
 stage = 1: act = 1                                            '2=done
 DIM SHARED tlsx, tlf, ltf:                                    'FRAME
 DIM bcnt(18)                                                  'SAME 12131213
@@ -157,8 +213,10 @@ SonicDir = 4
 
 Startup
 
+PRINT "Loading graphics..."
 LGFX
 l$ = "levels\1_1.l2"
+PRINT "Loading level..."
 LoadLevel l$
 
 SCREEN screenmode
@@ -170,7 +228,6 @@ FOR z = 0 TO 24: FOR z2 = 0 TO 24: OldOnScreen(z2, z) = 999: OnScreen(z2, z) = 9
 FOR z = 1 TO 10: msg(z).x = -80: NEXT
 MainLoop
 
-REM $STATIC
 SUB AnmMan
 rft = rft + 1
 'IF TIMER - rft! >= .1 THEN
@@ -326,7 +383,7 @@ FOR z = 1 TO bcnt(2)
 IF rm(z).x = tx AND rm(z).y = ty THEN
  IF SonicMode = 4 THEN
   Expman 1, tx, ty: Upforce = 3: score = score + 100
-  rm(z).state = 0
+  rm(z).STATE = 0
   sfx 12
  ELSE
  HitSonic 1
@@ -339,7 +396,7 @@ FOR z = 1 TO bcnt(1)
 IF mosqu(z).x = tx AND mosqu(z).y = ty THEN
  IF SonicMode = 4 THEN
   Expman 1, tx, ty: Upforce = 3: score = score + 100
-  mosqu(z).state = 0
+  mosqu(z).STATE = 0
   sfx 12
  ELSE
  HitSonic 1
@@ -352,7 +409,7 @@ FOR z = 1 TO bcnt(3)
 IF bpot(z).x = tx AND bpot(z).y = ty THEN
  IF SonicMode = 4 THEN
   Expman 1, tx, ty: Upforce = 3: score = score + 100
-  bpot(z).state = 0
+  bpot(z).STATE = 0
   sfx 12
  ELSE
  HitSonic 1
@@ -369,6 +426,33 @@ END IF
 EXIT FUNCTION
 END SELECT
 END FUNCTION
+
+SUB Console
+COLOR 7
+CLS
+LOCATE 2, 1
+PRINT "Console"
+PRINT "GotItem <n>"
+INPUT a$
+
+IF LCASE$(a$) = "gotitem" THEN GOSUB cmd.gotitem
+
+DrawAllScr
+EXIT SUB
+
+
+cmd.gotitem:
+PRINT "38 - ring box"
+PRINT "39 - shield box 1"
+PRINT "40 - spike box"
+PRINT "41 - shield box 2 (bubble)"
+PRINT "42 - shield box 3 (flame)"
+PRINT "43 - ring"
+        INPUT "GotItem >", n%
+        GotItem n%
+RETURN
+
+END SUB
 
 SUB Die (n)
 'EXIT SUB
@@ -409,26 +493,6 @@ a(x, y) = -1
 youaredead = 0
 WHILE INKEY$ <> "": WEND
 END IF
-END SUB
-
-SUB Dn (n)
-IF y + 1 = 55 THEN Die 1
-IF n <> 2 THEN IF ChkAhead(x, y + 1) = 1 THEN s3 = 0: EXIT SUB
-IF tempa = 0 THEN IF a(x, y + 1) = 2 OR a(x, y + 1) = 3 THEN sfx 9
-y = y + 1
-IF stry = 0 AND sy < 4 THEN sy = sy + 1: GOTO dnr
-IF stry = 48 THEN sy = sy + 1: GOTO dnr
-stry = stry + 1
-
-dnr:
-IF tempa = 100 THEN tempa = 0
-a(x, y - 1) = tempa
-tempa = a(x, y)
-a(x, y) = -1
-jt! = TIMER
-sti! = TIMER
-DrawAllScr
-
 END SUB
 
 SUB DnS
@@ -474,10 +538,20 @@ END SUB
 
 SUB DrawAllScr
 trx = 0: try = 0
+CLS
 IF screenmode = 13 THEN smy = 6: smx = 12
 IF screenmode = 12 THEN smy = 12: smx = 24
 FOR z = stry TO stry + smy      '6     12
 FOR z2 = strx TO strx + smx     '12    24
+
+FOR i = 0 TO 64
+  IF entities(i).flags AND 1 = 1 THEN
+   IF entities(i).x = z2 AND entities(i).y = z THEN
+    CALL DrawState(trx, try, entities(i).stateNum)
+   END IF
+  END IF
+NEXT i
+
 IF a(z2, z) = 17 OR a(z2, z) = 18 THEN GOSUB springd
 IF a(z2, z) = 21 OR a(z2, z) = 22 THEN GOSUB flipd
 IF a(z2, z) = 71 OR a(z2, z) = 70 THEN GOSUB botdo
@@ -599,9 +673,12 @@ CASE 2                      'Waiting
 
  SELECT CASE SonicFrame
  CASE 1
- CALL PUT3(ttx, tty, FRAME.SWAIT1)
+ DrawState ttx, tty, STATE.PLAYER.WAIT1
+ 'CALL PUT3(ttx, tty, FRAME.SWAIT1)
  CASE 2
- CALL PUT3(ttx, tty, FRAME.SWAIT2)
+ DrawState ttx, tty, STATE.PLAYER.WAIT2
+
+' CALL PUT3(ttx, tty, FRAME.SWAIT2)
  END SELECT
 
 CASE 3                     'Standing
@@ -623,6 +700,13 @@ CASE 4                     'Jumping
  CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.SPIN2%)
  END SELECT
 END SELECT
+END SUB
+
+SUB DrawState (x AS INTEGER, y AS INTEGER, stateNum AS INTEGER)
+ss% = Res.States(stateNum).spriteState
+spriteNum% = Res.SpriteStates(ss%).Sprites(0)
+'LOCATE 10, 10: COLOR 7: PRINT stateNum; spriteNum%; Res.Sprites(spriteNum%).offs
+CALL PUT3(x, y, Res.Sprites(spriteNum%).offs)
 END SUB
 
 SUB Expman (n, ttx, tty)
@@ -682,7 +766,7 @@ END SUB
 
 SUB GotItem (t)
 SELECT CASE t
-CASE 38: Upforce = 3: rings = rings + 10: rc = 14: sfx 4: LOCATE 1, 1: COLOR 14: PRINT "RINGS:"; rings
+CASE 38: Upforce = 3: rings = rings + 10: rc = 14: sfx 4: HUD.redraw = 1
 CASE 39: Upforce = 3: so = 1: sc = 1: sht! = TIMER: sfx 5: sht2! = TIMER
 CASE 40: Upforce = 3: HitSonic 0: sfx 8
 CASE 41: Upforce = 3: so = 2: sc = 2: sht! = TIMER: sht2! = TIMER: sfx 7
@@ -690,14 +774,13 @@ CASE 42: Upforce = 3: so = 3: sc = 4: sht! = TIMER: sht2! = TIMER: sfx 6
 
 CASE 43
 rings = rings + 1: rc = 14: sfx 2
-LOCATE 1, 1: COLOR 14: PRINT "RINGS:"; rings
+HUD.redraw = 1
 
 CASE 44
 sfx 3
 IF CDP + 2 > 50 THEN CDP = 48
 CDP = CDP + 2
-LINE (270, 0)-(270 + CDP, 5), 6, BF
-SetScr
+HUD.redraw = 1
 END SELECT
 
 END SUB
@@ -720,7 +803,7 @@ CASE 4
 force$ = "LUULL"
 END SELECT
 gothit! = TIMER: ght! = 0: ghs = 1
-LOCATE 1, 1: COLOR 14: PRINT "RINGS:"; rings
+HUD.redraw = 1
 EXIT SUB
 
 LHIT:
@@ -742,7 +825,7 @@ EXIT SUB
 hs17:
 IF tx > x THEN Rt 2
 IF tx < x THEN Lt 2
-IF ty > y THEN Dn 2
+IF ty > y THEN Player.Down entities(playerIdx), 2
 Up 2
 Upforce = 10
 s1s(z) = 1: s1t!(z) = TIMER: DrawGfx 17
@@ -755,7 +838,7 @@ EXIT SUB
 hs18:
 IF tx > x THEN Rt 2
 IF tx < x THEN Lt 2
-IF ty > y THEN Dn 2
+IF ty > y THEN Player.Down entities(playerIdx), 2
 Up 2
 Upforce = 6
 s2s(z) = 1: s2t!(z) = TIMER: DrawGfx 18
@@ -915,24 +998,30 @@ SUB LGFX
 
 DEF SEG = VARSEG(GraphicsBuf(0))
 BLOAD "datatest.dat", VARPTR(GraphicsBuf(0))
-DEF SEG
 
+DEF SEG = VARSEG(Res)
+BLOAD "res.dat", VARPTR(Res)
+
+DEF SEG
 END SUB
 
 SUB LoadLevel (t$)
+playerIdx = SpawnEntity(0, 0, -1)
+entities(playerIdx).stateNum = STATE.PLAYER.WAIT1
+
 passerstate = 0: passerframe = 0
 'stat0 = 9295
 'IF act = 1 THEN loadtoact
 tlsx = 25
-x = 0: y = 0: a(0, 0) = -1
+x = 0: y = 0: 'a(0, 0) = -1
 
 r% = 1
 OPEN t$ FOR BINARY AS #1
 DO UNTIL EOF(1)
-GET #1, r%, tx: r% = r% + 2
-GET #1, r%, ty: r% = r% + 2
-GET #1, r%, tn: r% = r% + 2
-GET #1, r%, tc: r% = r% + 2
+GET #1, , tx: r% = r% + 2
+GET #1, , ty: r% = r% + 2
+GET #1, , tn: r% = r% + 2
+GET #1, , tc: r% = r% + 2
 
 'INPUT #1, tx, ty, tn, tc
 'PRINT tx; ty; tn; tc
@@ -971,7 +1060,7 @@ CASE 22: nof2 = nof2 + 1: frx(nof2) = tx: fry(nof2) = ty: a(tx, ty) = tn
 '********************
 CASE 70
 bcnt(2) = bcnt(2) + 1: rm(bcnt(2)).x = tx: rm(bcnt(2)).y = ty
-rm(bcnt(2)).state = 2
+rm(bcnt(2)).STATE = 2
 rm(bcnt(2)).f1 = 0
 rm(bcnt(2)).t = INT(TIMER)
 a(tx, ty) = tn
@@ -981,22 +1070,22 @@ a(tx, ty) = tn
 bcnt(1) = bcnt(1) + 1
 mosqu(1).last = mosqu(1).last + 1
 
-GET #1, r%, temp: r% = r% + 2
+GET #1, , temp: r% = r% + 2
 
-GET #1, r%, mosqu(bcnt(1)).x1: r% = r% + 2
-GET #1, r%, mosqu(bcnt(1)).y1: r% = r% + 2
-GET #1, r%, mosqu(bcnt(1)).x2: r% = r% + 2
-GET #1, r%, mosqu(bcnt(1)).y2: r% = r% + 2
+GET #1, , mosqu(bcnt(1)).x1: r% = r% + 2
+GET #1, , mosqu(bcnt(1)).y1: r% = r% + 2
+GET #1, , mosqu(bcnt(1)).x2: r% = r% + 2
+GET #1, , mosqu(bcnt(1)).y2: r% = r% + 2
 
 'INPUT #1, mosqu(bcnt(1)).x1, mosqu(bcnt(1)).y1, mosqu(bcnt(1)).x2, mosqu(bcnt(1)).y2
 IF tx > mosqu(bcnt(1)).x2 THEN mosqu(bcnt(1)).f1 = 1 ELSE mosqu(bcnt(1)).f1 = 2
-mosqu(bcnt(1)).x = mosqu(bcnt(1)).x1: mosqu(bcnt(1)).y = mosqu(bcnt(1)).y1: mosqu(bcnt(1)).state = 1
+mosqu(bcnt(1)).x = mosqu(bcnt(1)).x1: mosqu(bcnt(1)).y = mosqu(bcnt(1)).y1: mosqu(bcnt(1)).STATE = 1
 mosqu(bcnt(1)).step = 2
 
 
 CASE 72
 bcnt(3) = bcnt(3) + 1: bpot(bcnt(3)).x = tx: bpot(bcnt(3)).y = ty
-bpot(bcnt(3)).state = 1
+bpot(bcnt(3)).STATE = 1
 bpot(bcnt(3)).f1 = 1: bpot(bcnt(3)).f2 = 0
 bpot(bcnt(3)).t = INT(TIMER)
 a(tx, ty) = tn
@@ -1041,7 +1130,7 @@ m:
 
 a$ = INKEY$
 
-WAIT &H3DA, 8
+FOR i = 0 TO 5: WAIT &H3DA, 8: WAIT &H3DA, 8, 8: NEXT
 
 'IF a$ = CHR$(0) + "M" THEN Rt 1
 IF INP(96) = 77 AND force$ = "" THEN Rt 1
@@ -1051,10 +1140,19 @@ IF a$ = "\" THEN HitSonic 0
 IF a$ = CHR$(0) + "P" THEN DnS
 'IF a$ = " " THEN Jump
 IF INP(96) = 57 THEN Jump
-IF a$ = "0" THEN SYSTEM
+IF a$ = "0" THEN
+        SCREEN 0: WIDTH 80: SYSTEM
+END IF
+
+IF UCASE$(a$) = "C" THEN Console
 IF a$ = CHR$(13) THEN GOSUB systat
-IF Upforce <> 0 AND TIMER - jt! >= .1 THEN UMan
-IF Upforce = 0 THEN IF ChkAhead(x, y + 1) = 0 AND TIMER - jt! >= .1 THEN Dn 1
+'IF Upforce <> 0 AND TIMER - jt! >= .1 THEN UMan
+IF Upforce <> 0 THEN UMan
+'IF Upforce = 0 THEN IF ChkAhead(x, y + 1) = 0 AND TIMER - jt! >= .1 THEN dn 1
+
+' Gravity
+IF Upforce = 0 THEN IF ChkAhead(x, y + 1) = 0 THEN Player.Down entities(playerIdx), 1
+
 IF Upforce <> 0 THEN IF a(x, y + 1) = 25 THEN Upforce = 2
 IF a(x, y + 1) = 11 THEN Lt 1
 IF a(x, y + 1) = 12 THEN Rt 1
@@ -1073,7 +1171,15 @@ enemy.mgr
 IF force$ <> "" AND TIMER - forcet! > .1 THEN DoForces
 IF youaredead THEN IF TIMER - DieTimer! < 8 THEN DoDie
 IF youaredead AND TIMER - DieTimer! > 8 THEN Die 2: DieTimer! = 0: force$ = ""
+
+DrawAllScr
+IF HUD.redraw THEN
+        HUD.redraw = 0
+        SetScr
+END IF
 GOTO m
+
+
 '***************************************
 systat:
 LINE (100, 100)-(268, 154), 0, BF: LINE (99, 99)-(269, 155), 15, B
@@ -1253,14 +1359,34 @@ END IF
 NEXT
 END SUB
 
+SUB Player.Down (self AS TEntity, n)
+
+IF e.y + 1 = 55 THEN Die 1
+IF n <> 2 THEN IF ChkAhead(e.x, e.y + 1) = 1 THEN s3 = 0: EXIT SUB
+IF tempa = 0 THEN IF a(e.x, e.y + 1) = 2 OR a(e.x, e.y + 1) = 3 THEN sfx 9
+e.y = e.y + 1
+IF stry = 0 AND sy < 4 THEN sy = sy + 1: GOTO dnr
+IF stry = 48 THEN sy = sy + 1: GOTO dnr
+stry = stry + 1
+
+dnr:
+IF tempa = 100 THEN tempa = 0
+a(e.x, e.y - 1) = tempa
+tempa = a(e.x, e.y)
+a(e.x, e.y) = -1
+jt! = TIMER
+sti! = TIMER
+
+END SUB
+
 SUB PUT2 (x AS INTEGER, y AS INTEGER, index AS INTEGER)
 PUT (x, y), GraphicsBuf(index), PSET
 END SUB
 
-SUB PUT3 (x AS INTEGER, y AS INTEGER, index AS INTEGER)
+SUB PUT3 (x AS INTEGER, y AS INTEGER, offs AS INTEGER)
 'IF x * 25 + 25 >= 320 THEN EXIT SUB
 'IF y * 25 + 12 + 25 >= 200 THEN EXIT SUB
-PUT (x * 24, y * 24 + 12), GraphicsBuf(index), PSET
+PUT (x * 24, y * 24 + 12), GraphicsBuf(offs), PSET
 
 END SUB
 
@@ -1301,7 +1427,8 @@ END SELECT
 
 SELECT CASE a(tx, ty)
 CASE -1, -2
-DrawSonic ttx, tty
+'DrawSonic ttx, tty
+DrawState ttx, tty, entities(playerIdx).stateNum
 CASE 0
 CASE 1: LINE (ttx * 24, tty * 24 + 12)-(ttx * 24 + 23, tty * 24 + 12 + 23), p(tx, ty), BF
 CASE 2: LINE (ttx * 24, tty * 24 + 12)-(ttx * 24 + 24, tty * 24 + 12 + 24), 1, BF
@@ -1369,13 +1496,13 @@ IF cfr = 4 THEN CALL PUT3(ttx, tty, FRAME.CHILI4)
 IF cfr = 5 THEN CALL PUT3(ttx, tty, FRAME.CHILI5)
 IF cfr = 6 THEN CALL PUT3(ttx, tty, FRAME.CHILI6)
 CASE 70
- IF rm(n).state = 1 THEN
+ IF rm(n).STATE = 1 THEN
   IF rm(n).f1 = 2 THEN CALL PUT3(ttx, tty, FRAME.RM2)
   IF rm(n).f1 = 1 THEN CALL PUT3(ttx, tty, FRAME.RM3)
  END IF
- IF rm(n).state = 2 THEN CALL PUT3(ttx, tty, FRAME.RM1)
+ IF rm(n).STATE = 2 THEN CALL PUT3(ttx, tty, FRAME.RM1)
 CASE 71
- SELECT CASE mosqu(n).state
+ SELECT CASE mosqu(n).STATE
  CASE 1, 2
   IF mosqu(n).f1 = 1 THEN CALL PUT3(ttx, tty, FRAME.MOSQU1)
   IF mosqu(n).f1 = 2 THEN CALL PUT3(ttx, tty, FRAME.MOSQU2)
@@ -1429,6 +1556,15 @@ DrawAllScr
 END SUB
 
 SUB SetScr
+
+' HUD Updates
+IF rings = 0 AND TIMER - rf! >= .4 THEN
+ IF rc = 14 THEN rc = 4 ELSE rc = 14
+ rf! = TIMER
+END IF
+
+' Draw HUD
+
 LINE (270, 0)-(270 + CDP, 5), 6, BF
 LINE (0, 11)-(320, 11), 9
 LOCATE 1, 1: COLOR rc: PRINT "RINGS:"; rings
@@ -1438,10 +1574,9 @@ IF Breath = 0 THEN Die 1: Breath = 99: LOCATE 1, 14: PRINT "           ": EXIT S
 'IF tempa = 0 THEN LOCATE 1, 14: PRINT "             ": Breath = 99
 LOCATE 25, 1: COLOR 9: PRINT "Score:"; score;
 LOCATE 25, 20: PRINT "Time"; 360 - INT((TIMER - GameTime));
-IF rings = 0 AND TIMER - rf! >= .4 THEN
- IF rc = 14 THEN rc = 4 ELSE rc = 14
- rf! = TIMER
-END IF
+
+' Chili dog power
+LINE (270, 0)-(270 + CDP, 5), 6, BF
 
 END SUB
 
@@ -1506,6 +1641,26 @@ IF TIMER - sht! >= .2 THEN sht! = TIMER: IF sc = 4 THEN sc = 12 ELSE sc = 4
 CIRCLE (sx * 24 + 12, sy * 24 + 12 + 11), 12, sc
 END SELECT
 END SUB
+
+FUNCTION SpawnEntity% (x AS INTEGER, y AS INTEGER, entityType AS INTEGER)
+SpawnEntity% = -1
+
+DIM i AS INTEGER
+
+FOR i = 0 TO 64
+        
+        IF (entities(i).flags AND 1) = 0 THEN
+                entities(i).x = x
+                entities(i).y = y
+                entities(i).flags = 1
+                entities(i).stateNum = 0
+                entities(i).stateFrames = 60
+
+                SpawnEntity% = i
+                EXIT FUNCTION
+        END IF
+NEXT i
+END FUNCTION
 
 SUB Tman
 FOR z = 1 TO afs
