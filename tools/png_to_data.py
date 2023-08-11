@@ -20,7 +20,7 @@ class State:
         super().__init__()
 
         self.name = name
-        self.duration = duration
+        self.duration = int(duration)
         self.next_state = next_state
         self.sprite_state = sprite_state
 
@@ -161,8 +161,8 @@ if __name__ == "__main__":
     state("PLAYER.RUN1", 2, "PLAYER.RUN2", "PLAYER.RUN1")
     state("PLAYER.RUN2", 2, "PLAYER.RUN1", "PLAYER.RUN2")
     state("PLAYER.STAND1", 30, "PLAYER.STAND1", "PLAYER.STAND")
-    state("PLAYER.WAIT1", 30, "PLAYER.WAIT2", "PLAYER.WAIT0")
-    state("PLAYER.WAIT2", 30, "PLAYER.WAIT1", "PLAYER.WAIT1")
+    state("PLAYER.WAIT1", 30/5, "PLAYER.WAIT2", "PLAYER.WAIT0")
+    state("PLAYER.WAIT2", 30/5, "PLAYER.WAIT1", "PLAYER.WAIT1")
 
     data = bytearray()
 

@@ -1,8 +1,9 @@
+DECLARE SUB UpdateEntity (self AS ANY)
 DECLARE SUB Player.Rt (self AS ANY, n%)
 DECLARE SUB Player.Up (self AS ANY, n%)
 DECLARE SUB Player.Down (self AS ANY, n%)
 DECLARE FUNCTION SpawnEntity% (x AS INTEGER, y AS INTEGER, entityType AS INTEGER)
-DECLARE SUB DrawState (x AS INTEGER, y AS INTEGER, stateNum AS INTEGER)
+DECLARE SUB DrawState (x AS INTEGER, y AS INTEGER, stateNum AS INTEGER, direction AS INTEGER)
 DECLARE SUB Console ()
 DECLARE SUB PUT2 (x AS INTEGER, y AS INTEGER, index AS INTEGER)
 DECLARE SUB PUT3 (x AS INTEGER, y AS INTEGER, index AS INTEGER)
@@ -11,6 +12,8 @@ DECLARE SUB PUT3 (x AS INTEGER, y AS INTEGER, index AS INTEGER)
 TYPE TEntity
  x AS INTEGER
  y AS INTEGER
+
+ direction AS INTEGER
 
  flags AS INTEGER       ' 1 = in use
  t AS INTEGER           ' Type
@@ -556,7 +559,7 @@ END SELECT
 FOR i = 0 TO 64
   IF entities(i).flags AND 1 = 1 THEN
    IF entities(i).x = z2 AND entities(i).y = z THEN
-    CALL DrawState(trx, try, entities(i).stateNum)
+    CALL DrawState(trx, try, entities(i).stateNum, entities(i).direction)
    END IF
   END IF
 NEXT i
@@ -683,10 +686,10 @@ CASE 2                      'Waiting
 
  SELECT CASE SonicFrame
  CASE 1
- DrawState ttx, tty, STATE.PLAYER.WAIT1
+ 'DrawState ttx, tty, STATE.PLAYER.WAIT1, entities(playerIdx).direction
  'CALL PUT3(ttx, tty, FRAME.SWAIT1)
  CASE 2
- DrawState ttx, tty, STATE.PLAYER.WAIT2
+ 'DrawState ttx, tty, STATE.PLAYER.WAIT2
 
 ' CALL PUT3(ttx, tty, FRAME.SWAIT2)
  END SELECT
@@ -712,9 +715,9 @@ CASE 4                     'Jumping
 END SELECT
 END SUB
 
-SUB DrawState (x AS INTEGER, y AS INTEGER, stateNum AS INTEGER)
+SUB DrawState (x AS INTEGER, y AS INTEGER, stateNum AS INTEGER, direction AS INTEGER)
 ss% = Res.States(stateNum).spriteState
-spriteNum% = Res.SpriteStates(ss%).Sprites(0)
+spriteNum% = Res.SpriteStates(ss%).Sprites(direction)
 'LOCATE 10, 10: COLOR 7: PRINT stateNum; spriteNum%; Res.Sprites(spriteNum%).offs
 CALL PUT3(x, y, Res.Sprites(spriteNum%).offs)
 END SUB
@@ -1119,8 +1122,10 @@ tempa = a(x, y)
 IF a(x, y) <> 17 OR a(x, y) <> 18 THEN a(x, y) = -1
 sti! = TIMER
 IF SonicMode <> 4 THEN SonicMode = 1
-IF SonicMode = 1 THEN SonicDir = 3
-DrawAllScr
+IF SonicMode = 1 THEN
+        SonicDir = 3
+        entities(playerIdx).direction = 3
+END IF
 
 END SUB
 
@@ -1161,7 +1166,13 @@ IF Upforce = 0 THEN IF ChkAhead(x, y + 1) = 1 AND SonicMode = 4 THEN SonicMode =
 IF tempa = 2 OR tempa = 3 THEN
  IF so <> 2 THEN IF TIMER - brt! >= 1 THEN brt! = TIMER: Breath = Breath - 1
 END IF
-SetScr
+
+FOR i = 0 TO 64
+     IF (entities(i).flags AND 1) = 1 THEN
+        UpdateEntity entities(i)
+     END IF
+NEXT
+
 IF tempa = 26 OR tempa = 27 THEN GambleHolder tempa
 Expman 2, 0, 0
 AnmMan
@@ -1403,7 +1414,10 @@ sti! = TIMER
 'tempa = a(x, y)
 'a(x, y) = -1
 IF SonicMode <> 4 THEN SonicMode = 1
-IF SonicMode = 1 THEN SonicDir = 4
+IF SonicMode = 1 THEN
+        SonicDir = 4
+        self.direction = 1
+END IF
 self.stateNum = STATE.PLAYER.RUN1
 
 END SUB
@@ -1481,7 +1495,7 @@ END SELECT
 SELECT CASE a(tx, ty)
 CASE -1, -2
 'DrawSonic ttx, tty
-DrawState ttx, tty, entities(playerIdx).stateNum
+DrawState ttx, tty, entities(playerIdx).stateNum, entities(playerIdx).stateNum - 3
 CASE 0
 CASE 1: LINE (ttx * 24, tty * 24 + 12)-(ttx * 24 + 23, tty * 24 + 12 + 23), p(tx, ty), BF
 CASE 2: LINE (ttx * 24, tty * 24 + 12)-(ttx * 24 + 24, tty * 24 + 12 + 24), 1, BF
@@ -1811,5 +1825,14 @@ SUB UMan
 Upforce = Upforce - 1
 IF Upforce < 0 THEN Upforce = 0: EXIT SUB
 IF Upforce <> 0 THEN Player.Up entities(playerIdx), 1
+END SUB
+
+SUB UpdateEntity (self AS TEntity)
+        IF self.stateNum = 0 THEN EXIT SUB
+        self.stateFrames = self.stateFrames - 1
+        IF self.stateFrames = 0 THEN
+              self.stateNum = Res.States(self.stateNum).nextState
+              self.stateFrames = Res.States(self.stateNum).duration
+        END IF
 END SUB
 
