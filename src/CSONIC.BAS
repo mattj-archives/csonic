@@ -1,3 +1,5 @@
+DECLARE SUB Player.Rt (self AS ANY, n%)
+DECLARE SUB Player.Up (self AS ANY, n%)
 DECLARE SUB Player.Down (self AS ANY, n%)
 DECLARE FUNCTION SpawnEntity% (x AS INTEGER, y AS INTEGER, entityType AS INTEGER)
 DECLARE SUB DrawState (x AS INTEGER, y AS INTEGER, stateNum AS INTEGER)
@@ -48,7 +50,7 @@ DECLARE SUB DrawGfx (n)
 DECLARE SUB AnmMan ()
 DECLARE SUB SonicMan ()
 DECLARE SUB Lt (n)
-DECLARE SUB Jump ()
+DECLARE SUB Player.Jump (self AS TEntity)
 DECLARE SUB UMan ()
 DECLARE SUB Up (n)
 DECLARE SUB Rt (n)
@@ -114,8 +116,8 @@ END TYPE
 
 TYPE TRes
         Sprites(0 TO 85) AS SPRITE
-        SpriteStates(0 TO 2) AS spriteState
-        States(0 TO 1) AS STATE
+        SpriteStates(0 TO 5) AS spriteState
+        States(0 TO 5) AS STATE
 END TYPE
 
 COMMON SHARED a(), x, y
@@ -343,7 +345,7 @@ ChkAhead = 0: EXIT FUNCTION
 CASE 1: ChkAhead = 1: EXIT FUNCTION
 CASE 2, 3: ChkAhead = 0: EXIT FUNCTION
 CASE 4, 5
-IF ty > y THEN Upforce = 2: Up 1
+IF ty > y THEN Upforce = 2: Player.Up entities(playerIdx), 1
 IF ty < y THEN Upforce = 0
 ChkAhead = 1: HitSonic 0: EXIT FUNCTION
 CASE 6, 7
@@ -530,19 +532,26 @@ SUB DoForces
 forcet! = TIMER
 forcep = forcep + 1
 IF forcep > LEN(force$) AND force$ <> "X" THEN force$ = "": EXIT SUB
-IF MID$(force$, forcep, 1) = "U" THEN Up 1
+IF MID$(force$, forcep, 1) = "U" THEN Player.Up entities(playerIdx), 1
 IF MID$(force$, forcep, 1) = "L" THEN Lt 1
-IF MID$(force$, forcep, 1) = "R" THEN Rt 1
+IF MID$(force$, forcep, 1) = "R" THEN Player.Rt entities(playerIdx), 1
 
 END SUB
 
 SUB DrawAllScr
 trx = 0: try = 0
-CLS
+'CLS
 IF screenmode = 13 THEN smy = 6: smx = 12
 IF screenmode = 12 THEN smy = 12: smx = 24
 FOR z = stry TO stry + smy      '6     12
 FOR z2 = strx TO strx + smx     '12    24
+
+SELECT CASE a(z2, z)
+CASE 0: ReDrawObj z2, z, trx, try, 0
+CASE 1: ReDrawObj z2, z, trx, try, 0
+CASE 2: ReDrawObj z2, z, trx, try, 0
+
+END SELECT
 
 FOR i = 0 TO 64
   IF entities(i).flags AND 1 = 1 THEN
@@ -552,12 +561,12 @@ FOR i = 0 TO 64
   END IF
 NEXT i
 
-IF a(z2, z) = 17 OR a(z2, z) = 18 THEN GOSUB springd
-IF a(z2, z) = 21 OR a(z2, z) = 22 THEN GOSUB flipd
-IF a(z2, z) = 71 OR a(z2, z) = 70 THEN GOSUB botdo
-OnScreen(trx, try) = a(z2, z)
-IF OldOnScreen(trx, try) <> OnScreen(trx, try) THEN ReDrawObj z2, z, trx, try, 0
-IF a(z2, z) = -1 OR a(z2, z) = -2 THEN ReDrawObj z2, z, trx, try, 0
+'IF a(z2, z) = 17 OR a(z2, z) = 18 THEN GOSUB springd
+'IF a(z2, z) = 21 OR a(z2, z) = 22 THEN GOSUB flipd
+'IF a(z2, z) = 71 OR a(z2, z) = 70 THEN GOSUB botdo
+'OnScreen(trx, try) = a(z2, z)
+'IF OldOnScreen(trx, try) <> OnScreen(trx, try) THEN ReDrawObj z2, z, trx, try, 0
+'IF a(z2, z) = -1 OR a(z2, z) = -2 THEN ReDrawObj z2, z, trx, try, 0
 nc2:
 trx = trx + 1
 NEXT
@@ -602,6 +611,7 @@ RETURN
 END SUB
 
 SUB DrawGfx (n)
+EXIT SUB
 trx = 0: try = 0
 IF screenmode = 13 THEN smy = 6: smx = 12
 IF screenmode = 12 THEN smy = 12: smx = 24
@@ -823,10 +833,10 @@ IF spx1(z) = tx AND spy1(z) = ty THEN GOTO hs17
 NEXT
 EXIT SUB
 hs17:
-IF tx > x THEN Rt 2
+IF tx > x THEN Player.Rt entities(playerIdx), 2
 IF tx < x THEN Lt 2
 IF ty > y THEN Player.Down entities(playerIdx), 2
-Up 2
+Player.Up entities(playerIdx), 2
 Upforce = 10
 s1s(z) = 1: s1t!(z) = TIMER: DrawGfx 17
 CASE 18
@@ -836,10 +846,10 @@ IF spx2(z) = tx AND spy2(z) = ty THEN GOTO hs18
 NEXT
 EXIT SUB
 hs18:
-IF tx > x THEN Rt 2
+IF tx > x THEN Player.Rt entities(playerIdx), 2
 IF tx < x THEN Lt 2
 IF ty > y THEN Player.Down entities(playerIdx), 2
-Up 2
+Player.Up entities(playerIdx), 2
 Upforce = 6
 s2s(z) = 1: s2t!(z) = TIMER: DrawGfx 18
 
@@ -865,16 +875,6 @@ SonicMode = 4: SonicFrame = 1
 frf(z) = 1: frt!(z) = TIMER: DrawGfx 21
 
 END SELECT
-END SUB
-
-SUB Jump
-IF a(x, y + 1) = 21 OR a(x, y + 1) = 22 THEN HitSpring a(x, y + 1), x, y + 1: sfx 10: EXIT SUB
-IF Upforce = 0 AND ChkAhead(x, y + 1) = 1 THEN
-sfx 1
-Upforce = 4: SonicMode = 4: SonicFrame = 1: StartForce = 3
-jt! = TIMER
-END IF
-
 END SUB
 
 SUB LaserMan
@@ -1029,7 +1029,7 @@ GET #1, , tc: r% = r% + 2
 SELECT CASE tn
 CASE -1
 a(tx, ty) = -1
-sx = tx: sy = ty: x = tx: y = ty
+sx = tx: sy = ty: entities(playerIdx).x = tx: entities(playerIdx).y = ty
 ssx = tx: ssy = ty: stax = tx: stay = ty
 CASE 0
 CASE 1
@@ -1133,13 +1133,13 @@ a$ = INKEY$
 FOR i = 0 TO 5: WAIT &H3DA, 8: WAIT &H3DA, 8, 8: NEXT
 
 'IF a$ = CHR$(0) + "M" THEN Rt 1
-IF INP(96) = 77 AND force$ = "" THEN Rt 1
+IF INP(96) = 77 AND force$ = "" THEN Player.Rt entities(playerIdx), 1
 IF INP(96) = 75 AND force$ = "" THEN Lt 1
 IF a$ = "\" THEN HitSonic 0
 'IF a$ = CHR$(0) + "K" THEN Lt 1
 IF a$ = CHR$(0) + "P" THEN DnS
 'IF a$ = " " THEN Jump
-IF INP(96) = 57 THEN Jump
+IF INP(96) = 57 THEN Player.Jump entities(playerIdx)
 IF a$ = "0" THEN
         SCREEN 0: WIDTH 80: SYSTEM
 END IF
@@ -1155,7 +1155,7 @@ IF Upforce = 0 THEN IF ChkAhead(x, y + 1) = 0 THEN Player.Down entities(playerId
 
 IF Upforce <> 0 THEN IF a(x, y + 1) = 25 THEN Upforce = 2
 IF a(x, y + 1) = 11 THEN Lt 1
-IF a(x, y + 1) = 12 THEN Rt 1
+IF a(x, y + 1) = 12 THEN Player.Rt entities(playerIdx), 1
 IF y + 1 = 55 THEN Die 1
 IF Upforce = 0 THEN IF ChkAhead(x, y + 1) = 1 AND SonicMode = 4 THEN SonicMode = 1: s3 = 0: DrawGfx -1
 IF tempa = 2 OR tempa = 3 THEN
@@ -1296,7 +1296,7 @@ FOR z = 1 TO cm
 mp1:
 IF TIMER - m(z).t < .5 THEN m(z).Mved = 0
 IF TIMER - m(z).t >= .5 THEN
- IF a(m(z).x, m(z).y - 1) = -1 THEN Up 1
+ IF a(m(z).x, m(z).y - 1) = -1 THEN Player.Up entities(playerIdx), 1
  m(z).y = m(z).y - 1
  a(m(z).x, m(z).y + 1) = 0: a(m(z).x, m(z).y) = 13
  m(z).t = TIMER
@@ -1309,7 +1309,7 @@ END IF
 mp2:
 IF TIMER - m(z).t < .5 THEN m(z).Mved = 0
 IF TIMER - m(z).t >= .5 THEN
- IF a(m(z).x, m(z).y - 1) = -1 THEN Up 1
+ IF a(m(z).x, m(z).y - 1) = -1 THEN Player.Up entities(playerIdx), 1
  m(z).y = m(z).y + 1
  a(m(z).x, m(z).y - 1) = 0: a(m(z).x, m(z).y) = 13
  m(z).t = TIMER
@@ -1335,7 +1335,7 @@ END IF
 mp4:
 IF TIMER - m(z).t < .5 THEN m(z).Mved = 0
 IF TIMER - m(z).t >= .5 THEN
- IF a(m(z).x, m(z).y - 1) = -1 THEN Rt 1
+ IF a(m(z).x, m(z).y - 1) = -1 THEN Player.Rt entities(playerIdx), 1
  m(z).x = m(z).x + 1
  a(m(z).x - 1, m(z).y) = 0: a(m(z).x, m(z).y) = 13
  m(z).t = TIMER
@@ -1361,21 +1361,74 @@ END SUB
 
 SUB Player.Down (self AS TEntity, n)
 
-IF e.y + 1 = 55 THEN Die 1
-IF n <> 2 THEN IF ChkAhead(e.x, e.y + 1) = 1 THEN s3 = 0: EXIT SUB
-IF tempa = 0 THEN IF a(e.x, e.y + 1) = 2 OR a(e.x, e.y + 1) = 3 THEN sfx 9
-e.y = e.y + 1
+IF self.y + 1 = 55 THEN Die 1
+IF n <> 2 THEN IF ChkAhead(self.x, self.y + 1) = 1 THEN s3 = 0: EXIT SUB
+IF tempa = 0 THEN IF a(self.x, self.y + 1) = 2 OR a(self.x, self.y + 1) = 3 THEN sfx 9
+self.y = self.y + 1
 IF stry = 0 AND sy < 4 THEN sy = sy + 1: GOTO dnr
 IF stry = 48 THEN sy = sy + 1: GOTO dnr
 stry = stry + 1
 
 dnr:
-IF tempa = 100 THEN tempa = 0
-a(e.x, e.y - 1) = tempa
-tempa = a(e.x, e.y)
-a(e.x, e.y) = -1
+'IF tempa = 100 THEN tempa = 0
+'a(self.x, self.y - 1) = tempa
+'tempa = a(self.x, self.y)
+'a(self.x, self.y) = -1
 jt! = TIMER
 sti! = TIMER
+
+END SUB
+
+SUB Player.Jump (self AS TEntity)
+IF a(self.x, self.y + 1) = 21 OR a(self.x, self.y + 1) = 22 THEN HitSpring a(self.x, self.y + 1), self.x, self.y + 1: sfx 10: EXIT SUB
+IF Upforce = 0 AND ChkAhead(self.x, self.y + 1) = 1 THEN
+sfx 1
+Upforce = 4: SonicMode = 4: SonicFrame = 1: StartForce = 3
+jt! = TIMER
+END IF
+
+END SUB
+
+SUB Player.Rt (self AS TEntity, n)
+IF self.x + 1 = 169 THEN EXIT SUB
+IF n <> 2 THEN IF ChkAhead(self.x + 1, self.y) = 1 THEN EXIT SUB
+self.x = self.x + 1
+IF strx = 0 AND sx < 6 THEN sx = sx + 1: GOTO dnr2
+IF strx = 156 THEN sx = sx + 1: GOTO dnr2
+strx = strx + 1
+dnr2:
+sti! = TIMER
+'IF tempa = 100 THEN tempa = 0
+'a(self.x - 1, self.y) = tempa
+'tempa = a(x, y)
+'a(x, y) = -1
+IF SonicMode <> 4 THEN SonicMode = 1
+IF SonicMode = 1 THEN SonicDir = 4
+self.stateNum = STATE.PLAYER.RUN1
+
+END SUB
+
+SUB Player.Up (self AS TEntity, n)
+IF self.y - 1 = -1 THEN EXIT SUB
+IF n <> 2 THEN IF ChkAhead(self.x, self.y - 1) = 1 THEN EXIT SUB
+IF tempa = 2 OR tempa = 3 THEN IF a(self.x, self.y - 1) = 0 THEN sfx 9
+self.y = self.y - 1
+IF stry = 0 THEN sy = sy - 1: GOTO dnr3
+IF stry = 46 THEN
+ IF sy <= 4 THEN stry = stry - 1: GOTO dnr3
+ IF sy > 4 THEN sy = sy - 1: GOTO dnr3
+END IF
+stry = stry - 1
+
+dnr3:
+'IF tempa = 100 THEN tempa = 0
+'a(x, y + 1) = tempa
+'tempa = a(x, y)
+'a(x, y) = -1
+
+jt! = TIMER
+sti! = TIMER
+DrawAllScr
 
 END SUB
 
@@ -1421,7 +1474,7 @@ CASE 0
 'IF ttx * 24 <= 295 AND tty * 24 + 12 <= 178 AND ttx > -1 AND tty >= 0 THEN PUT (ttx * 24, tty * 24 + 12), back%, PSET
 'PUT (ttx * 24, tty * 24 + 12), back%, PSET
 
-CALL PUT3(ttx, tty, FRAME.BACK1)
+CALL PUT3(ttx, tty, Res.Sprites(SPRITE.BACK1).offs)
 
 END SELECT
 
@@ -1536,25 +1589,6 @@ END SELECT
 
 END SUB
 
-SUB Rt (n)
-IF x + 1 = 169 THEN EXIT SUB
-IF n <> 2 THEN IF ChkAhead(x + 1, y) = 1 THEN EXIT SUB
-x = x + 1
-IF strx = 0 AND sx < 6 THEN sx = sx + 1: GOTO dnr2
-IF strx = 156 THEN sx = sx + 1: GOTO dnr2
-strx = strx + 1
-dnr2:
-sti! = TIMER
-IF tempa = 100 THEN tempa = 0
-a(x - 1, y) = tempa
-tempa = a(x, y)
-a(x, y) = -1
-IF SonicMode <> 4 THEN SonicMode = 1
-IF SonicMode = 1 THEN SonicDir = 4
-DrawAllScr
-
-END SUB
-
 SUB SetScr
 
 ' HUD Updates
@@ -1616,18 +1650,31 @@ gothit! = 0: ghs = 0
 END IF
 
 IF SonicMode = 1 THEN
- IF TIMER - sti! >= 1 THEN SonicMode = 3: SonicFrame = 1: sti! = TIMER: DrawGfx -1: DrawGfx 1
+ ' Go to Standing
+ IF TIMER - sti! >= 1 THEN
+        entities(playerIdx).stateNum = STATE.PLAYER.STAND1
+        SonicMode = 3
+        sti! = TIMER
+ END IF
 END IF
 
 IF SonicMode = 3 THEN
- IF TIMER - sti! >= 2 THEN SonicMode = 2: SonicFrame = 1: sti! = TIMER: DrawGfx -1: DrawGfx 1
+ ' Standing, Go to waiting?
+ IF TIMER - sti! >= 2 THEN
+        entities(playerIdx).stateNum = STATE.PLAYER.WAIT1
+
+        SonicMode = 2
+        
+        sti! = TIMER
+ END IF
 END IF
 
 IF SonicMode = 2 THEN
- IF TIMER - sti! >= .5 THEN
- IF SonicFrame = 1 THEN SonicFrame = 2 ELSE SonicFrame = 1
- sti! = TIMER: DrawGfx -1: REM DrawGFX 1: EXIT SUB
- END IF
+ ' Waiting
+ 'IF TIMER - sti! >= .5 THEN
+ 'IF SonicFrame = 1 THEN SonicFrame = 2 ELSE SonicFrame = 1
+ 'sti! = TIMER: DrawGfx -1: REM DrawGFX 1: EXIT SUB
+ 'END IF
 END IF
 SELECT CASE so
 CASE 1
@@ -1763,30 +1810,6 @@ END SUB
 SUB UMan
 Upforce = Upforce - 1
 IF Upforce < 0 THEN Upforce = 0: EXIT SUB
-IF Upforce <> 0 THEN Up 1
-END SUB
-
-SUB Up (n)
-IF y - 1 = -1 THEN EXIT SUB
-IF n <> 2 THEN IF ChkAhead(x, y - 1) = 1 THEN EXIT SUB
-IF tempa = 2 OR tempa = 3 THEN IF a(x, y - 1) = 0 THEN sfx 9
-y = y - 1
-IF stry = 0 THEN sy = sy - 1: GOTO dnr3
-IF stry = 46 THEN
- IF sy <= 4 THEN stry = stry - 1: GOTO dnr3
- IF sy > 4 THEN sy = sy - 1: GOTO dnr3
-END IF
-stry = stry - 1
-
-dnr3:
-IF tempa = 100 THEN tempa = 0
-a(x, y + 1) = tempa
-tempa = a(x, y)
-a(x, y) = -1
-
-jt! = TIMER
-sti! = TIMER
-DrawAllScr
-
+IF Upforce <> 0 THEN Player.Up entities(playerIdx), 1
 END SUB
 

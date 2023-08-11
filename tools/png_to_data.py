@@ -149,10 +149,18 @@ if __name__ == "__main__":
 
     res_file = open("src/res/CONST.BI", "wt")
 
+    sprite_state("NONE", "", "")
+    sprite_state("PLAYER.RUN1", "SL1", "SR1")
+    sprite_state("PLAYER.RUN2", "SL2", "SR2")
     sprite_state("PLAYER.STAND", "SLS", "SRS")
     sprite_state("PLAYER.WAIT0", "SWAIT1", "SWAIT1")
     sprite_state("PLAYER.WAIT1", "SWAIT2", "SWAIT2")
 
+    state("NONE", 60, "NONE", "NONE")
+
+    state("PLAYER.RUN1", 2, "PLAYER.RUN2", "PLAYER.RUN1")
+    state("PLAYER.RUN2", 2, "PLAYER.RUN1", "PLAYER.RUN2")
+    state("PLAYER.STAND1", 30, "PLAYER.STAND1", "PLAYER.STAND")
     state("PLAYER.WAIT1", 30, "PLAYER.WAIT2", "PLAYER.WAIT0")
     state("PLAYER.WAIT2", 30, "PLAYER.WAIT1", "PLAYER.WAIT1")
 
@@ -176,8 +184,24 @@ if __name__ == "__main__":
         idx = sprite_states_arr.index(ss)
         write_res(f"CONST SPRITESTATE.{ss.name} = {idx}")
         # print(sprites[f"SPRITE.{ss.left}"], sprites[f"SPRITE.{ss.right}"])
-        data.extend(struct.pack("<H", sprites[f"SPRITE.{ss.left}"][0]))
-        data.extend(struct.pack("<H", sprites[f"SPRITE.{ss.right}"][0]))
+
+        sprite_index = 0
+
+        try:
+            sprite_index = sprites[f"SPRITE.{ss.left}"][0]
+        except:
+            pass
+
+        data.extend(struct.pack("<H", sprite_index))
+
+        sprite_index = 0
+
+        try:
+            sprite_index = sprites[f"SPRITE.{ss.right}"][0]
+        except:
+            pass
+
+        data.extend(struct.pack("<H", sprite_index))
 
     state: State
     print(states)
