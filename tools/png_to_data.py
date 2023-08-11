@@ -33,7 +33,7 @@ res_file = open("src/res/CONST.BI", "wt")
 data = bytearray()
 
 path = "GFX3"
-for f in listdir(path):
+for f in sorted(listdir(path)):
     fn = join(path, f)
 
     infile = join(path, f)

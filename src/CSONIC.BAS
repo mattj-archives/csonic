@@ -101,6 +101,9 @@ DIM SHARED gfx%(209), gfx2%(24, 24), PASSER1%(209), PASSER2%(209), PASSER3%(209)
 DIM bg11%(209), bg12%(209), bg13%(209), bg14%(209)
 DIM bg21%(209), bg22%(209), bg23%(209), bg24%(209)
 DIM bp%(209), back%(209)
+
+DIM SHARED GraphicsBuf(0 TO 27089) AS INTEGER
+
 '**************************
 DIM SHARED SonicMode, SonicFrame: SonicMode = 3: SonicFrame = 1
 DIM SHARED Upforce, StartForce, sti!, jt!: Upforce = 0
@@ -153,7 +156,6 @@ END TYPE
 DIM SHARED m(40) AS MP, cm, ocm
 DIM SHARED laser(30) AS lsr, lsrs
 'Bad guy DIMs
-DIM SHARED scr%(30000)
 DIM bpot(30) AS badguy, mosqu(30) AS badguy, rm(30) AS badguy
 DIM SHARED screenmode: screenmode = 7
 '**********************
@@ -162,12 +164,14 @@ SonicDir = 4
 Startup
 
 
-SCREEN screenmode
 DEF SEG = VARSEG(back%(0)): BLOAD "gfx\back1.gfx", VARPTR(back%(0))
 ReadyMask
 LGFX
-l$ = "c:\csonic\1_1"
+l$ = "levels\1_1.lev"
 LoadLevel l$
+
+SCREEN screenmode
+
 LevelIntro
 FOR z = 0 TO 24: FOR z2 = 0 TO 24: OldOnScreen(z2, z) = 999: OnScreen(z2, z) = 999: NEXT: NEXT
 FOR z = 1 TO 10: msg(z).x = -80: NEXT
@@ -912,6 +916,12 @@ t! = TIMER: WHILE TIMER - t! < 1: WEND
 END SUB
 
 SUB LGFX
+
+DEF SEG = VARSEG(GraphicsBuf(0))
+BLOAD "datatest.dat", VARPTR(GraphicsBuf(0))
+DEF SEG
+EXIT SUB
+
 CLS
 LOCATE 1, 1: COLOR 7: PRINT "Loading standard graphics";
 OPEN "GFX\GFX.LST" FOR INPUT AS #1
@@ -1011,13 +1021,15 @@ END SUB
 SUB LoadLevel (t$)
 passerstate = 0: passerframe = 0
 'stat0 = 9295
-IF act = 1 THEN loadtoact
+'IF act = 1 THEN loadtoact
 tlsx = 25
 x = 0: y = 0: a(0, 0) = -1
-t$ = "levels\1_2.lev"
+
 OPEN t$ FOR INPUT AS #1
 DO UNTIL EOF(1)
 INPUT #1, tx, ty, tn, tc
+PRINT tx; ty; tn; tc
+SLEEP
 SELECT CASE tn
 CASE -1
 a(tx, ty) = -1
@@ -1076,10 +1088,9 @@ bpot(bcnt(3)).t = INT(TIMER)
 a(tx, ty) = tn
 CASE 103: passx = tx: passy = ty: a(tx, ty) = tn
 END SELECT
-COLOR 7: LOCATE 1, 1: PRINT "Loading..."
-LINE (74, 95)-(127, 105), 10, B
-LINE (74 + ty, 96)-(74 + ty, 104), 2
-'stat0 = stat0 + 1: LOCATE 22, 1: PRINT stat0; "/9295"
+'COLOR 7: LOCATE 1, 1: PRINT "Loading..."
+'LINE (74, 95)-(127, 105), 10, B
+'LINE (74 + ty, 96)-(74 + ty, 104), 2
 'DrawLoadScene ty * 5
 LOOP
 LOCATE 1, 1: PRINT STRING$(80, " ")
@@ -1327,8 +1338,8 @@ NEXT
 END SUB
 
 SUB ReadyMask
-PUT (0, 0), back%, PSET
-FOR yy = 0 TO 24: FOR xx = 0 TO 24: gfx2%(xx, yy) = POINT(xx, yy): NEXT: NEXT
+'PUT (0, 0), back%, PSET
+'FOR yy = 0 TO 24: FOR xx = 0 TO 24: gfx2%(xx, yy) = POINT(xx, yy): NEXT: NEXT
 END SUB
 
 SUB ReDrawAround (tx, ty)
