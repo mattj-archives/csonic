@@ -26,7 +26,6 @@ pal = [
     (hi, hi, hi),
 ]
 
-
 data0 = open("datatest.dat", "wb")
 res_file = open("src/res/CONST.BI", "wt")
 
@@ -52,6 +51,7 @@ for f in sorted(listdir(path)):
     res_file.write(f"CONST {basic_frame_name} = {len(data) >> 1}\n")
     img_data = img.getdata()
 
+    print("Length before data:", len(data), "num pixels:", len(img_data))
     data.extend(struct.pack("<H", img.size[0] * 8))
     data.extend(struct.pack("<H", img.size[1]))
 
@@ -62,12 +62,14 @@ for f in sorted(listdir(path)):
         # print(d, pal.index(d))
 
     # print(data)
-    print(len(data))
+    print("Current length", len(data), len(data) & 1)
 
     # Pad
 
-    if len(data) and 1 != 0:
+    if len(data) & 1 != 0:
         data.append(0)
+        # print("--- added padding ---")
+
     # print(len(data))
     # exit(0)
 
@@ -75,9 +77,10 @@ for f in sorted(listdir(path)):
 # https://rpg.hamsterrepublic.com/ohrrpgce/BSAVE_Header
 
 data0.write(bytes([0xfd]))
-data0.write(bytes([0, 0])) # segment
-data0.write(bytes([0, 0])) # offset
+data0.write(bytes([0, 0]))  # segment
+data0.write(bytes([0, 0]))  # offset
 data0.write(bytes(struct.pack("<H", len(data))))
+print("Final length (shorts): ", len(data)>>1)
 data0.write(data)
 data0.close()
 res_file.close()

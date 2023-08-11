@@ -1,3 +1,7 @@
+DECLARE SUB PUT2 (x AS INTEGER, y AS INTEGER, index AS INTEGER)
+DECLARE SUB PUT3 (x AS INTEGER, y AS INTEGER, index AS INTEGER)
+'$STATIC
+'$INCLUDE: 'src/res/CONST.BI'
 DECLARE SUB Startup ()
 DEFINT A-Z
 DECLARE SUB message (n, ty, stx, c, ms$)
@@ -67,29 +71,22 @@ stopx AS INTEGER
 t AS LONG
 col AS INTEGER
 END TYPE
-COMMON SHARED bg11%(), bg12%(), bg13%(), bg14%()
-COMMON SHARED bg21%(), bg22%(), bg23%(), bg24%()
-COMMON SHARED bp%(), gfx%()
 COMMON SHARED a(), x, y
 COMMON SHARED p%(), bcnt()
-COMMON SHARED bpot() AS badguy, mosqu() AS badguy, back%(), rm() AS badguy
+COMMON SHARED bpot() AS badguy, mosqu() AS badguy, rm() AS badguy
 COMMON SHARED stage, SonicDir
 COMMON SHARED act, strx, stry
 DIM a(168, 54)
 DIM p(168, 54)
 
 RANDOMIZE TIMER
-'CLEAR , , 20000
 DIM SHARED ssx, ssy, stax, stay
 DIM SHARED sx, sy
 stage = 1: act = 1
 '**************************
-DIM SHARED SRS%(209), SLS%(209), SR1%(209), SR2%(209), SL1%(209), SL2%(209), SWAIT1%(209), SWAIT2%(209)
-DIM SHARED SPIN1%(209), SPIN2%(209):
-DIM SHARED CHILI1%(209), CHILI2%(209), CHILI3%(209), CHILI4%(209), CHILI5%(209): DIM SHARED CHILI6%(209):
 DIM SHARED RING1%(209), RING2%(209), RING3%(209), RING4%(209), RING5%(209), RING6%(209):
 DIM SHARED BOXRNG%(209), BOXSHI%(209), BOXSPI%(209), BOXBUB%(209), BOXFIR%(209)
-DIM SHARED e1%(209), e2%(209), e3%(209), e4%(209), e5%(209)
+
 DIM SHARED BOXST%(209), SPRINGR1%(209), SPRINGR2%(209), SPRINGL1%(209), SPRINGL2%(209)
 DIM SHARED SPIKEUP%(209), SPIKEDN%(209), SPIKELT%(209), SPIKERT%(209), SDIE%(209)
 DIM SHARED FSPIKE%(209), AFSPIKE%(209), MPL%(209), MPR%(209), MPLAT%(209), BPLAT%(209)
@@ -98,11 +95,8 @@ DIM SHARED LAVA1%(209), LAVA2%(209), LAVA3%(209), ELL%(209), ELR%(209), EL1%(209
 DIM SHARED CFP%(209), WFP%(209), LUP%(209), LDN%(209), LLT%(209), LRT%(209), LHOR%(209), LVER%(209)
 DIM SHARED gfx%(209), gfx2%(24, 24), PASSER1%(209), PASSER2%(209), PASSER3%(209), PASSER4%(209)
 
-DIM bg11%(209), bg12%(209), bg13%(209), bg14%(209)
-DIM bg21%(209), bg22%(209), bg23%(209), bg24%(209)
-DIM bp%(209), back%(209)
 
-DIM SHARED GraphicsBuf(0 TO 27089) AS INTEGER
+DIM SHARED GraphicsBuf(0 TO 27064) AS INTEGER
 
 '**************************
 DIM SHARED SonicMode, SonicFrame: SonicMode = 3: SonicFrame = 1
@@ -157,22 +151,21 @@ DIM SHARED m(40) AS MP, cm, ocm
 DIM SHARED laser(30) AS lsr, lsrs
 'Bad guy DIMs
 DIM bpot(30) AS badguy, mosqu(30) AS badguy, rm(30) AS badguy
-DIM SHARED screenmode: screenmode = 7
+DIM SHARED screenmode: screenmode = 13
 '**********************
 SonicDir = 4
 
 Startup
 
-
-DEF SEG = VARSEG(back%(0)): BLOAD "gfx\back1.gfx", VARPTR(back%(0))
-ReadyMask
 LGFX
-l$ = "levels\1_1.lev"
+l$ = "levels\1_1.l2"
 LoadLevel l$
 
 SCREEN screenmode
 
 LevelIntro
+SetScr
+
 FOR z = 0 TO 24: FOR z2 = 0 TO 24: OldOnScreen(z2, z) = 999: OnScreen(z2, z) = 999: NEXT: NEXT
 FOR z = 1 TO 10: msg(z).x = -80: NEXT
 MainLoop
@@ -481,7 +474,7 @@ END SUB
 
 SUB DrawAllScr
 trx = 0: try = 0
-IF screenmode = 7 THEN smy = 6: smx = 12
+IF screenmode = 13 THEN smy = 6: smx = 12
 IF screenmode = 12 THEN smy = 12: smx = 24
 FOR z = stry TO stry + smy      '6     12
 FOR z2 = strx TO strx + smx     '12    24
@@ -498,7 +491,7 @@ trx = 0
 try = try + 1
 NEXT
 
-IF screenmode = 7 THEN FOR z = 0 TO 6: FOR z2 = 0 TO 12: OldOnScreen(z2, z) = OnScreen(z2, z): NEXT: NEXT
+IF screenmode = 13 THEN FOR z = 0 TO 6: FOR z2 = 0 TO 12: OldOnScreen(z2, z) = OnScreen(z2, z): NEXT: NEXT
 IF screenmode = 12 THEN FOR z = 0 TO 12: FOR z2 = 0 TO 24: OldOnScreen(z2, z) = OnScreen(z2, z): NEXT: NEXT
 
 EXIT SUB
@@ -536,7 +529,7 @@ END SUB
 
 SUB DrawGfx (n)
 trx = 0: try = 0
-IF screenmode = 7 THEN smy = 6: smx = 12
+IF screenmode = 13 THEN smy = 6: smx = 12
 IF screenmode = 12 THEN smy = 12: smx = 24
 FOR z = stry TO stry + smy      '6     12
 FOR z2 = strx TO strx + smx     '12    24
@@ -569,7 +562,7 @@ IF ghs = 2 THEN
 '  a(tx, ty) = tempa
 '  redrawobj x, y, ttx, tty, 0
 ' ELSE
-  PUT (ttx * 24, tty * 24 + 12), back%, PSET
+  'PUT (ttx * 24, tty * 24 + 12), back%, PSET
 ' END IF
  EXIT SUB
 END IF
@@ -588,43 +581,46 @@ CASE 1
  CASE 3
  SELECT CASE SonicFrame
  CASE 1
- PUT (ttx * 24, tty * 24 + 12), SL1%, PSET
+ CALL PUT3(ttx, tty, FRAME.SL1)
  CASE 2
- PUT (ttx * 24, tty * 24 + 12), SL2%, PSET
+ CALL PUT3(ttx, tty, FRAME.SL2)
  END SELECT
 
  CASE 4
  SELECT CASE SonicFrame
  CASE 1
- PUT (ttx * 24, tty * 24 + 12), SR1%, PSET
+' PUT (ttx * 24, tty * 24 + 12), SR1%, PSET
+ CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.SR1)
  CASE 2
- PUT (ttx * 24, tty * 24 + 12), SR2%, PSET
+ CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.SR2)
  END SELECT
  END SELECT
 CASE 2                      'Waiting
 
  SELECT CASE SonicFrame
  CASE 1
- PUT (ttx * 24, tty * 24 + 12), SWAIT1%, PSET
+ CALL PUT3(ttx, tty, FRAME.SWAIT1)
  CASE 2
- PUT (ttx * 24, tty * 24 + 12), SWAIT2%, PSET
+ CALL PUT3(ttx, tty, FRAME.SWAIT2)
  END SELECT
 
 CASE 3                     'Standing
 
  SELECT CASE SonicDir
  CASE 3
- PUT (ttx * 24, tty * 24 + 12), SLS%, PSET
+ CALL PUT2(ttx * 24, tty * 24 + 12, frame.sls)
  CASE 4
- PUT (ttx * 24, tty * 24 + 12), SRS%, PSET
+ 'PUT (ttx * 24, tty * 24 + 12), SRS%, PSET
+ CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.SRS)
+
  END SELECT
 
 CASE 4                     'Jumping
  SELECT CASE SonicFrame
  CASE 1
- PUT (ttx * 24, tty * 24 + 12), SPIN1%, PSET
+ CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.SPIN1%)
  CASE 2
- PUT (ttx * 24, tty * 24 + 12), SPIN2%, PSET
+ CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.SPIN2%)
  END SELECT
 END SELECT
 END SUB
@@ -920,101 +916,6 @@ SUB LGFX
 DEF SEG = VARSEG(GraphicsBuf(0))
 BLOAD "datatest.dat", VARPTR(GraphicsBuf(0))
 DEF SEG
-EXIT SUB
-
-CLS
-LOCATE 1, 1: COLOR 7: PRINT "Loading standard graphics";
-OPEN "GFX\GFX.LST" FOR INPUT AS #1
-oa = 74
-DO UNTIL a = oa
-INPUT #1, GFXFILE$
-                IF GFXFILE$ = "" THEN GOTO SL
-                MGFXFILE$ = "GFX\" + GFXFILE$ + ".GFX"
-                DEF SEG = VARSEG(gfx%(0))
-                BLOAD MGFXFILE$, VARPTR(gfx%(0))
-IF GFXFILE$ = "SLS" THEN ChangeGFX SLS%()
-IF GFXFILE$ = "SRS" THEN ChangeGFX SRS%()
-IF GFXFILE$ = "SL1" THEN ChangeGFX SL1%()
-IF GFXFILE$ = "SR1" THEN ChangeGFX SR1%()
-IF GFXFILE$ = "SL2" THEN ChangeGFX SL2%()
-IF GFXFILE$ = "SR2" THEN ChangeGFX SR2%()
-IF GFXFILE$ = "SWAIT1" THEN ChangeGFX SWAIT1%()
-IF GFXFILE$ = "SWAIT2" THEN ChangeGFX SWAIT2%()
-IF GFXFILE$ = "SPIN1" THEN ChangeGFX SPIN1%()
-IF GFXFILE$ = "SPIN2" THEN ChangeGFX SPIN2%()
-IF GFXFILE$ = "CHILI1" THEN ChangeGFX CHILI1%()
-IF GFXFILE$ = "CHILI2" THEN ChangeGFX CHILI2%()
-IF GFXFILE$ = "CHILI3" THEN ChangeGFX CHILI3%()
-IF GFXFILE$ = "CHILI4" THEN ChangeGFX CHILI4%()
-IF GFXFILE$ = "CHILI5" THEN ChangeGFX CHILI5%()
-IF GFXFILE$ = "CHILI6" THEN ChangeGFX CHILI6%()
-IF GFXFILE$ = "RING1" THEN ChangeGFX RING1%()
-IF GFXFILE$ = "RING2" THEN ChangeGFX RING2%()
-IF GFXFILE$ = "RING3" THEN ChangeGFX RING3%()
-IF GFXFILE$ = "RING4" THEN ChangeGFX RING4%()
-IF GFXFILE$ = "RING5" THEN ChangeGFX RING5%()
-IF GFXFILE$ = "RING6" THEN ChangeGFX RING6%()
-IF GFXFILE$ = "BOX-RNG" THEN ChangeGFX BOXRNG%()
-IF GFXFILE$ = "BOX-SHI" THEN ChangeGFX BOXSHI%()
-IF GFXFILE$ = "BOX-SPI" THEN ChangeGFX BOXSPI%()
-IF GFXFILE$ = "BOX-BUB" THEN ChangeGFX BOXBUB%()
-IF GFXFILE$ = "BOX-FIR" THEN ChangeGFX BOXFIR%()
-IF GFXFILE$ = "BOX-ST" THEN ChangeGFX BOXST%()
-IF GFXFILE$ = "E1" THEN ChangeGFX e1%()
-IF GFXFILE$ = "E2" THEN ChangeGFX e2%()
-IF GFXFILE$ = "E3" THEN ChangeGFX e3%()
-IF GFXFILE$ = "E4" THEN ChangeGFX e4%()
-IF GFXFILE$ = "E5" THEN ChangeGFX e5%()
-IF GFXFILE$ = "SPRINGR1" THEN ChangeGFX SPRINGR1%()
-IF GFXFILE$ = "SPRINGR2" THEN ChangeGFX SPRINGR2%()
-IF GFXFILE$ = "SPRINGL1" THEN ChangeGFX SPRINGL1%()
-IF GFXFILE$ = "SPRINGL2" THEN ChangeGFX SPRINGL2%()
-IF GFXFILE$ = "SPIKEUP" THEN ChangeGFX SPIKEUP%()
-IF GFXFILE$ = "SPIKEDN" THEN ChangeGFX SPIKEDN%()
-IF GFXFILE$ = "SPIKELT" THEN ChangeGFX SPIKELT%()
-IF GFXFILE$ = "SPIKERT" THEN ChangeGFX SPIKERT%()
-IF GFXFILE$ = "SDIE" THEN ChangeGFX SDIE%()
-IF GFXFILE$ = "FSPIKE" THEN ChangeGFX FSPIKE%()
-IF GFXFILE$ = "AFSPIKE" THEN ChangeGFX AFSPIKE%()
-IF GFXFILE$ = "MPL" THEN ChangeGFX MPL%()
-IF GFXFILE$ = "MPR" THEN ChangeGFX MPR%()
-IF GFXFILE$ = "MPLAT" THEN ChangeGFX MPLAT%()
-IF GFXFILE$ = "BPLAT" THEN ChangeGFX BPLAT%()
-IF GFXFILE$ = "LFLIP1" THEN ChangeGFX LFLIP1%()
-IF GFXFILE$ = "LFLIP2" THEN ChangeGFX LFLIP2%()
-IF GFXFILE$ = "RFLIP1" THEN ChangeGFX RFLIP1%()
-IF GFXFILE$ = "RFLIP2" THEN ChangeGFX RFLIP2%()
-IF GFXFILE$ = "GAMBLE" THEN ChangeGFX GAMBLE%()
-IF GFXFILE$ = "LAVA1" THEN ChangeGFX LAVA1%()
-IF GFXFILE$ = "LAVA2" THEN ChangeGFX LAVA2%()
-IF GFXFILE$ = "LAVA3" THEN ChangeGFX LAVA3%()
-IF GFXFILE$ = "ELL" THEN ChangeGFX ELL%()
-IF GFXFILE$ = "ELR" THEN ChangeGFX ELR%()
-IF GFXFILE$ = "EL1" THEN ChangeGFX EL1%()
-IF GFXFILE$ = "EL2" THEN ChangeGFX EL2%()
-IF GFXFILE$ = "EL3" THEN ChangeGFX EL3%()
-IF GFXFILE$ = "CFP" THEN ChangeGFX CFP%()
-IF GFXFILE$ = "WFP" THEN ChangeGFX WFP%()
-IF GFXFILE$ = "P1" THEN ChangeGFX bp%()
-IF GFXFILE$ = "LUP" THEN ChangeGFX LUP%()
-IF GFXFILE$ = "LDN" THEN ChangeGFX LDN%()
-IF GFXFILE$ = "LLT" THEN ChangeGFX LLT%()
-IF GFXFILE$ = "LRT" THEN ChangeGFX LRT%()
-IF GFXFILE$ = "LHOR" THEN ChangeGFX LHOR%()
-IF GFXFILE$ = "LVER" THEN ChangeGFX LVER%()
-IF GFXFILE$ = "PASSER1" THEN ChangeGFX PASSER1%()
-IF GFXFILE$ = "PASSER2" THEN ChangeGFX PASSER2%()
-IF GFXFILE$ = "PASSER3" THEN ChangeGFX PASSER3%()
-IF GFXFILE$ = "PASSER4" THEN ChangeGFX PASSER4%()
-
-'LOCATE 11, 10: PRINT "Free memory:"; FRE(-1)
-PRINT ".";
-CLOSE #2
-a = a + 1
-LOOP
-SL:
-CLOSE #1
-CLS
 
 END SUB
 
@@ -1025,11 +926,17 @@ passerstate = 0: passerframe = 0
 tlsx = 25
 x = 0: y = 0: a(0, 0) = -1
 
-OPEN t$ FOR INPUT AS #1
+r% = 1
+OPEN t$ FOR BINARY AS #1
 DO UNTIL EOF(1)
-INPUT #1, tx, ty, tn, tc
-PRINT tx; ty; tn; tc
-SLEEP
+GET #1, r%, tx: r% = r% + 2
+GET #1, r%, ty: r% = r% + 2
+GET #1, r%, tn: r% = r% + 2
+GET #1, r%, tc: r% = r% + 2
+
+'INPUT #1, tx, ty, tn, tc
+'PRINT tx; ty; tn; tc
+'SLEEP
 SELECT CASE tn
 CASE -1
 a(tx, ty) = -1
@@ -1073,8 +980,15 @@ CASE 71              'Mosquitoes
 a(tx, ty) = tn
 bcnt(1) = bcnt(1) + 1
 mosqu(1).last = mosqu(1).last + 1
-INPUT #1, temp
-INPUT #1, mosqu(bcnt(1)).x1, mosqu(bcnt(1)).y1, mosqu(bcnt(1)).x2, mosqu(bcnt(1)).y2
+
+GET #1, r%, temp: r% = r% + 2
+
+GET #1, r%, mosqu(bcnt(1)).x1: r% = r% + 2
+GET #1, r%, mosqu(bcnt(1)).y1: r% = r% + 2
+GET #1, r%, mosqu(bcnt(1)).x2: r% = r% + 2
+GET #1, r%, mosqu(bcnt(1)).y2: r% = r% + 2
+
+'INPUT #1, mosqu(bcnt(1)).x1, mosqu(bcnt(1)).y1, mosqu(bcnt(1)).x2, mosqu(bcnt(1)).y2
 IF tx > mosqu(bcnt(1)).x2 THEN mosqu(bcnt(1)).f1 = 1 ELSE mosqu(bcnt(1)).f1 = 2
 mosqu(bcnt(1)).x = mosqu(bcnt(1)).x1: mosqu(bcnt(1)).y = mosqu(bcnt(1)).y1: mosqu(bcnt(1)).state = 1
 mosqu(bcnt(1)).step = 2
@@ -1098,7 +1012,6 @@ CLOSE
 
 strx = 0: stry = 0: 'DrawAllScr
 LavaTimer! = TIMER
-SetScr
 PlatDo 1
 GameTime = INT(TIMER)
 END SUB
@@ -1123,10 +1036,13 @@ DrawAllScr
 END SUB
 
 SUB MainLoop
+DrawAllScr
 m:
 
 a$ = INKEY$
-FOR z = 1 TO 100: NEXT
+
+WAIT &H3DA, 8
+
 'IF a$ = CHR$(0) + "M" THEN Rt 1
 IF INP(96) = 77 AND force$ = "" THEN Rt 1
 IF INP(96) = 75 AND force$ = "" THEN Lt 1
@@ -1337,9 +1253,15 @@ END IF
 NEXT
 END SUB
 
-SUB ReadyMask
-'PUT (0, 0), back%, PSET
-'FOR yy = 0 TO 24: FOR xx = 0 TO 24: gfx2%(xx, yy) = POINT(xx, yy): NEXT: NEXT
+SUB PUT2 (x AS INTEGER, y AS INTEGER, index AS INTEGER)
+PUT (x, y), GraphicsBuf(index), PSET
+END SUB
+
+SUB PUT3 (x AS INTEGER, y AS INTEGER, index AS INTEGER)
+'IF x * 25 + 25 >= 320 THEN EXIT SUB
+'IF y * 25 + 12 + 25 >= 200 THEN EXIT SUB
+PUT (x * 24, y * 24 + 12), GraphicsBuf(index), PSET
+
 END SUB
 
 SUB ReDrawAround (tx, ty)
@@ -1356,7 +1278,7 @@ IF OS(tx + 1, ty + 1) = 1 THEN ReDrawObj tx + 1, ty + 1, tx + 1 - strx, ty + 1 -
 END SUB
 
 SUB ReDrawObj (tx, ty, ttx, tty, n)
-IF screenmode = 7 THEN
+IF screenmode = 13 THEN
 IF ttx * 24 <= 295 AND tty * 24 + 12 <= 182 AND ttx > -1 AND tty >= 0 THEN OldOnScreen(ttx, tty) = a(tx, ty)
 IF ttx * 24 <= 295 AND tty * 24 + 12 <= 178 AND ttx > -1 AND tty >= 0 THEN GOTO doredraw ELSE EXIT SUB
 END IF
@@ -1371,14 +1293,17 @@ SELECT CASE a(tx, ty)
 CASE 0
 'LINE (ttx * 24, tty * 24 + 12)-(ttx * 24 + 24, tty * 24 + 12 + 24), 0, BF
 'IF ttx * 24 <= 295 AND tty * 24 + 12 <= 178 AND ttx > -1 AND tty >= 0 THEN PUT (ttx * 24, tty * 24 + 12), back%, PSET
-PUT (ttx * 24, tty * 24 + 12), back%, PSET
+'PUT (ttx * 24, tty * 24 + 12), back%, PSET
+
+CALL PUT3(ttx, tty, FRAME.BACK1)
+
 END SELECT
 
 SELECT CASE a(tx, ty)
 CASE -1, -2
 DrawSonic ttx, tty
 CASE 0
-CASE 1: LINE (ttx * 24, tty * 24 + 13)-(ttx * 24 + 24, tty * 24 + 12 + 24), p(tx, ty), BF
+CASE 1: LINE (ttx * 24, tty * 24 + 12)-(ttx * 24 + 23, tty * 24 + 12 + 23), p(tx, ty), BF
 CASE 2: LINE (ttx * 24, tty * 24 + 12)-(ttx * 24 + 24, tty * 24 + 12 + 24), 1, BF
 CASE 3: LINE (ttx * 24, tty * 24 + 12)-(ttx * 24 + 24, tty * 24 + 12 + 24), 12, BF
 CASE 4: PUT (ttx * 24, tty * 24 + 12), SPIKEUP%, PSET
@@ -1430,45 +1355,46 @@ CASE 18
 IF s2s(n) = 1 THEN PUT (ttx * 24, tty * 24 + 12), SPRINGL2%, PSET
 IF s2s(n) = 0 THEN PUT (ttx * 24, tty * 24 + 12), SPRINGL1%, PSET
 CASE 43
-IF rfr = 1 THEN PUT (ttx * 24, tty * 24 + 12), RING1%, PSET
-IF rfr = 2 THEN PUT (ttx * 24, tty * 24 + 12), RING2%, PSET
-IF rfr = 3 THEN PUT (ttx * 24, tty * 24 + 12), RING3%, PSET
-IF rfr = 4 THEN PUT (ttx * 24, tty * 24 + 12), RING4%, PSET
-IF rfr = 5 THEN PUT (ttx * 24, tty * 24 + 12), RING5%, PSET
-IF rfr = 6 THEN PUT (ttx * 24, tty * 24 + 12), RING6%, PSET
+IF rfr = 1 THEN CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.RING1)
+IF rfr = 2 THEN CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.RING2)
+IF rfr = 3 THEN CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.RING3)
+IF rfr = 4 THEN CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.RING4)
+IF rfr = 5 THEN CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.RING5)
+IF rfr = 6 THEN CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.RING6)
 CASE 44
-IF cfr = 1 THEN PUT (ttx * 24, tty * 24 + 12), CHILI1%, PSET
-IF cfr = 2 THEN PUT (ttx * 24, tty * 24 + 12), CHILI2%, PSET
-IF cfr = 3 THEN PUT (ttx * 24, tty * 24 + 12), CHILI3%, PSET
-IF cfr = 4 THEN PUT (ttx * 24, tty * 24 + 12), CHILI4%, PSET
-IF cfr = 5 THEN PUT (ttx * 24, tty * 24 + 12), CHILI5%, PSET
-IF cfr = 6 THEN PUT (ttx * 24, tty * 24 + 12), CHILI6%, PSET
+IF cfr = 1 THEN CALL PUT3(ttx, tty, FRAME.CHILI1)
+IF cfr = 2 THEN CALL PUT3(ttx, tty, FRAME.CHILI2)
+IF cfr = 3 THEN CALL PUT3(ttx, tty, FRAME.CHILI3)
+IF cfr = 4 THEN CALL PUT3(ttx, tty, FRAME.CHILI4)
+IF cfr = 5 THEN CALL PUT3(ttx, tty, FRAME.CHILI5)
+IF cfr = 6 THEN CALL PUT3(ttx, tty, FRAME.CHILI6)
 CASE 70
  IF rm(n).state = 1 THEN
-  IF rm(n).f1 = 2 THEN PUT (ttx * 24, tty * 24 + 12), bg12%, PSET
-  IF rm(n).f1 = 1 THEN PUT (ttx * 24, tty * 24 + 12), bg13%, PSET
+  IF rm(n).f1 = 2 THEN CALL PUT3(ttx, tty, FRAME.RM2)
+  IF rm(n).f1 = 1 THEN CALL PUT3(ttx, tty, FRAME.RM3)
  END IF
- IF rm(n).state = 2 THEN PUT (ttx * 24, tty * 24 + 12), bg11%, PSET
+ IF rm(n).state = 2 THEN CALL PUT3(ttx, tty, FRAME.RM1)
 CASE 71
  SELECT CASE mosqu(n).state
  CASE 1, 2
-  IF mosqu(n).f1 = 1 THEN PUT (ttx * 24, tty * 24 + 12), bg21%, PSET
-  IF mosqu(n).f1 = 2 THEN PUT (ttx * 24, tty * 24 + 12), bg22%, PSET
+  IF mosqu(n).f1 = 1 THEN CALL PUT3(ttx, tty, FRAME.MOSQU1)
+  IF mosqu(n).f1 = 2 THEN CALL PUT3(ttx, tty, FRAME.MOSQU2)
  CASE 3, 4, 5
-  IF mosqu(n).f2 = 1 THEN PUT (ttx * 24, tty * 24 + 12), bg23%, PSET
-  IF mosqu(n).f2 = 2 THEN PUT (ttx * 24, tty * 24 + 12), bg24%, PSET
+  IF mosqu(n).f2 = 1 THEN CALL PUT3(ttx, tty, FRAME.MOSQU3)
+  IF mosqu(n).f2 = 2 THEN CALL PUT3(ttx, tty, FRAME.MOSQU4)
  END SELECT
  
 
-CASE 72: PUT (ttx * 24, tty * 24 + 12), bp%, PSET
+CASE 72:
+ CALL PUT3(ttx, tty, frame.p1)
 CASE 100
 FOR z = 1 TO 15
  IF ef(z) <> 0 THEN
  IF ex(z) = tx AND ey(z) = ty THEN
- IF ef(z) = 1 THEN PUT (ttx * 24, tty * 24 + 12), e5%, PSET
- IF ef(z) = 2 THEN PUT (ttx * 24, tty * 24 + 12), e4%, PSET
- IF ef(z) = 3 THEN PUT (ttx * 24, tty * 24 + 12), e2%, PSET
- IF ef(z) = 4 THEN PUT (ttx * 24, tty * 24 + 12), e1%, PSET
+ IF ef(z) = 1 THEN CALL PUT3(ttx, tty, FRAME.E5)
+ IF ef(z) = 2 THEN CALL PUT3(ttx, tty, FRAME.E4)
+ IF ef(z) = 3 THEN CALL PUT3(ttx, tty, FRAME.E2)
+ IF ef(z) = 4 THEN CALL PUT3(ttx, tty, FRAME.E1)
  END IF
  END IF
 NEXT

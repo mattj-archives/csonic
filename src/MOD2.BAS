@@ -24,12 +24,9 @@ num AS INTEGER
 step AS INTEGER
 END TYPE
 
-COMMON SHARED bg11%(), bg12%(), bg13%(), bg14%()
-COMMON SHARED bg21%(), bg22%(), bg23%(), bg24%()
-COMMON SHARED bp%(), gfx%()
 COMMON SHARED a(), x, y
 COMMON SHARED p%(), bcnt()
-COMMON SHARED bpot() AS badguy, mosqu() AS badguy, back%(), rm() AS badguy
+COMMON SHARED bpot() AS badguy, mosqu() AS badguy, rm() AS badguy
 COMMON SHARED stage, SonicDir
 COMMON SHARED act, strx, stry
 
@@ -203,25 +200,5 @@ END IF
 NEXT
 tmve = 0
 
-END SUB
-
-SUB loadtoact
-stage = 1
-COLOR 2: PRINT "Loading graphics..."
-DEF SEG = VARSEG(gfx%(0)): BLOAD "gfx\p1.gfx", VARPTR(gfx%(0)): ChangeGFX bp%()
-
-SELECT CASE stage
-CASE 1
-'RMs
-DEF SEG = VARSEG(gfx%(0)): BLOAD "gfx\rm1.gfx", VARPTR(gfx%(0)): ChangeGFX bg11%()
-DEF SEG = VARSEG(gfx%(0)): BLOAD "gfx\rm2.gfx", VARPTR(gfx%(0)): ChangeGFX bg12%()
-DEF SEG = VARSEG(gfx%(0)): BLOAD "gfx\rm3.gfx", VARPTR(gfx%(0)): ChangeGFX bg13%()
-'Mosquitoes
-DEF SEG = VARSEG(gfx%(0)): BLOAD "gfx\mosqu1.gfx", VARPTR(gfx%(0)): ChangeGFX bg21%()
-DEF SEG = VARSEG(gfx%(0)): BLOAD "gfx\mosqu2.gfx", VARPTR(gfx%(0)): ChangeGFX bg22%()
-DEF SEG = VARSEG(gfx%(0)): BLOAD "gfx\mosqu3.gfx", VARPTR(gfx%(0)): ChangeGFX bg23%()
-DEF SEG = VARSEG(gfx%(0)): BLOAD "gfx\mosqu4.gfx", VARPTR(gfx%(0)): ChangeGFX bg24%()
-END SELECT
-CLS
 END SUB
 
