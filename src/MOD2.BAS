@@ -1,5 +1,4 @@
 DEFINT A-Z
-DECLARE SUB ChangeGFX (p%())
 DECLARE SUB ReDrawAround (tx, ty)
 DECLARE FUNCTION OS (tx, ty)
 DECLARE SUB ReDrawObj (tx, ty, ttx, tty, n)
@@ -24,14 +23,14 @@ num AS INTEGER
 step AS INTEGER
 END TYPE
 
-COMMON SHARED a(), x, y
-COMMON SHARED p%(), bcnt()
+COMMON SHARED a(), p()
+COMMON SHARED bcnt()
 COMMON SHARED bpot() AS badguy, mosqu() AS badguy, rm() AS badguy
 COMMON SHARED stage, SonicDir
 COMMON SHARED act, strx, stry
 
 REM $STATIC
-SUB enemy.mgr
+SUB enemy.mgr ()
 SELECT CASE stage
 CASE 1
 enemy.mgr1
@@ -39,43 +38,9 @@ END SELECT
 
 END SUB
 
-SUB enemy.mgr1
+SUB enemy.mgr1 ()
 tmve = 0
 'get rid of that EXIT SUB for the next enemy
-FOR z = 1 TO bcnt(3)
-IF bpot(z).state = 1 THEN
- IF TIMER - bpot(z).t > .5 THEN
-  IF bpot(z).f2 = 3 THEN
-   IF bpot(z).f1 = 1 THEN bpot(z).f1 = 2 ELSE bpot(z).f1 = 1
-   bpot(z).f2 = 0
-   'EXIT SUB
-  END IF
-  
-  IF bpot(z).f1 = 1 THEN
-   bpot(z).y = bpot(z).y - 1
-   a(bpot(z).x, bpot(z).y + 1) = 0
-   a(bpot(z).x, bpot(z).y) = 72
-   bpot(z).t = TIMER
-   IF bpot(z).f2 = 3 THEN bpot(z).f2 = 0 ELSE bpot(z).f2 = bpot(z).f2 + 1
-  temp1 = bpot(z).x: temp2 = bpot(z).y
-  IF OS(temp1, temp2) = 1 THEN ReDrawObj temp1, temp2, temp1 - strx, temp2 - stry, 0
-  ReDrawObj temp1, temp2 + 1, temp1 - strx, temp2 - stry + 1, 0
- 
-  END IF
-  IF bpot(z).f1 = 2 THEN
-   bpot(z).y = bpot(z).y + 1
-   a(bpot(z).x, bpot(z).y - 1) = 0
-   a(bpot(z).x, bpot(z).y) = 72
-   bpot(z).t = TIMER
-  IF bpot(z).f2 = 3 THEN bpot(z).f2 = 0 ELSE bpot(z).f2 = bpot(z).f2 + 1
-  temp1 = bpot(z).x: temp2 = bpot(z).y
-  IF OS(temp1, temp2) = 1 THEN ReDrawObj temp1, temp2, temp1 - strx, temp2 - stry, 0
-  ReDrawObj temp1, temp2 - 1, temp1 - strx, temp2 - stry - 1, 0
- 
-  END IF
- END IF
-END IF
-NEXT
 '******************************************************************
 FOR z = 1 TO mosqu(1).last
  IF mosqu(z).state = 1 THEN

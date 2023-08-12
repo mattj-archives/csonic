@@ -16,13 +16,14 @@ class SpriteState:
 
 
 class State:
-    def __init__(self, name, duration, next_state, sprite_state) -> None:
+    def __init__(self, name, duration, next_state, sprite_state, func=0) -> None:
         super().__init__()
 
         self.name = name
         self.duration = int(duration)
         self.next_state = next_state
         self.sprite_state = sprite_state
+        self.func = func
 
 
 hi = 0xff
@@ -137,8 +138,8 @@ def sprite_state(name, left, right):
     sprite_states_arr.append(_sprite_state)
 
 
-def state(name, duration, next_state, sprite_state):
-    _state = State(name, duration, next_state, sprite_state)
+def state(name, duration, next_state, sprite_state, func=0):
+    _state = State(name, duration, next_state, sprite_state, func=func)
     states[name] = _state
     states_arr.append(_state)
 
@@ -155,6 +156,12 @@ if __name__ == "__main__":
     sprite_state("PLAYER.STAND", "SLS", "SRS")
     sprite_state("PLAYER.WAIT0", "SWAIT1", "SWAIT1")
     sprite_state("PLAYER.WAIT1", "SWAIT2", "SWAIT2")
+    sprite_state("PLAYER.SPIN1", "SPIN1", "SPIN1")
+    sprite_state("PLAYER.SPIN2", "SPIN2", "SPIN2")
+    sprite_state("BPOT1", "P1", "P1")
+
+    for i in range(1, 7):
+        sprite_state(f"RING{i}", f"RING{i}", f"RING{i}")
 
     state("NONE", 60, "NONE", "NONE")
 
@@ -163,6 +170,23 @@ if __name__ == "__main__":
     state("PLAYER.STAND1", 30, "PLAYER.STAND1", "PLAYER.STAND")
     state("PLAYER.WAIT1", 30/5, "PLAYER.WAIT2", "PLAYER.WAIT0")
     state("PLAYER.WAIT2", 30/5, "PLAYER.WAIT1", "PLAYER.WAIT1")
+    state("PLAYER.SPIN1", 30/5, "PLAYER.SPIN2", "PLAYER.SPIN1")
+    state("PLAYER.SPIN2", 30/5, "PLAYER.SPIN1", "PLAYER.SPIN2")
+    state("BPOT_IDLE", 1, "BPOT1", "BPOT1", 0)
+    state("BPOT1", 10, "BPOT2", "BPOT1", 1)
+    state("BPOT2", 10, "BPOT3", "BPOT1", 1)
+    state("BPOT3", 10, "BPOT4", "BPOT1", 1)
+    state("BPOT4", 10, "BPOT5", "BPOT1", 2)
+    state("BPOT5", 10, "BPOT6", "BPOT1", 2)
+    state("BPOT6", 10, "BPOT1", "BPOT1", 2)
+
+    state("RING1", 1, "RING2", "RING1")
+    state("RING2", 1, "RING3", "RING2")
+    state("RING3", 1, "RING4", "RING3")
+    state("RING4", 1, "RING5", "RING4")
+    state("RING5", 1, "RING6", "RING5")
+    state("RING6", 1, "RING1", "RING6")
+
 
     data = bytearray()
 
@@ -220,9 +244,31 @@ if __name__ == "__main__":
         data.extend(struct.pack("<H", state.duration))
         data.extend(struct.pack("<H", next_state_index))
         data.extend(struct.pack("<H", sprite_state_idx))
+        data.extend(struct.pack("<H", state.func))
 
     BSAVE("res.dat", data)
 
+    write_res("TYPE Sprite")
+    write_res("\toffs as integer")
+    write_res("\tbufNum as integer")
+    write_res("End Type")
+
+    write_res("TYPE SpriteState")
+    write_res("\tSprites(0 to 1) as integer")
+    write_res("End Type")
+
+    write_res("TYPE State")
+    write_res("\tduration as integer")
+    write_res("\tnextState as integer")
+    write_res("\tspriteState as integer")
+    write_res("\tfunc as integer")
+    write_res("End Type")
+
+    write_res("TYPE TRes")
+    write_res(f"\tSprites(0 to {len(sprites)-1}) as Sprite")
+    write_res(f"\tSpriteStates(0 to {len(sprite_states)-1}) as SpriteState")
+    write_res(f"\tStates(0 to {len(states)-1}) as State")
+    write_res("End Type")
     print(f"Sprites: 0 to {len(sprites) - 1}")
     print(f"Sprite States: 0 to {len(sprite_states) - 1}")
     print(f"States: 0 to {len(states) - 1}")

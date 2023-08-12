@@ -1,11 +1,18 @@
+DECLARE SUB StateFunc (self AS ANY)
+DECLARE SUB Player.Update (self AS ANY)
+DECLARE SUB Entity.AddToTile (e AS ANY, tile AS ANY)
+DECLARE SUB Entity.RemoveFromTile (e AS ANY, tile AS ANY)
+DECLARE SUB Entity.SetState (e AS ANY, stateNum AS INTEGER)
+DECLARE SUB Player.Touch (self AS ANY)
+DECLARE SUB Player.Left (self AS ANY, n%)
 DECLARE SUB UpdateEntity (self AS ANY)
 DECLARE SUB Player.Rt (self AS ANY, n%)
 DECLARE SUB Player.Up (self AS ANY, n%)
 DECLARE SUB Player.Down (self AS ANY, n%)
 DECLARE FUNCTION SpawnEntity% (x AS INTEGER, y AS INTEGER, entityType AS INTEGER)
-DECLARE SUB DrawState (x AS INTEGER, y AS INTEGER, stateNum AS INTEGER, direction AS INTEGER)
+DECLARE SUB DrawState (x AS INTEGER, y AS INTEGER, stateNum AS INTEGER, BYVAL direction AS INTEGER)
 DECLARE SUB Console ()
-DECLARE SUB PUT2 (x AS INTEGER, y AS INTEGER, index AS INTEGER)
+DECLARE SUB PUT2 (BYVAL x%, BYVAL y%, BYVAL dataSeg%, BYVAL dataOffs%)
 DECLARE SUB PUT3 (x AS INTEGER, y AS INTEGER, index AS INTEGER)
 '$STATIC
 '$INCLUDE: 'src/res/CONST.BI'
@@ -13,6 +20,7 @@ TYPE TEntity
  x AS INTEGER
  y AS INTEGER
 
+ entityNum AS INTEGER
  direction AS INTEGER
 
  flags AS INTEGER       ' 1 = in use
@@ -21,6 +29,8 @@ TYPE TEntity
 
  stateNum AS INTEGER
  stateFrames AS INTEGER
+
+ nextTileEntityNum AS INTEGER
 END TYPE
 
 DECLARE SUB Startup ()
@@ -48,7 +58,7 @@ DECLARE SUB sfx (n)
 DECLARE SUB HitSonic (n)
 DECLARE SUB Expman (n, ttx, tty)
 DECLARE FUNCTION ChkAhead (tx, ty)
-DECLARE SUB GotItem (t)
+DECLARE SUB gotitem (t)
 DECLARE SUB DrawGfx (n)
 DECLARE SUB AnmMan ()
 DECLARE SUB SonicMan ()
@@ -99,49 +109,31 @@ TYPE THUD
  redraw AS INTEGER
 END TYPE
 
-TYPE SPRITE
-        offs AS INTEGER
-        bufNum AS INTEGER
+TYPE TTile
+ firstEntityNum AS INTEGER
+ tile AS INTEGER    ' ??? stuff
+ color AS INTEGER   ' Terrain color
 END TYPE
 
-TYPE spriteState
-        Sprites(0 TO 1) AS INTEGER
-END TYPE
-
-TYPE STATE
-        duration AS INTEGER
-        nextState AS INTEGER
-        spriteState AS INTEGER
-
-        ' Function to call on state...
-
-END TYPE
-
-TYPE TRes
-        Sprites(0 TO 85) AS SPRITE
-        SpriteStates(0 TO 5) AS spriteState
-        States(0 TO 5) AS STATE
-END TYPE
-
-COMMON SHARED a(), x, y
-COMMON SHARED p%(), bcnt()
+COMMON SHARED a(), p()
+COMMON SHARED bcnt()
 COMMON SHARED bpot() AS badguy, mosqu() AS badguy, rm() AS badguy
 COMMON SHARED stage, SonicDir
 COMMON SHARED act, strx, stry
 COMMON SHARED HUD AS THUD
 COMMON SHARED Res AS TRes
 COMMON SHARED entities() AS TEntity
+COMMON SHARED Map() AS TTile
 
-DIM entities(0 TO 64) AS TEntity
+DIM entities(0 TO 128) AS TEntity
 DIM a(168, 54)
-DIM p(168, 54)
+DIM Map(168, 54) AS TTile
 
 RANDOMIZE TIMER
 DIM SHARED ssx, ssy, stax, stay
 DIM SHARED sx, sy
 stage = 1: act = 1
 '**************************
-DIM SHARED RING1%(209), RING2%(209), RING3%(209), RING4%(209), RING5%(209), RING6%(209):
 DIM SHARED BOXRNG%(209), BOXSHI%(209), BOXSPI%(209), BOXBUB%(209), BOXFIR%(209)
 
 DIM SHARED BOXST%(209), SPRINGR1%(209), SPRINGR2%(209), SPRINGL1%(209), SPRINGL2%(209)
@@ -150,8 +142,7 @@ DIM SHARED FSPIKE%(209), AFSPIKE%(209), MPL%(209), MPR%(209), MPLAT%(209), BPLAT
 DIM SHARED LFLIP1%(209), RFLIP1%(209), LFLIP2%(209), RFLIP2%(209), GAMBLE%(209)
 DIM SHARED LAVA1%(209), LAVA2%(209), LAVA3%(209), ELL%(209), ELR%(209), EL1%(209), EL2%(209), EL3%(209)
 DIM SHARED CFP%(209), WFP%(209), LUP%(209), LDN%(209), LLT%(209), LRT%(209), LHOR%(209), LVER%(209)
-DIM SHARED gfx%(209), gfx2%(24, 24), PASSER1%(209), PASSER2%(209), PASSER3%(209), PASSER4%(209)
-
+DIM SHARED PASSER1%(209), PASSER2%(209), PASSER3%(209), PASSER4%(209)
 
 DIM SHARED GraphicsBuf(0 TO 27064) AS INTEGER
 
@@ -159,8 +150,9 @@ DIM SHARED GraphicsBuf(0 TO 27064) AS INTEGER
 
 DIM SHARED playerIdx AS INTEGER
 
-DIM SHARED SonicMode, SonicFrame: SonicMode = 3: SonicFrame = 1
-DIM SHARED Upforce, StartForce, sti!, jt!: Upforce = 0
+DIM SHARED SonicMode, SonicFrame, PlayerInAir%: SonicMode = 3: SonicFrame = 1
+PlayerInAir = 1
+DIM SHARED UpForce, StartForce, sti!, jt!: UpForce = 0
 DIM SHARED rings, rf!, rc: rings = 0: rc = 4: rf! = INT(TIMER)
 DIM SHARED rfr, cfr, rft, cft!: rfr = 1: cfr = 1: rft = 0: cft! = INT(TIMER)
 DIM SHARED boxs!, bb, CDP: boxs! = INT(TIMER): bb = 1: CDP = 0
@@ -185,7 +177,6 @@ DIM SHARED msg(10) AS mess
 stage = 1: act = 1                                            '2=done
 DIM SHARED tlsx, tlf, ltf:                                    'FRAME
 DIM bcnt(18)                                                  'SAME 12131213
-DIM SHARED OnScreen(24, 24), OldOnScreen(24, 24)     '12,9
 TYPE MP
 x1 AS INTEGER
 x2 AS INTEGER
@@ -220,20 +211,21 @@ Startup
 
 PRINT "Loading graphics..."
 LGFX
-l$ = "levels\1_1.l2"
+
 PRINT "Loading level..."
-LoadLevel l$
+LoadLevel "levels\1_1.l2"
+
+PRINT : PRINT : PRINT "Free memory:"; FRE(-1)
 
 SCREEN screenmode
 
 LevelIntro
 SetScr
 
-FOR z = 0 TO 24: FOR z2 = 0 TO 24: OldOnScreen(z2, z) = 999: OnScreen(z2, z) = 999: NEXT: NEXT
 FOR z = 1 TO 10: msg(z).x = -80: NEXT
 MainLoop
 
-SUB AnmMan
+SUB AnmMan ()
 rft = rft + 1
 'IF TIMER - rft! >= .1 THEN
 IF rft >= 8 THEN
@@ -301,13 +293,13 @@ IF passerstate = 1 THEN
  IF TIMER - passertime2! < 4 THEN
   IF TIMER - passertime! > .1 THEN
    IF passerspin = 1 THEN               'on spin
-    passerframe = passerframe + 1
-    IF passerframe = 3 THEN passerframe = 0
-    passerspin = 0
-    passertime! = TIMER
+	passerframe = passerframe + 1
+	IF passerframe = 3 THEN passerframe = 0
+	passerspin = 0
+	passertime! = TIMER
    ELSE
-    passerspin = 1
-    passertime! = TIMER
+	passerspin = 1
+	passertime! = TIMER
    END IF
   IF OS(passx, passy) = 1 THEN ReDrawObj passx, passy, passx - strx, passy - stry, 0
   END IF
@@ -322,34 +314,26 @@ END IF
 END IF
 END SUB
 
-SUB ChangeGFX (p%())
-DEF SEG = &HB800
-FOR z = 0 TO 209: p%(z) = gfx%(z): NEXT
-PUT (160, 100), p%, PSET
-o& = 100 * 320 + 160
-FOR yy = 0 TO 24
- o& = (100 + yy) * 320& + 160
- FOR xx = 0 TO 24
-
-'IF POINT(160 + xx, 100 + yy) = 0 THEN PSET (160 + xx, 100 + yy), gfx2%(xx, yy)
-IF PEEK(o&) = 0 THEN POKE o&, gfx2%(xx, yy)
-o& = o& + 1
-NEXT
-NEXT
-GET (160, 100)-(160 + 24, 100 + 24), p%
-LINE (160, 100)-(160 + 24, 100 + 24), 0, BF
-
-END SUB
-
 FUNCTION ChkAhead (tx, ty)
+ChkAhead = 0
+IF tx < 0 OR ty < 0 THEN ChkAhead = 1: EXIT FUNCTION
+
+IF Map(tx, ty).firstEntityNum <> 0 THEN
+
+ SELECT CASE entities(Map(tx, ty).firstEntityNum).t
+ CASE 72: 'BPOT
+	ChkAhead = 1
+	EXIT FUNCTION
+ END SELECT
+
+END IF
+
 SELECT CASE a(tx, ty)
-CASE 0
-ChkAhead = 0: EXIT FUNCTION
 CASE 1: ChkAhead = 1: EXIT FUNCTION
 CASE 2, 3: ChkAhead = 0: EXIT FUNCTION
 CASE 4, 5
-IF ty > y THEN Upforce = 2: Player.Up entities(playerIdx), 1
-IF ty < y THEN Upforce = 0
+IF ty > y THEN UpForce = 2: Player.Up entities(playerIdx), 1
+IF ty < y THEN UpForce = 0
 ChkAhead = 1: HitSonic 0: EXIT FUNCTION
 CASE 6, 7
 ChkAhead = 0: HitSonic 0: EXIT FUNCTION
@@ -359,11 +343,11 @@ CASE 13: ChkAhead = 1: EXIT FUNCTION
 CASE 8: IF x = tx AND ty < y THEN HitSonic 0: ChkAhead = 1: EXIT FUNCTION
 ChkAhead = 1: EXIT FUNCTION
 CASE 17, 18
-IF ty > y AND SonicMode = 4 THEN SonicMode = 1: Upforce = 0: EXIT FUNCTION
+IF ty > y AND SonicMode = 4 THEN SonicMode = 1: UpForce = 0: EXIT FUNCTION
 ChkAhead = 1: HitSpring a(tx, ty), tx, ty: EXIT FUNCTION
 CASE 21, 22: ChkAhead = 1: EXIT FUNCTION
 CASE 25
-IF ty > y THEN Upforce = 2
+IF ty > y THEN UpForce = 2
 ChkAhead = 1
 EXIT FUNCTION
 CASE 26, 27: ChkAhead = 0: EXIT FUNCTION
@@ -373,13 +357,13 @@ CASE 31: ChkAhead = 0: HitSonic 31: EXIT FUNCTION
 CASE 32, 33: ChkAhead = 1: EXIT FUNCTION
 CASE 38 TO 42
 IF a(tx, ty) > 37 AND a(tx, ty) < 43 THEN IF SonicMode <> 4 THEN ChkAhead = 1: EXIT FUNCTION
-GotItem a(tx, ty)
+gotitem a(tx, ty)
 a(tx, ty) = 0
 Expman 1, tx, ty
 ChkAhead = 0: EXIT FUNCTION
 
 CASE 43, 44
-GotItem a(tx, ty)
+gotitem a(tx, ty)
 a(tx, ty) = 0
 ChkAhead = 0: EXIT FUNCTION
 
@@ -387,7 +371,7 @@ CASE 70
 FOR z = 1 TO bcnt(2)
 IF rm(z).x = tx AND rm(z).y = ty THEN
  IF SonicMode = 4 THEN
-  Expman 1, tx, ty: Upforce = 3: score = score + 100
+  Expman 1, tx, ty: UpForce = 3: score = score + 100
   rm(z).STATE = 0
   sfx 12
  ELSE
@@ -397,30 +381,33 @@ END IF
 NEXT
 
 CASE 71
-FOR z = 1 TO bcnt(1)
-IF mosqu(z).x = tx AND mosqu(z).y = ty THEN
- IF SonicMode = 4 THEN
-  Expman 1, tx, ty: Upforce = 3: score = score + 100
-  mosqu(z).STATE = 0
-  sfx 12
- ELSE
- HitSonic 1
- END IF
-END IF
-NEXT
+ChkAhead = 1
+'FOR z = 1 TO bcnt(1)
+'IF mosqu(z).x = tx AND mosqu(z).y = ty THEN
+' IF SonicMode = 4 THEN
+'  Expman 1, tx, ty: UpForce = 3: score = score + 100
+'  mosqu(z).STATE = 0
+'  sfx 12
+' ELSE
+' HitSonic 1
+' END IF
+'END IF
+'NEXT
 
 CASE 72
-FOR z = 1 TO bcnt(3)
-IF bpot(z).x = tx AND bpot(z).y = ty THEN
- IF SonicMode = 4 THEN
-  Expman 1, tx, ty: Upforce = 3: score = score + 100
-  bpot(z).STATE = 0
-  sfx 12
- ELSE
- HitSonic 1
- END IF
-END IF
-NEXT
+'ChkAhead = 1
+
+'FOR z = 1 TO bcnt(3)
+'IF bpot(z).x = tx AND bpot(z).y = ty THEN
+' IF SonicMode = 4 THEN
+'  Expman 1, tx, ty: UpForce = 3: score = score + 100
+'  bpot(z).STATE = 0
+'  sfx 12
+' ELSE
+' HitSonic 1
+' END IF
+'END IF
+'NEXT
 
 CASE 100: ChkAhead = 0: EXIT FUNCTION
 CASE 103: ChkAhead = 0
@@ -432,7 +419,7 @@ EXIT FUNCTION
 END SELECT
 END FUNCTION
 
-SUB Console
+SUB Console ()
 COLOR 7
 CLS
 LOCATE 2, 1
@@ -441,8 +428,6 @@ PRINT "GotItem <n>"
 INPUT a$
 
 IF LCASE$(a$) = "gotitem" THEN GOSUB cmd.gotitem
-
-DrawAllScr
 EXIT SUB
 
 
@@ -453,8 +438,8 @@ PRINT "40 - spike box"
 PRINT "41 - shield box 2 (bubble)"
 PRINT "42 - shield box 3 (flame)"
 PRINT "43 - ring"
-        INPUT "GotItem >", n%
-        GotItem n%
+		INPUT "GotItem >", n%
+		gotitem n%
 RETURN
 
 END SUB
@@ -500,8 +485,8 @@ WHILE INKEY$ <> "": WEND
 END IF
 END SUB
 
-SUB DnS
-IF so = 2 AND Upforce = 0 AND ChkAhead(x, y + 1) = 1 THEN
+SUB DnS ()
+IF so = 2 AND UpForce = 0 AND ChkAhead(x, y + 1) = 1 THEN
  'IF s3 = 0 THEN
  FOR z = .9 TO .1 STEP -.1
  CIRCLE (sx * 24 + 10, sy * 24 + 12 + 10), 12, sc, , , z
@@ -510,13 +495,13 @@ IF so = 2 AND Upforce = 0 AND ChkAhead(x, y + 1) = 1 THEN
  CIRCLE (sx * 24 + 10, sy * 24 + 12 + 10), 12, 0, , , z
  NEXT
 s3 = 1
-Upforce = 6
+UpForce = 6
 'END IF
 END IF
 
 END SUB
 
-SUB DoDie
+SUB DoDie ()
 dieta:
 dx = INT(RND * 6) + strx + 4
 dy = INT(RND * 3) + stry + 4
@@ -531,17 +516,17 @@ dy = INT(RND * 3) + stry + 4
 'END IF
 END SUB
 
-SUB DoForces
+SUB DoForces ()
 forcet! = TIMER
 forcep = forcep + 1
 IF forcep > LEN(force$) AND force$ <> "X" THEN force$ = "": EXIT SUB
 IF MID$(force$, forcep, 1) = "U" THEN Player.Up entities(playerIdx), 1
-IF MID$(force$, forcep, 1) = "L" THEN Lt 1
+IF MID$(force$, forcep, 1) = "L" THEN Player.Left entities(playerIdx), 1
 IF MID$(force$, forcep, 1) = "R" THEN Player.Rt entities(playerIdx), 1
 
 END SUB
 
-SUB DrawAllScr
+SUB DrawAllScr ()
 trx = 0: try = 0
 'CLS
 IF screenmode = 13 THEN smy = 6: smx = 12
@@ -549,20 +534,16 @@ IF screenmode = 12 THEN smy = 12: smx = 24
 FOR z = stry TO stry + smy      '6     12
 FOR z2 = strx TO strx + smx     '12    24
 
-SELECT CASE a(z2, z)
-CASE 0: ReDrawObj z2, z, trx, try, 0
-CASE 1: ReDrawObj z2, z, trx, try, 0
-CASE 2: ReDrawObj z2, z, trx, try, 0
-
-END SELECT
-
-FOR i = 0 TO 64
-  IF entities(i).flags AND 1 = 1 THEN
-   IF entities(i).x = z2 AND entities(i).y = z THEN
-    CALL DrawState(trx, try, entities(i).stateNum, entities(i).direction)
-   END IF
-  END IF
-NEXT i
+IF Map(z2, z).firstEntityNum <> 0 THEN
+	entityNum% = Map(z2, z).firstEntityNum
+	CALL DrawState(trx, try, entities(entityNum%).stateNum, entities(entityNum%).direction)
+ELSE
+	SELECT CASE a(z2, z)
+	CASE 0: ReDrawObj z2, z, trx, try, 0
+	CASE 1: ReDrawObj z2, z, trx, try, 0
+	CASE 2: ReDrawObj z2, z, trx, try, 0
+	END SELECT
+END IF
 
 'IF a(z2, z) = 17 OR a(z2, z) = 18 THEN GOSUB springd
 'IF a(z2, z) = 21 OR a(z2, z) = 22 THEN GOSUB flipd
@@ -577,8 +558,8 @@ trx = 0
 try = try + 1
 NEXT
 
-IF screenmode = 13 THEN FOR z = 0 TO 6: FOR z2 = 0 TO 12: OldOnScreen(z2, z) = OnScreen(z2, z): NEXT: NEXT
-IF screenmode = 12 THEN FOR z = 0 TO 12: FOR z2 = 0 TO 24: OldOnScreen(z2, z) = OnScreen(z2, z): NEXT: NEXT
+'IF screenmode = 13 THEN FOR z = 0 TO 6: FOR z2 = 0 TO 12: OldOnScreen(z2, z) = OnScreen(z2, z): NEXT: NEXT
+'IF screenmode = 12 THEN FOR z = 0 TO 12: FOR z2 = 0 TO 24: OldOnScreen(z2, z) = OnScreen(z2, z): NEXT: NEXT
 
 EXIT SUB
 
@@ -677,9 +658,9 @@ CASE 1
  SELECT CASE SonicFrame
  CASE 1
 ' PUT (ttx * 24, tty * 24 + 12), SR1%, PSET
- CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.SR1)
+ 'CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.SR1)
  CASE 2
- CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.SR2)
+ 'CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.SR2)
  END SELECT
  END SELECT
 CASE 2                      'Waiting
@@ -698,28 +679,52 @@ CASE 3                     'Standing
 
  SELECT CASE SonicDir
  CASE 3
- CALL PUT2(ttx * 24, tty * 24 + 12, frame.sls)
+ 'CALL PUT2(ttx * 24, tty * 24 + 12, frame.sls)
  CASE 4
  'PUT (ttx * 24, tty * 24 + 12), SRS%, PSET
- CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.SRS)
+ 'CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.SRS)
 
  END SELECT
 
 CASE 4                     'Jumping
  SELECT CASE SonicFrame
  CASE 1
- CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.SPIN1%)
+ 'CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.SPIN1%)
  CASE 2
- CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.SPIN2%)
+ 'CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.SPIN2%)
  END SELECT
 END SELECT
 END SUB
 
-SUB DrawState (x AS INTEGER, y AS INTEGER, stateNum AS INTEGER, direction AS INTEGER)
+SUB DrawState (x AS INTEGER, y AS INTEGER, stateNum AS INTEGER, BYVAL direction AS INTEGER)
 ss% = Res.States(stateNum).spriteState
+direction = direction - 3
+IF direction < 0 THEN direction = 0
 spriteNum% = Res.SpriteStates(ss%).Sprites(direction)
 'LOCATE 10, 10: COLOR 7: PRINT stateNum; spriteNum%; Res.Sprites(spriteNum%).offs
 CALL PUT3(x, y, Res.Sprites(spriteNum%).offs)
+END SUB
+
+SUB Entity.AddToTile (e AS TEntity, tile AS TTile)
+ IF tile.firstEntityNum <> 0 THEN
+	e.nextTileEntityNum = tile.firstEntityNum
+ END IF
+
+ tile.firstEntityNum = e.entityNum
+END SUB
+
+SUB Entity.RemoveFromTile (e AS TEntity, tile AS TTile)
+
+	IF tile.firstEntityNum = e.entityNum THEN
+		  tile.firstEntityNum = 0
+	END IF
+
+	' e.nextTileEntity...
+END SUB
+
+SUB Entity.SetState (e AS TEntity, stateNum AS INTEGER)
+	e.stateNum = stateNum
+	e.stateFrames = Res.States(stateNum).duration
 END SUB
 
 SUB Expman (n, ttx, tty)
@@ -762,9 +767,9 @@ NEXT
 SOUND 800, 5
 COLOR 14: LOCATE 1, 19: PRINT tttt$(tttt1): LOCATE 1, 20: PRINT tttt$(tttt2): LOCATE 1, 21: PRINT tttt$(tttt3)
 LINE (0, 0)-(320, 11), 0, BF
-IF tttt1 = 1 AND tttt2 = 1 AND tttt3 = 1 THEN FOR z = 1 TO 125: GotItem 43: NEXT
+IF tttt1 = 1 AND tttt2 = 1 AND tttt3 = 1 THEN FOR z = 1 TO 125: gotitem 43: NEXT
 IF tttt1 = 2 AND tttt2 = 2 AND tttt3 = 2 THEN HitSonic 0
-IF tttt1 = 3 AND tttt2 = 3 AND tttt3 = 3 THEN FOR z = 1 TO 25: GotItem 43: NEXT
+IF tttt1 = 3 AND tttt2 = 3 AND tttt3 = 3 THEN FOR z = 1 TO 25: gotitem 43: NEXT
 
 CASE 27
 FOR z = 1 TO 6
@@ -777,13 +782,13 @@ END SELECT
 
 END SUB
 
-SUB GotItem (t)
+SUB gotitem (t)
 SELECT CASE t
-CASE 38: Upforce = 3: rings = rings + 10: rc = 14: sfx 4: HUD.redraw = 1
-CASE 39: Upforce = 3: so = 1: sc = 1: sht! = TIMER: sfx 5: sht2! = TIMER
-CASE 40: Upforce = 3: HitSonic 0: sfx 8
-CASE 41: Upforce = 3: so = 2: sc = 2: sht! = TIMER: sht2! = TIMER: sfx 7
-CASE 42: Upforce = 3: so = 3: sc = 4: sht! = TIMER: sht2! = TIMER: sfx 6
+CASE 38: UpForce = 3: rings = rings + 10: rc = 14: sfx 4: HUD.redraw = 1
+CASE 39: UpForce = 3: so = 1: sc = 1: sht! = TIMER: sfx 5: sht2! = TIMER
+CASE 40: UpForce = 3: HitSonic 0: sfx 8
+CASE 41: UpForce = 3: so = 2: sc = 2: sht! = TIMER: sht2! = TIMER: sfx 7
+CASE 42: UpForce = 3: so = 3: sc = 4: sht! = TIMER: sht2! = TIMER: sfx 6
 
 CASE 43
 rings = rings + 1: rc = 14: sfx 2
@@ -837,10 +842,10 @@ NEXT
 EXIT SUB
 hs17:
 IF tx > x THEN Player.Rt entities(playerIdx), 2
-IF tx < x THEN Lt 2
+IF tx < x THEN Player.Left entities(playerIdx), 2
 IF ty > y THEN Player.Down entities(playerIdx), 2
 Player.Up entities(playerIdx), 2
-Upforce = 10
+UpForce = 10
 s1s(z) = 1: s1t!(z) = TIMER: DrawGfx 17
 CASE 18
 t18:
@@ -850,10 +855,10 @@ NEXT
 EXIT SUB
 hs18:
 IF tx > x THEN Player.Rt entities(playerIdx), 2
-IF tx < x THEN Lt 2
+IF tx < x THEN Player.Left entities(playerIdx), 2
 IF ty > y THEN Player.Down entities(playerIdx), 2
 Player.Up entities(playerIdx), 2
-Upforce = 6
+UpForce = 6
 s2s(z) = 1: s2t!(z) = TIMER: DrawGfx 18
 
 CASE 21
@@ -863,7 +868,7 @@ IF flx(z) = tx AND fly(z) = ty THEN GOTO hs21
 NEXT
 EXIT SUB
 hs21:
-Upforce = 10
+UpForce = 10
 SonicMode = 4: SonicFrame = 1
 flf(z) = 1: flt!(z) = TIMER: DrawGfx 21
 CASE 22
@@ -873,14 +878,14 @@ IF frx(z) = tx AND fry(z) = ty THEN GOTO hs22
 NEXT
 EXIT SUB
 hs22:
-Upforce = 10
+UpForce = 10
 SonicMode = 4: SonicFrame = 1
 frf(z) = 1: frt!(z) = TIMER: DrawGfx 21
 
 END SELECT
 END SUB
 
-SUB LaserMan
+SUB LaserMan ()
 FOR z = 1 TO lsrs
  IF laser(z).ldir = 0 AND TIMER - laser(z).et >= 1 THEN GOSUB firelaser
  IF TIMER - laser(z).Lt >= .2 THEN GOSUB movelaser
@@ -951,7 +956,7 @@ RETURN
 
 END SUB
 
-SUB LevelIntro
+SUB LevelIntro ()
 EXIT SUB
 CLS
 s1$ = " Rabid Mushroom zone"
@@ -997,7 +1002,7 @@ COLOR 15: LOCATE 20, 12: PRINT "Cool Sonéc 1"
 t! = TIMER: WHILE TIMER - t! < 1: WEND
 END SUB
 
-SUB LGFX
+SUB LGFX ()
 
 DEF SEG = VARSEG(GraphicsBuf(0))
 BLOAD "datatest.dat", VARPTR(GraphicsBuf(0))
@@ -1010,13 +1015,13 @@ END SUB
 
 SUB LoadLevel (t$)
 playerIdx = SpawnEntity(0, 0, -1)
-entities(playerIdx).stateNum = STATE.PLAYER.WAIT1
+Entity.SetState entities(playerIdx), STATE.PLAYER.WAIT1
 
 passerstate = 0: passerframe = 0
 'stat0 = 9295
 'IF act = 1 THEN loadtoact
 tlsx = 25
-x = 0: y = 0: 'a(0, 0) = -1
+x = 0: y = 0
 
 r% = 1
 OPEN t$ FOR BINARY AS #1
@@ -1026,9 +1031,6 @@ GET #1, , ty: r% = r% + 2
 GET #1, , tn: r% = r% + 2
 GET #1, , tc: r% = r% + 2
 
-'INPUT #1, tx, ty, tn, tc
-'PRINT tx; ty; tn; tc
-'SLEEP
 SELECT CASE tn
 CASE -1
 a(tx, ty) = -1
@@ -1037,12 +1039,15 @@ ssx = tx: ssy = ty: stax = tx: stay = ty
 CASE 0
 CASE 1
 a(tx, ty) = 1
-p(tx, ty) = tc
-CASE 10: fp = fp + 1: fpx(fp) = tx: fpy(fp) = ty: a(tx, ty) = tn: p(tx, ty) = tc
+'p(tx, ty) = tc
+Map(tx, ty).tile = 1
+Map(tx, ty).color = tc
+
+CASE 10: fp = fp + 1: fpx(fp) = tx: fpy(fp) = ty: a(tx, ty) = tn
 CASE 17: nos1 = nos1 + 1: spx1(nos1) = tx: spy1(nos1) = ty: a(tx, ty) = tn
 CASE 18: nos2 = nos2 + 1: spx2(nos2) = tx: spy2(nos2) = ty: a(tx, ty) = tn
 
-CASE 2 TO 7, 11, 12, 25 TO 31, 38 TO 44: a(tx, ty) = tn
+CASE 2 TO 7, 11, 12, 25 TO 31, 38 TO 42, 44: a(tx, ty) = tn
 CASE 8: fs = fs + 1: fsx(fs) = tx: fsy(fs) = ty: a(tx, ty) = tn
 CASE 9: afs = afs + 1: afsx(afs) = tx: afsy(afs) = ty: a(tx, ty) = tn
 CASE 32: fc = fc + 1: fcx(fc) = tx: fcy(fc) = ty: a(tx, ty) = tn
@@ -1051,6 +1056,10 @@ CASE 34: a(tx, ty) = 34: lsrs = lsrs + 1: laser(lsrs).x = tx: laser(lsrs).y = ty
 CASE 35: a(tx, ty) = 35: lsrs = lsrs + 1: laser(lsrs).x = tx: laser(lsrs).y = ty: laser(lsrs).ltype = 2
 CASE 36: a(tx, ty) = 36: lsrs = lsrs + 1: laser(lsrs).x = tx: laser(lsrs).y = ty: laser(lsrs).ltype = 3
 CASE 37: a(tx, ty) = 37: lsrs = lsrs + 1: laser(lsrs).x = tx: laser(lsrs).y = ty: laser(lsrs).ltype = 4
+
+CASE 43:
+	a = SpawnEntity(tx, ty, 43)
+	IF a <> -1 THEN Entity.SetState entities(a), STATE.RING1
 
 CASE 13
 a(tx, ty) = tn
@@ -1086,91 +1095,79 @@ mosqu(bcnt(1)).x = mosqu(bcnt(1)).x1: mosqu(bcnt(1)).y = mosqu(bcnt(1)).y1: mosq
 mosqu(bcnt(1)).step = 2
 
 
-CASE 72
+CASE 72  ' BPOT
+	a = SpawnEntity(tx, ty, 72)
+	IF a <> -1 THEN Entity.SetState entities(a), STATE.BPOT_IDLE
+
 bcnt(3) = bcnt(3) + 1: bpot(bcnt(3)).x = tx: bpot(bcnt(3)).y = ty
 bpot(bcnt(3)).STATE = 1
 bpot(bcnt(3)).f1 = 1: bpot(bcnt(3)).f2 = 0
 bpot(bcnt(3)).t = INT(TIMER)
-a(tx, ty) = tn
-CASE 103: passx = tx: passy = ty: a(tx, ty) = tn
+
+CASE 103
+	passx = tx: passy = ty: a(tx, ty) = tn
 END SELECT
+
 'COLOR 7: LOCATE 1, 1: PRINT "Loading..."
 'LINE (74, 95)-(127, 105), 10, B
 'LINE (74 + ty, 96)-(74 + ty, 104), 2
 'DrawLoadScene ty * 5
 LOOP
-LOCATE 1, 1: PRINT STRING$(80, " ")
 CLOSE
 
-strx = 0: stry = 0: 'DrawAllScr
+strx = 0: stry = 0
 LavaTimer! = TIMER
 PlatDo 1
 GameTime = INT(TIMER)
 END SUB
 
-SUB Lt (n)
-IF x - 1 = -1 THEN EXIT SUB
-IF n <> 2 THEN IF ChkAhead(x - 1, y) = 1 THEN EXIT SUB
-x = x - 1
-IF strx = 0 THEN sx = sx - 1: GOTO dnr4
-IF strx = 156 AND sx >= 6 THEN sx = sx - 1: GOTO dnr4
-strx = strx - 1
-dnr4:
-IF tempa = 100 THEN tempa = 0
-a(x + 1, y) = tempa
-tempa = a(x, y)
-IF a(x, y) <> 17 OR a(x, y) <> 18 THEN a(x, y) = -1
-sti! = TIMER
-IF SonicMode <> 4 THEN SonicMode = 1
-IF SonicMode = 1 THEN
-        SonicDir = 3
-        entities(playerIdx).direction = 3
-END IF
-
-END SUB
-
-SUB MainLoop
-DrawAllScr
+SUB MainLoop ()
 m:
 
 a$ = INKEY$
 
-FOR i = 0 TO 5: WAIT &H3DA, 8: WAIT &H3DA, 8, 8: NEXT
+FOR i = 0 TO 1: WAIT &H3DA, 8: WAIT &H3DA, 8, 8: NEXT
 
 'IF a$ = CHR$(0) + "M" THEN Rt 1
-IF INP(96) = 77 AND force$ = "" THEN Player.Rt entities(playerIdx), 1
-IF INP(96) = 75 AND force$ = "" THEN Lt 1
+'IF INP(96) = 77 AND force$ = "" THEN Player.Rt entities(playerIdx), 1
+'IF INP(96) = 75 AND force$ = "" THEN Player.Left entities(playerIdx), 1
+
 IF a$ = "\" THEN HitSonic 0
 'IF a$ = CHR$(0) + "K" THEN Lt 1
 IF a$ = CHR$(0) + "P" THEN DnS
 'IF a$ = " " THEN Jump
 IF INP(96) = 57 THEN Player.Jump entities(playerIdx)
 IF a$ = "0" THEN
-        SCREEN 0: WIDTH 80: SYSTEM
+		SCREEN 0: WIDTH 80: SYSTEM
 END IF
 
 IF UCASE$(a$) = "C" THEN Console
 IF a$ = CHR$(13) THEN GOSUB systat
 'IF Upforce <> 0 AND TIMER - jt! >= .1 THEN UMan
-IF Upforce <> 0 THEN UMan
+
 'IF Upforce = 0 THEN IF ChkAhead(x, y + 1) = 0 AND TIMER - jt! >= .1 THEN dn 1
 
 ' Gravity
-IF Upforce = 0 THEN IF ChkAhead(x, y + 1) = 0 THEN Player.Down entities(playerIdx), 1
+'IF Upforce = 0 THEN IF ChkAhead(x, y + 1) = 0 THEN Player.Down entities(playerIdx), 1
 
-IF Upforce <> 0 THEN IF a(x, y + 1) = 25 THEN Upforce = 2
-IF a(x, y + 1) = 11 THEN Lt 1
-IF a(x, y + 1) = 12 THEN Player.Rt entities(playerIdx), 1
-IF y + 1 = 55 THEN Die 1
-IF Upforce = 0 THEN IF ChkAhead(x, y + 1) = 1 AND SonicMode = 4 THEN SonicMode = 1: s3 = 0: DrawGfx -1
+'IF Upforce <> 0 THEN IF a(x, y + 1) = 25 THEN Upforce = 2
+'IF a(x, y + 1) = 11 THEN Player.Left entities(playerIdx), 1
+'IF a(x, y + 1) = 12 THEN Player.Rt entities(playerIdx), 1
+'IF y + 1 = 55 THEN Die 1
+
+' Landing
+'IF UpForce = 0 THEN IF ChkAhead(x, y + 1) = 1 AND SonicMode = 4 THEN SonicMode = 1: s3 = 0: DrawGfx -1
+
 IF tempa = 2 OR tempa = 3 THEN
  IF so <> 2 THEN IF TIMER - brt! >= 1 THEN brt! = TIMER: Breath = Breath - 1
 END IF
 
+Player.Update entities(playerIdx)
+
 FOR i = 0 TO 64
-     IF (entities(i).flags AND 1) = 1 THEN
-        UpdateEntity entities(i)
-     END IF
+	 IF (entities(i).flags AND 1) = 1 THEN
+		UpdateEntity entities(i)
+	 END IF
 NEXT
 
 IF tempa = 26 OR tempa = 27 THEN GambleHolder tempa
@@ -1185,8 +1182,8 @@ IF youaredead AND TIMER - DieTimer! > 8 THEN Die 2: DieTimer! = 0: force$ = ""
 
 DrawAllScr
 IF HUD.redraw THEN
-        HUD.redraw = 0
-        SetScr
+		HUD.redraw = 0
+		SetScr
 END IF
 GOTO m
 
@@ -1219,7 +1216,6 @@ IF ff = 0 THEN PSET (100 + x, 100 + y), 0
 IF ff = 1 THEN PSET (100 + x, 100 + y), 14
 t! = TIMER: WHILE TIMER - t! <= .5: WEND
 WEND
-DrawAllScr
 RETURN
 '*****************************************
 END SUB
@@ -1269,7 +1265,7 @@ END IF
 
 END FUNCTION
 
-SUB PassLevel
+SUB PassLevel ()
 FOR z = 0 TO 5
  FOR y = 12 TO 212 STEP 5
  LINE (0, y + z)-(320, y + z), 0
@@ -1333,7 +1329,7 @@ END IF
 mp3:
 IF TIMER - m(z).t < .5 THEN m(z).Mved = 0
 IF TIMER - m(z).t >= .5 THEN
- IF a(m(z).x, m(z).y - 1) = -1 THEN Lt 1
+ IF a(m(z).x, m(z).y - 1) = -1 THEN Player.Left entities(playerIdx), 1
  m(z).x = m(z).x - 1
  a(m(z).x + 1, m(z).y) = 0: a(m(z).x, m(z).y) = 13
  m(z).t = TIMER
@@ -1372,19 +1368,25 @@ END SUB
 
 SUB Player.Down (self AS TEntity, n)
 
-IF self.y + 1 = 55 THEN Die 1
+IF self.y + 1 = 55 THEN
+ Die 1
+ EXIT SUB
+END IF
+
 IF n <> 2 THEN IF ChkAhead(self.x, self.y + 1) = 1 THEN s3 = 0: EXIT SUB
+
+' Checks if going underwater
 IF tempa = 0 THEN IF a(self.x, self.y + 1) = 2 OR a(self.x, self.y + 1) = 3 THEN sfx 9
+
+Entity.RemoveFromTile self, Map(self.x, self.y)
 self.y = self.y + 1
+Entity.AddToTile self, Map(self.x, self.y)
+
 IF stry = 0 AND sy < 4 THEN sy = sy + 1: GOTO dnr
 IF stry = 48 THEN sy = sy + 1: GOTO dnr
 stry = stry + 1
 
 dnr:
-'IF tempa = 100 THEN tempa = 0
-'a(self.x, self.y - 1) = tempa
-'tempa = a(self.x, self.y)
-'a(self.x, self.y) = -1
 jt! = TIMER
 sti! = TIMER
 
@@ -1392,10 +1394,43 @@ END SUB
 
 SUB Player.Jump (self AS TEntity)
 IF a(self.x, self.y + 1) = 21 OR a(self.x, self.y + 1) = 22 THEN HitSpring a(self.x, self.y + 1), self.x, self.y + 1: sfx 10: EXIT SUB
-IF Upforce = 0 AND ChkAhead(self.x, self.y + 1) = 1 THEN
-sfx 1
-Upforce = 4: SonicMode = 4: SonicFrame = 1: StartForce = 3
-jt! = TIMER
+
+IF UpForce = 0 AND ChkAhead(self.x, self.y + 1) = 1 THEN
+	sfx 1
+	UpForce = 4
+
+	SonicMode = 4    ' Spin
+
+	StartForce = 3
+
+	Entity.SetState self, STATE.PLAYER.SPIN1
+
+	jt! = TIMER
+END IF
+
+END SUB
+
+SUB Player.Left (self AS TEntity, n)
+IF self.x - 1 = -1 THEN EXIT SUB
+IF n <> 2 THEN IF ChkAhead(self.x - 1, self.y) = 1 THEN EXIT SUB
+
+Entity.RemoveFromTile self, Map(self.x, self.y)
+self.x = self.x - 1
+Entity.AddToTile self, Map(self.x, self.y)
+
+IF strx = 0 THEN sx = sx - 1: GOTO dnr4
+IF strx = 156 AND sx >= 6 THEN sx = sx - 1: GOTO dnr4
+strx = strx - 1
+dnr4:
+'IF tempa = 100 THEN tempa = 0
+'a(x + 1, y) = tempa
+'tempa = a(x, y)
+'IF a(x, y) <> 17 OR a(x, y) <> 18 THEN a(x, y) = -1
+sti! = TIMER
+IF SonicMode <> 4 THEN SonicMode = 1
+IF SonicMode = 1 THEN
+		SonicDir = 3
+		self.direction = 3
 END IF
 
 END SUB
@@ -1403,22 +1438,42 @@ END SUB
 SUB Player.Rt (self AS TEntity, n)
 IF self.x + 1 = 169 THEN EXIT SUB
 IF n <> 2 THEN IF ChkAhead(self.x + 1, self.y) = 1 THEN EXIT SUB
+
+Entity.RemoveFromTile self, Map(self.x, self.y)
 self.x = self.x + 1
+Entity.AddToTile self, Map(self.x, self.y)
+
 IF strx = 0 AND sx < 6 THEN sx = sx + 1: GOTO dnr2
 IF strx = 156 THEN sx = sx + 1: GOTO dnr2
 strx = strx + 1
 dnr2:
 sti! = TIMER
-'IF tempa = 100 THEN tempa = 0
-'a(self.x - 1, self.y) = tempa
-'tempa = a(x, y)
-'a(x, y) = -1
+
 IF SonicMode <> 4 THEN SonicMode = 1
 IF SonicMode = 1 THEN
-        SonicDir = 4
-        self.direction = 1
+		SonicDir = 4
+		self.direction = 4
 END IF
-self.stateNum = STATE.PLAYER.RUN1
+
+Entity.SetState self, STATE.PLAYER.RUN1
+
+END SUB
+
+SUB Player.Touch (self AS TEntity)
+
+FOR i = 0 TO 64
+  IF (entities(i).flags AND 1) = 1 THEN
+   IF entities(i).x = self.x AND entities(i).y = self.y THEN
+	 IF entities(i).t = 43 THEN
+		gotitem 43
+		Entity.RemoveFromTile entities(i), Map(self.x, self.y)
+		entities(i).flags = 0
+	 END IF
+
+	 'CALL DrawState(trx, try, entities(i).stateNum, entities(i).direction)
+   END IF
+  END IF
+NEXT i
 
 END SUB
 
@@ -1426,7 +1481,11 @@ SUB Player.Up (self AS TEntity, n)
 IF self.y - 1 = -1 THEN EXIT SUB
 IF n <> 2 THEN IF ChkAhead(self.x, self.y - 1) = 1 THEN EXIT SUB
 IF tempa = 2 OR tempa = 3 THEN IF a(self.x, self.y - 1) = 0 THEN sfx 9
+
+Entity.RemoveFromTile self, Map(self.x, self.y)
 self.y = self.y - 1
+Entity.AddToTile self, Map(self.x, self.y)
+
 IF stry = 0 THEN sy = sy - 1: GOTO dnr3
 IF stry = 46 THEN
  IF sy <= 4 THEN stry = stry - 1: GOTO dnr3
@@ -1442,19 +1501,102 @@ dnr3:
 
 jt! = TIMER
 sti! = TIMER
-DrawAllScr
 
+Player.Touch self
 END SUB
 
-SUB PUT2 (x AS INTEGER, y AS INTEGER, index AS INTEGER)
-PUT (x, y), GraphicsBuf(index), PSET
+SUB Player.Update (self AS TEntity)
+deltaX% = 0
+deltaY% = 0
+PlayerWasInAir% = PlayerInAir
+
+IF INP(96) = 77 THEN deltaX% = deltaX% + 1
+IF INP(96) = 75 THEN deltaX% = deltaX% - 1
+
+IF UpForce > 0 THEN PlayerInAir = 1
+
+IF ChkAhead(self.x, self.y + 1) = 0 THEN
+	PlayerInAir = 1
+END IF
+
+IF PlayerInAir THEN
+	IF UpForce > 0 THEN
+		UpForce = UpForce - 1
+		deltaY% = -1
+	ELSE deltaY% = 1
+	END IF
+
+	IF ChkAhead(self.x, self.y + deltaY%) = 0 THEN
+		Entity.RemoveFromTile self, Map(self.x, self.y)
+		self.y = self.y + deltaY%
+		Entity.AddToTile self, Map(self.x, self.y)
+	ELSE
+		IF deltaY% > 0 THEN
+			PlayerInAir = 0
+		END IF
+	END IF
+
+	IF deltaX% <> 0 THEN
+		IF ChkAhead(self.x + deltaX%, self.y) = 0 THEN
+			Entity.RemoveFromTile self, Map(self.x, self.y)
+			self.x = self.x + deltaX%
+			Entity.AddToTile self, Map(self.x, self.y)
+		END IF
+
+		IF deltaX% > 0 THEN self.direction = 4
+		IF deltaX% < 0 THEN self.direction = 3
+	END IF
+
+	IF PlayerInAir THEN
+
+	END IF
+ELSE
+END IF
+
+
+strx = self.x - 6
+IF strx < 0 THEN strx = 0
+stry = self.y - 4
+IF stry < 0 THEN stry = 0
+
+IF PlayerInAir = 0 THEN
+	IF PlayerWasInAir% = 1 THEN
+		SonicMode = 1
+		Entity.SetState self, STATE.PLAYER.STAND1
+		IF deltaX% <> 0 THEN Entity.SetState self, STATE.PLAYER.RUN1
+	END IF
+ELSE
+END IF
+
+IF SonicMode <> 4 THEN
+	IF deltaX% <> 0 THEN
+		' Switch to running?
+		IF SonicMode <> 1 THEN
+			SonicMode = 1
+			Entity.SetState self, STATE.PLAYER.RUN1
+		END IF
+	ELSE
+		IF PlayerInAir = 0 THEN
+
+			' Switch to standing
+			IF SonicMode <> 3 THEN
+				SonicMode = 3
+				Entity.SetState self, STATE.PLAYER.WAIT1
+			END IF
+		END IF
+	END IF
+END IF
+
+Player.Touch self
+
 END SUB
 
 SUB PUT3 (x AS INTEGER, y AS INTEGER, offs AS INTEGER)
 'IF x * 25 + 25 >= 320 THEN EXIT SUB
 'IF y * 25 + 12 + 25 >= 200 THEN EXIT SUB
-PUT (x * 24, y * 24 + 12), GraphicsBuf(offs), PSET
+'PUT (x * 24, y * 24 + 12), GraphicsBuf(offs), PSET
 
+PUT2 x * 24, y * 24 + 12, VARSEG(GraphicsBuf(0)), VARPTR(GraphicsBuf(offs))
 END SUB
 
 SUB ReDrawAround (tx, ty)
@@ -1471,33 +1613,42 @@ IF OS(tx + 1, ty + 1) = 1 THEN ReDrawObj tx + 1, ty + 1, tx + 1 - strx, ty + 1 -
 END SUB
 
 SUB ReDrawObj (tx, ty, ttx, tty, n)
-IF screenmode = 13 THEN
-IF ttx * 24 <= 295 AND tty * 24 + 12 <= 182 AND ttx > -1 AND tty >= 0 THEN OldOnScreen(ttx, tty) = a(tx, ty)
-IF ttx * 24 <= 295 AND tty * 24 + 12 <= 178 AND ttx > -1 AND tty >= 0 THEN GOTO doredraw ELSE EXIT SUB
-END IF
-IF screenmode = 12 THEN
-IF ttx * 24 <= 620 AND tty * 24 + 12 <= 300 AND ttx > -1 AND tty >= 0 THEN OldOnScreen(ttx, tty) = a(tx, ty)
-IF ttx * 24 <= 620 AND tty * 24 + 12 <= 300 AND ttx > -1 AND tty >= 0 THEN GOTO doredraw ELSE EXIT SUB
-END IF
+'IF ttx * 24 <= 295 AND tty * 24 + 12 <= 178 AND ttx > -1 AND tty >= 0 THEN GOTO doredraw ELSE EXIT SUB
+IF ttx * 24 > 295 THEN EXIT SUB
+IF ttx * 24 + 24 <= 0 THEN EXIT SUB
+IF tty * 24 + 12 <= 0 THEN EXIT SUB
+IF tty * 24 + 12 + 24 > 180 THEN EXIT SUB
 
-EXIT SUB
-doredraw:
+'IF screenmode = 13 THEN
+'IF ttx * 24 <= 295 AND tty * 24 + 12 <= 182 AND ttx > -1 AND tty >= 0 THEN OldOnScreen(ttx, tty) = a(tx, ty)
+'END IF
+'IF screenmode = 12 THEN
+'IF ttx * 24 <= 620 AND tty * 24 + 12 <= 300 AND ttx > -1 AND tty >= 0 THEN OldOnScreen(ttx, tty) = a(tx, ty)
+'IF ttx * 24 <= 620 AND tty * 24 + 12 <= 300 AND ttx > -1 AND tty >= 0 THEN GOTO doredraw ELSE EXIT SUB
+'END IF
+
+'EXIT SUB
+'doredraw:
+
 SELECT CASE a(tx, ty)
 CASE 0
 'LINE (ttx * 24, tty * 24 + 12)-(ttx * 24 + 24, tty * 24 + 12 + 24), 0, BF
 'IF ttx * 24 <= 295 AND tty * 24 + 12 <= 178 AND ttx > -1 AND tty >= 0 THEN PUT (ttx * 24, tty * 24 + 12), back%, PSET
 'PUT (ttx * 24, tty * 24 + 12), back%, PSET
-
 CALL PUT3(ttx, tty, Res.Sprites(SPRITE.BACK1).offs)
+CASE 1: LINE (ttx * 24, tty * 24 + 12)-(ttx * 24 + 23, tty * 24 + 12 + 23), Map(tx, ty).color, BF
+CASE 2: LINE (ttx * 24, tty * 24 + 12)-(ttx * 24 + 24, tty * 24 + 12 + 24), 1, BF
+CASE 3: LINE (ttx * 24, tty * 24 + 12)-(ttx * 24 + 24, tty * 24 + 12 + 24), 12, BF
 
 END SELECT
 
+EXIT SUB
 SELECT CASE a(tx, ty)
 CASE -1, -2
 'DrawSonic ttx, tty
 DrawState ttx, tty, entities(playerIdx).stateNum, entities(playerIdx).stateNum - 3
 CASE 0
-CASE 1: LINE (ttx * 24, tty * 24 + 12)-(ttx * 24 + 23, tty * 24 + 12 + 23), p(tx, ty), BF
+CASE 1: LINE (ttx * 24, tty * 24 + 12)-(ttx * 24 + 23, tty * 24 + 12 + 23), Map(tx, ty).color, BF
 CASE 2: LINE (ttx * 24, tty * 24 + 12)-(ttx * 24 + 24, tty * 24 + 12 + 24), 1, BF
 CASE 3: LINE (ttx * 24, tty * 24 + 12)-(ttx * 24 + 24, tty * 24 + 12 + 24), 12, BF
 CASE 4: PUT (ttx * 24, tty * 24 + 12), SPIKEUP%, PSET
@@ -1549,12 +1700,12 @@ CASE 18
 IF s2s(n) = 1 THEN PUT (ttx * 24, tty * 24 + 12), SPRINGL2%, PSET
 IF s2s(n) = 0 THEN PUT (ttx * 24, tty * 24 + 12), SPRINGL1%, PSET
 CASE 43
-IF rfr = 1 THEN CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.RING1)
-IF rfr = 2 THEN CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.RING2)
-IF rfr = 3 THEN CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.RING3)
-IF rfr = 4 THEN CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.RING4)
-IF rfr = 5 THEN CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.RING5)
-IF rfr = 6 THEN CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.RING6)
+'IF rfr = 1 THEN CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.RING1)
+'IF rfr = 2 THEN CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.RING2)
+'IF rfr = 3 THEN CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.RING3)
+'IF rfr = 4 THEN CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.RING4)
+'IF rfr = 5 THEN CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.RING5)
+'IF rfr = 6 THEN CALL PUT2(ttx * 24, tty * 24 + 12, FRAME.RING6)
 CASE 44
 IF cfr = 1 THEN CALL PUT3(ttx, tty, FRAME.CHILI1)
 IF cfr = 2 THEN CALL PUT3(ttx, tty, FRAME.CHILI2)
@@ -1603,7 +1754,7 @@ END SELECT
 
 END SUB
 
-SUB SetScr
+SUB SetScr ()
 
 ' HUD Updates
 IF rings = 0 AND TIMER - rf! >= .4 THEN
@@ -1652,7 +1803,7 @@ END SELECT
 
 END SUB
 
-SUB SonicMan
+SUB SonicMan ()
 IF gothit! <> 0 AND TIMER - gothit! < 3 THEN
  ght! = ght! + 1
  IF ght! >= 10 THEN
@@ -1666,20 +1817,20 @@ END IF
 IF SonicMode = 1 THEN
  ' Go to Standing
  IF TIMER - sti! >= 1 THEN
-        entities(playerIdx).stateNum = STATE.PLAYER.STAND1
-        SonicMode = 3
-        sti! = TIMER
+		entities(playerIdx).stateNum = STATE.PLAYER.STAND1
+		SonicMode = 3
+		sti! = TIMER
  END IF
 END IF
 
 IF SonicMode = 3 THEN
  ' Standing, Go to waiting?
  IF TIMER - sti! >= 2 THEN
-        entities(playerIdx).stateNum = STATE.PLAYER.WAIT1
+		entities(playerIdx).stateNum = STATE.PLAYER.WAIT1
 
-        SonicMode = 2
-        
-        sti! = TIMER
+		SonicMode = 2
+		
+		sti! = TIMER
  END IF
 END IF
 
@@ -1708,22 +1859,45 @@ SpawnEntity% = -1
 
 DIM i AS INTEGER
 
-FOR i = 0 TO 64
-        
-        IF (entities(i).flags AND 1) = 0 THEN
-                entities(i).x = x
-                entities(i).y = y
-                entities(i).flags = 1
-                entities(i).stateNum = 0
-                entities(i).stateFrames = 60
+FOR i = 1 TO 64
+		
+		IF (entities(i).flags AND 1) = 0 THEN
+				entities(i).x = x
+				entities(i).y = y
+				entities(i).entityNum = i
+				entities(i).flags = 1
+				entities(i).stateNum = STATE.NONE
+				entities(i).stateFrames = 60
+				entities(i).t = entityType
 
-                SpawnEntity% = i
-                EXIT FUNCTION
-        END IF
+				Entity.AddToTile entities(i), Map(x, y)
+
+				SpawnEntity% = i
+				EXIT FUNCTION
+		END IF
 NEXT i
 END FUNCTION
 
-SUB Tman
+SUB StateFunc (self AS TEntity)
+SELECT CASE Res.States(self.stateNum).func
+CASE 1:
+ IF ChkAhead(self.x, self.y - 1) = 0 THEN
+  Entity.RemoveFromTile self, Map(self.x, self.y)
+  self.y = self.y - 1
+  Entity.AddToTile self, Map(self.x, self.y)
+ END IF
+CASE 2:
+ IF ChkAhead(self.x, self.y + 1) = 0 THEN
+  Entity.RemoveFromTile self, Map(self.x, self.y)
+  self.y = self.y + 1
+  Entity.AddToTile self, Map(self.x, self.y)
+ END IF
+
+END SELECT
+
+END SUB
+
+SUB Tman ()
 FOR z = 1 TO afs
  IF afss(z) = 0 THEN IF afsx(z) - x = 1 OR afsx(z) - x = -1 THEN afss(z) = 1: GOTO nafs
  IF afss(z) = 1 THEN GOSUB fg
@@ -1821,18 +1995,15 @@ RETURN
 
 END SUB
 
-SUB UMan
-Upforce = Upforce - 1
-IF Upforce < 0 THEN Upforce = 0: EXIT SUB
-IF Upforce <> 0 THEN Player.Up entities(playerIdx), 1
-END SUB
-
 SUB UpdateEntity (self AS TEntity)
-        IF self.stateNum = 0 THEN EXIT SUB
-        self.stateFrames = self.stateFrames - 1
-        IF self.stateFrames = 0 THEN
-              self.stateNum = Res.States(self.stateNum).nextState
-              self.stateFrames = Res.States(self.stateNum).duration
-        END IF
+		IF self.stateNum = 0 THEN EXIT SUB
+		self.stateFrames = self.stateFrames - 1
+		IF self.stateFrames = 0 THEN
+			  self.stateNum = Res.States(self.stateNum).nextState
+			  self.stateFrames = Res.States(self.stateNum).duration
+
+			  StateFunc self
+
+		END IF
 END SUB
 
