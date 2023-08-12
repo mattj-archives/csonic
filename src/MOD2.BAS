@@ -30,14 +30,6 @@ COMMON SHARED stage, SonicDir
 COMMON SHARED act, strx, stry
 
 REM $STATIC
-SUB enemy.mgr ()
-SELECT CASE stage
-CASE 1
-'enemy.mgr1
-END SELECT
-
-END SUB
-
 SUB enemy.mgr1 ()
 tmve = 0
 'get rid of that EXIT SUB for the next enemy

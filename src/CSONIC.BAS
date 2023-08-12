@@ -157,7 +157,6 @@ DIM SHARED UpForce, StartForce, sti!, jt!: UpForce = 0
 DIM SHARED rings, rf!, rc: rings = 0: rc = 4: rf! = INT(TIMER)
 DIM SHARED rfr, cfr, rft, cft!: rfr = 1: cfr = 1: rft = 0: cft! = INT(TIMER)
 DIM SHARED boxs!, bb, CDP: boxs! = INT(TIMER): bb = 1: CDP = 0
-DIM SHARED ex(15), ey(15), ef(15), et(15)
 DIM SHARED sc, so, s3, sht!, sht2!, sfxf: sfxf = 1'shield color,onflag,timer
 DIM SHARED nos1, nos2, s1s(20), s2s(20), s1t!(20), s2t!(20), spx1(20), spy1(20), spx2(20), spy2(20)
 DIM SHARED tempa, Breath, brt!: Breath = 99
@@ -278,17 +277,6 @@ ElState = ElState + 1: IF ElState = 4 THEN ElState = 1
 Eltimer = 0
 DrawGfx 31
 END IF
-FOR z = 1 TO 15
- IF ef(z) <> 0 THEN
- et(z) = et(z) + 1
- IF et(z) >= 8 THEN ef(z) = ef(z) + 1: et(z) = 0
- IF OS(ex(z), ey(z)) = 1 THEN ReDrawObj ex(z), ey(z), ex(z) - strx, ey(z) - stry, 0
- IF ef(z) = 5 THEN
- ef(z) = 0: a(ex(z), ey(z)) = 0
- IF OS(ex(z), ey(z)) = 1 THEN ReDrawObj ex(z), ey(z), ex(z) - strx, ey(z) - stry, 0
- END IF
- END IF
-NEXT
 LaserMan
 IF passerstate = 1 THEN
  IF TIMER - passertime2! < 4 THEN
@@ -503,18 +491,9 @@ END IF
 END SUB
 
 SUB DoDie ()
-dieta:
-dx = INT(RND * 6) + strx + 4
-dy = INT(RND * 3) + stry + 4
-  IF a(dx, dy) <> 0 OR a(dx, dy) = 100 THEN EXIT SUB
-  Expman 1, dx, dy
- 
-' ELSE
-' GOTO dieta
-' END IF
-'ELSE
-'GOTO dieta
-'END IF
+	dx = INT(RND * 6) + strx + 4
+	dy = INT(RND * 3) + stry + 4
+	Expman 1, dx, dy
 END SUB
 
 SUB DoForces ()
@@ -729,22 +708,14 @@ SUB Entity.SetState (e AS TEntity, stateNum AS INTEGER)
 END SUB
 
 SUB Expman (n, ttx, tty)
-SELECT CASE n
-CASE 1
-FOR z = 1 TO 15
-IF ef(z) = 0 THEN GOTO makeexp
-NEXT
-a(ttx, tty) = 0
-EXIT SUB
-makeexp:
-a(ttx, tty) = 100
-ex(z) = ttx: ey(z) = tty
-ef(z) = 1
-et(z) = 0
-CASE 2
-DrawGfx 100
-END SELECT
+IF n = 1 THEN
+  a% = SpawnEntity(ttx, tty, 100)
+  IF a% <> -1 THEN
+	Entity.SetState entities(a%), STATE.EXPLODE1
+  END IF
 
+  EXIT SUB
+END IF
 END SUB
 
 SUB GambleHolder (n)
@@ -1157,20 +1128,13 @@ END IF
 
 IF UCASE$(a$) = "C" THEN Console
 IF a$ = CHR$(13) THEN GOSUB systat
-'IF Upforce <> 0 AND TIMER - jt! >= .1 THEN UMan
 
 'IF Upforce = 0 THEN IF ChkAhead(x, y + 1) = 0 AND TIMER - jt! >= .1 THEN dn 1
-
-' Gravity
-'IF Upforce = 0 THEN IF ChkAhead(x, y + 1) = 0 THEN Player.Down entities(playerIdx), 1
-
 'IF Upforce <> 0 THEN IF a(x, y + 1) = 25 THEN Upforce = 2
+
 'IF a(x, y + 1) = 11 THEN Player.Left entities(playerIdx), 1
 'IF a(x, y + 1) = 12 THEN Player.Rt entities(playerIdx), 1
 'IF y + 1 = 55 THEN Die 1
-
-' Landing
-'IF UpForce = 0 THEN IF ChkAhead(x, y + 1) = 1 AND SonicMode = 4 THEN SonicMode = 1: s3 = 0: DrawGfx -1
 
 IF tempa = 2 OR tempa = 3 THEN
  IF so <> 2 THEN IF TIMER - brt! >= 1 THEN brt! = TIMER: Breath = Breath - 1
@@ -1178,18 +1142,17 @@ END IF
 
 Player.Update entities(playerIdx)
 
-FOR i = 0 TO 64
+FOR i = 1 TO 128
 	 IF (entities(i).flags AND 1) = 1 THEN
 		UpdateEntity entities(i)
 	 END IF
 NEXT
 
 IF tempa = 26 OR tempa = 27 THEN GambleHolder tempa
-Expman 2, 0, 0
 AnmMan
 SonicMan
 PlatDo 2
-enemy.mgr
+
 IF force$ <> "" AND TIMER - forcet! > .1 THEN DoForces
 IF youaredead THEN IF TIMER - DieTimer! < 8 THEN DoDie
 IF youaredead AND TIMER - DieTimer! > 8 THEN Die 2: DieTimer! = 0: force$ = ""
@@ -1718,17 +1681,6 @@ CASE 71
 
 CASE 72:
  CALL PUT3(ttx, tty, frame.p1)
-CASE 100
-FOR z = 1 TO 15
- IF ef(z) <> 0 THEN
- IF ex(z) = tx AND ey(z) = ty THEN
- IF ef(z) = 1 THEN CALL PUT3(ttx, tty, FRAME.E5)
- IF ef(z) = 2 THEN CALL PUT3(ttx, tty, FRAME.E4)
- IF ef(z) = 3 THEN CALL PUT3(ttx, tty, FRAME.E2)
- IF ef(z) = 4 THEN CALL PUT3(ttx, tty, FRAME.E1)
- END IF
- END IF
-NEXT
 CASE 103
 SELECT CASE passerframe
  CASE 0: PUT (ttx * 24, tty * 24 + 12), PASSER1%, PSET
@@ -1845,7 +1797,7 @@ SpawnEntity% = -1
 
 DIM i AS INTEGER
 
-FOR i = 1 TO 64
+FOR i = 1 TO 128
 		
 		IF (entities(i).flags AND 1) = 0 THEN
 				entities(i).x = x
@@ -1900,6 +1852,7 @@ CASE 3:
 	self.x = self.x + 1
 	self.direction = 4
  END IF
+
  Entity.AddToTile self, Map(self.x, self.y)
 
  IF self.x = nextX THEN
@@ -1919,6 +1872,11 @@ CASE 4:
 	ELSE
 		Entity.SetState self, STATE.MOSQU.ATTACK4
 	END IF
+
+CASE 999:
+	' Delete entity
+	Entity.RemoveFromTile self, Map(self.x, self.y)
+	self.flags = 0
 END SELECT
 
 END SUB
