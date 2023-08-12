@@ -1,3 +1,4 @@
+DECLARE SUB Player.SetMode (self AS ANY, mode%)
 DECLARE SUB StateFunc (self AS ANY)
 DECLARE SUB Player.Update (self AS ANY)
 DECLARE SUB Entity.AddToTile (e AS ANY, tile AS ANY)
@@ -520,9 +521,9 @@ SUB DoForces ()
 forcet! = TIMER
 forcep = forcep + 1
 IF forcep > LEN(force$) AND force$ <> "X" THEN force$ = "": EXIT SUB
-IF MID$(force$, forcep, 1) = "U" THEN Player.Up entities(playerIdx), 1
-IF MID$(force$, forcep, 1) = "L" THEN Player.Left entities(playerIdx), 1
-IF MID$(force$, forcep, 1) = "R" THEN Player.Rt entities(playerIdx), 1
+'IF MID$(force$, forcep, 1) = "U" THEN Player.Up entities(playerIdx), 1
+'IF MID$(force$, forcep, 1) = "L" THEN Player.Left entities(playerIdx), 1
+'IF MID$(force$, forcep, 1) = "R" THEN Player.Rt entities(playerIdx), 1
 
 END SUB
 
@@ -841,9 +842,9 @@ IF spx1(z) = tx AND spy1(z) = ty THEN GOTO hs17
 NEXT
 EXIT SUB
 hs17:
-IF tx > x THEN Player.Rt entities(playerIdx), 2
-IF tx < x THEN Player.Left entities(playerIdx), 2
-IF ty > y THEN Player.Down entities(playerIdx), 2
+'IF tx > x THEN Player.Rt entities(playerIdx), 2
+'IF tx < x THEN Player.Left entities(playerIdx), 2
+'IF ty > y THEN Player.Down entities(playerIdx), 2
 Player.Up entities(playerIdx), 2
 UpForce = 10
 s1s(z) = 1: s1t!(z) = TIMER: DrawGfx 17
@@ -854,9 +855,9 @@ IF spx2(z) = tx AND spy2(z) = ty THEN GOTO hs18
 NEXT
 EXIT SUB
 hs18:
-IF tx > x THEN Player.Rt entities(playerIdx), 2
-IF tx < x THEN Player.Left entities(playerIdx), 2
-IF ty > y THEN Player.Down entities(playerIdx), 2
+'IF tx > x THEN Player.Rt entities(playerIdx), 2
+'IF tx < x THEN Player.Left entities(playerIdx), 2
+'IF ty > y THEN Player.Down entities(playerIdx), 2
 Player.Up entities(playerIdx), 2
 UpForce = 6
 s2s(z) = 1: s2t!(z) = TIMER: DrawGfx 18
@@ -1078,20 +1079,31 @@ rm(bcnt(2)).t = INT(TIMER)
 a(tx, ty) = tn
 
 CASE 71              'Mosquitoes
-a(tx, ty) = tn
 bcnt(1) = bcnt(1) + 1
 mosqu(1).last = mosqu(1).last + 1
 
-GET #1, , temp: r% = r% + 2
+GET #1, , temp
 
-GET #1, , mosqu(bcnt(1)).x1: r% = r% + 2
-GET #1, , mosqu(bcnt(1)).y1: r% = r% + 2
-GET #1, , mosqu(bcnt(1)).x2: r% = r% + 2
-GET #1, , mosqu(bcnt(1)).y2: r% = r% + 2
+GET #1, , mosqu(bcnt(1)).x1
+GET #1, , mosqu(bcnt(1)).y1
+GET #1, , mosqu(bcnt(1)).x2
+GET #1, , mosqu(bcnt(1)).y2
 
-'INPUT #1, mosqu(bcnt(1)).x1, mosqu(bcnt(1)).y1, mosqu(bcnt(1)).x2, mosqu(bcnt(1)).y2
-IF tx > mosqu(bcnt(1)).x2 THEN mosqu(bcnt(1)).f1 = 1 ELSE mosqu(bcnt(1)).f1 = 2
-mosqu(bcnt(1)).x = mosqu(bcnt(1)).x1: mosqu(bcnt(1)).y = mosqu(bcnt(1)).y1: mosqu(bcnt(1)).STATE = 1
+	a = SpawnEntity(tx, ty, 72)
+	IF a <> -1 THEN
+		Entity.SetState entities(a), STATE.MOSQU.IDLE
+		entities(a).idx = bcnt(1)
+	END IF
+
+IF tx > mosqu(bcnt(1)).x2 THEN
+	mosqu(bcnt(1)).f1 = 1
+ELSE
+	mosqu(bcnt(1)).f1 = 2
+END IF
+
+mosqu(bcnt(1)).x = mosqu(bcnt(1)).x1
+mosqu(bcnt(1)).y = mosqu(bcnt(1)).y1
+mosqu(bcnt(1)).STATE = 1
 mosqu(bcnt(1)).step = 2
 
 
@@ -1099,7 +1111,9 @@ CASE 72  ' BPOT
 	a = SpawnEntity(tx, ty, 72)
 	IF a <> -1 THEN Entity.SetState entities(a), STATE.BPOT_IDLE
 
-bcnt(3) = bcnt(3) + 1: bpot(bcnt(3)).x = tx: bpot(bcnt(3)).y = ty
+bcnt(3) = bcnt(3) + 1
+bpot(bcnt(3)).x = tx
+bpot(bcnt(3)).y = ty
 bpot(bcnt(3)).STATE = 1
 bpot(bcnt(3)).f1 = 1: bpot(bcnt(3)).f2 = 0
 bpot(bcnt(3)).t = INT(TIMER)
@@ -1329,7 +1343,7 @@ END IF
 mp3:
 IF TIMER - m(z).t < .5 THEN m(z).Mved = 0
 IF TIMER - m(z).t >= .5 THEN
- IF a(m(z).x, m(z).y - 1) = -1 THEN Player.Left entities(playerIdx), 1
+ 'IF a(m(z).x, m(z).y - 1) = -1 THEN Player.Left entities(playerIdx), 1
  m(z).x = m(z).x - 1
  a(m(z).x + 1, m(z).y) = 0: a(m(z).x, m(z).y) = 13
  m(z).t = TIMER
@@ -1342,7 +1356,7 @@ END IF
 mp4:
 IF TIMER - m(z).t < .5 THEN m(z).Mved = 0
 IF TIMER - m(z).t >= .5 THEN
- IF a(m(z).x, m(z).y - 1) = -1 THEN Player.Rt entities(playerIdx), 1
+ 'IF a(m(z).x, m(z).y - 1) = -1 THEN Player.Rt entities(playerIdx), 1
  m(z).x = m(z).x + 1
  a(m(z).x - 1, m(z).y) = 0: a(m(z).x, m(z).y) = 13
  m(z).t = TIMER
@@ -1399,64 +1413,30 @@ IF UpForce = 0 AND ChkAhead(self.x, self.y + 1) = 1 THEN
 	sfx 1
 	UpForce = 4
 
-	SonicMode = 4    ' Spin
-
+	Player.SetMode self, 4
 	StartForce = 3
-
-	Entity.SetState self, STATE.PLAYER.SPIN1
-
 	jt! = TIMER
 END IF
 
 END SUB
 
-SUB Player.Left (self AS TEntity, n)
-IF self.x - 1 = -1 THEN EXIT SUB
-IF n <> 2 THEN IF ChkAhead(self.x - 1, self.y) = 1 THEN EXIT SUB
+SUB Player.SetMode (self AS TEntity, mode%)
 
-Entity.RemoveFromTile self, Map(self.x, self.y)
-self.x = self.x - 1
-Entity.AddToTile self, Map(self.x, self.y)
-
-IF strx = 0 THEN sx = sx - 1: GOTO dnr4
-IF strx = 156 AND sx >= 6 THEN sx = sx - 1: GOTO dnr4
-strx = strx - 1
-dnr4:
-'IF tempa = 100 THEN tempa = 0
-'a(x + 1, y) = tempa
-'tempa = a(x, y)
-'IF a(x, y) <> 17 OR a(x, y) <> 18 THEN a(x, y) = -1
-sti! = TIMER
-IF SonicMode <> 4 THEN SonicMode = 1
-IF SonicMode = 1 THEN
-		SonicDir = 3
-		self.direction = 3
-END IF
-
-END SUB
-
-SUB Player.Rt (self AS TEntity, n)
-IF self.x + 1 = 169 THEN EXIT SUB
-IF n <> 2 THEN IF ChkAhead(self.x + 1, self.y) = 1 THEN EXIT SUB
-
-Entity.RemoveFromTile self, Map(self.x, self.y)
-self.x = self.x + 1
-Entity.AddToTile self, Map(self.x, self.y)
-
-IF strx = 0 AND sx < 6 THEN sx = sx + 1: GOTO dnr2
-IF strx = 156 THEN sx = sx + 1: GOTO dnr2
-strx = strx + 1
-dnr2:
 sti! = TIMER
 
-IF SonicMode <> 4 THEN SonicMode = 1
-IF SonicMode = 1 THEN
-		SonicDir = 4
-		self.direction = 4
-END IF
+IF SonicMode = mode% THEN EXIT SUB
 
-Entity.SetState self, STATE.PLAYER.RUN1
-
+SonicMode = mode%
+SELECT CASE SonicMode
+CASE 1: 'Running
+	Entity.SetState self, STATE.PLAYER.RUN1
+CASE 2: 'Waiting
+	Entity.SetState self, STATE.PLAYER.WAIT1
+CASE 3: ' Standing
+	Entity.SetState self, STATE.PLAYER.STAND1
+CASE 4: ' Spinning
+	Entity.SetState self, STATE.PLAYER.SPIN1
+END SELECT
 END SUB
 
 SUB Player.Touch (self AS TEntity)
@@ -1532,57 +1512,63 @@ IF PlayerInAir THEN
 		Entity.AddToTile self, Map(self.x, self.y)
 	ELSE
 		IF deltaY% > 0 THEN
-			PlayerInAir = 0
+			 PlayerInAir = 0
 		END IF
-	END IF
-
-	IF deltaX% <> 0 THEN
-		IF ChkAhead(self.x + deltaX%, self.y) = 0 THEN
-			Entity.RemoveFromTile self, Map(self.x, self.y)
-			self.x = self.x + deltaX%
-			Entity.AddToTile self, Map(self.x, self.y)
-		END IF
-
-		IF deltaX% > 0 THEN self.direction = 4
-		IF deltaX% < 0 THEN self.direction = 3
-	END IF
-
-	IF PlayerInAir THEN
-
 	END IF
 ELSE
 END IF
 
+IF deltaX% <> 0 THEN
+	IF ChkAhead(self.x + deltaX%, self.y) = 0 THEN
+		Entity.RemoveFromTile self, Map(self.x, self.y)
+		self.x = self.x + deltaX%
+		Entity.AddToTile self, Map(self.x, self.y)
+	END IF
+
+	IF deltaX% > 0 THEN self.direction = 4
+	IF deltaX% < 0 THEN self.direction = 3
+END IF
 
 strx = self.x - 6
 IF strx < 0 THEN strx = 0
 stry = self.y - 4
 IF stry < 0 THEN stry = 0
 
-IF PlayerInAir = 0 THEN
-	IF PlayerWasInAir% = 1 THEN
-		SonicMode = 1
-		Entity.SetState self, STATE.PLAYER.STAND1
-		IF deltaX% <> 0 THEN Entity.SetState self, STATE.PLAYER.RUN1
+' SonicMode
+' 1 = Running
+' 2 = Waiting
+' 3 = Standing
+' 4 = Spinning (in air, usually)
+
+IF SonicMode = 1 THEN
+	IF deltaX% = 0 THEN
+		' If we're not in the air and not running, set to standing
+		IF PlayerInAir = 0 THEN Player.SetMode self, 3
 	END IF
-ELSE
 END IF
 
-IF SonicMode <> 4 THEN
+IF SonicMode = 2 THEN
 	IF deltaX% <> 0 THEN
-		' Switch to running?
-		IF SonicMode <> 1 THEN
-			SonicMode = 1
-			Entity.SetState self, STATE.PLAYER.RUN1
-		END IF
-	ELSE
-		IF PlayerInAir = 0 THEN
+		Player.SetMode self, 1
+	END IF
+END IF
 
-			' Switch to standing
-			IF SonicMode <> 3 THEN
-				SonicMode = 3
-				Entity.SetState self, STATE.PLAYER.WAIT1
-			END IF
+IF SonicMode = 3 THEN
+	IF PlayerInAir = 1 OR deltaX% <> 0 THEN
+		Player.SetMode self, 1
+	ELSE
+		IF TIMER - sti! > 1 THEN
+			Player.SetMode self, 2
+		END IF
+	END IF
+END IF
+
+IF SonicMode = 4 THEN
+	IF PlayerInAir = 0 THEN
+		IF deltaX% <> 0 THEN
+			Player.SetMode self, 1
+		ELSE
+			Player.SetMode self, 3
 		END IF
 	END IF
 END IF
@@ -1813,7 +1799,7 @@ IF gothit! <> 0 AND TIMER - gothit! < 3 THEN
 ELSE
 gothit! = 0: ghs = 0
 END IF
-
+EXIT SUB
 IF SonicMode = 1 THEN
  ' Go to Standing
  IF TIMER - sti! >= 1 THEN
@@ -1879,6 +1865,8 @@ NEXT i
 END FUNCTION
 
 SUB StateFunc (self AS TEntity)
+DIM i, nextX, nextY AS INTEGER
+
 SELECT CASE Res.States(self.stateNum).func
 CASE 1:
  IF ChkAhead(self.x, self.y - 1) = 0 THEN
@@ -1892,7 +1880,45 @@ CASE 2:
   self.y = self.y + 1
   Entity.AddToTile self, Map(self.x, self.y)
  END IF
+CASE 3:
+ ' Mosquito Patrol
 
+ i = self.idx
+
+ IF mosqu(i).step = 2 THEN
+  nextX = mosqu(i).x2
+ ELSE
+  nextX = mosqu(i).x1
+ END IF
+
+ Entity.RemoveFromTile self, Map(self.x, self.y)
+
+ IF nextX < self.x THEN
+	self.x = self.x - 1
+	self.direction = 3
+ ELSE
+	self.x = self.x + 1
+	self.direction = 4
+ END IF
+ Entity.AddToTile self, Map(self.x, self.y)
+
+ IF self.x = nextX THEN
+	IF mosqu(i).step = 2 THEN mosqu(i).step = 1 ELSE mosqu(i).step = 2
+ END IF
+
+ IF self.x = entities(playerIdx).x AND self.y - entities(playerIdx).y < 10 THEN
+	Entity.SetState self, STATE.MOSQU.ATTACK1
+ END IF
+
+CASE 4:
+	' Mosquito moving down
+	IF ChkAhead(self.x, self.y + 1) = 0 THEN
+		Entity.RemoveFromTile self, Map(self.x, self.y)
+		self.y = self.y + 1
+		Entity.AddToTile self, Map(self.x, self.y)
+	ELSE
+		Entity.SetState self, STATE.MOSQU.ATTACK4
+	END IF
 END SELECT
 
 END SUB

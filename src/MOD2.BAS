@@ -33,7 +33,7 @@ REM $STATIC
 SUB enemy.mgr ()
 SELECT CASE stage
 CASE 1
-enemy.mgr1
+'enemy.mgr1
 END SELECT
 
 END SUB
@@ -41,70 +41,6 @@ END SUB
 SUB enemy.mgr1 ()
 tmve = 0
 'get rid of that EXIT SUB for the next enemy
-'******************************************************************
-FOR z = 1 TO mosqu(1).last
- IF mosqu(z).state = 1 THEN
-  IF TIMER - mosqu(z).t > .5 THEN
-   IF mosqu(z).f1 = 1 THEN
-    IF mosqu(z).step = 2 THEN
-     IF mosqu(z).x - 1 < mosqu(z).x2 THEN mosqu(z).f1 = 2: mosqu(z).step = 1: GOTO 10
-    ELSE
-     IF mosqu(z).x - 1 < mosqu(z).x1 THEN mosqu(z).f1 = 2: mosqu(z).step = 2: GOTO 10
-    END IF
-    mosqu(z).x = mosqu(z).x - 1: tmve = 1
-    a(mosqu(z).x, mosqu(z).y) = 71
-    a(mosqu(z).x + 1, mosqu(z).y) = 0
-   ELSE
-    IF mosqu(z).step = 2 THEN
-     IF mosqu(z).x + 1 > mosqu(z).x2 THEN mosqu(z).f1 = 1: mosqu(z).step = 1: GOTO 10
-    ELSE
-     IF mosqu(z).x + 1 > mosqu(z).x1 THEN mosqu(z).f1 = 1: mosqu(z).step = 2: GOTO 10
-    END IF
-    mosqu(z).x = mosqu(z).x + 1: tmve = 1
-    a(mosqu(z).x, mosqu(z).y) = 71
-    a(mosqu(z).x - 1, mosqu(z).y) = 0
-
-   END IF
-  mosqu(z).t = TIMER
-10
-  END IF
- END IF
- '**************************
- IF x = mosqu(z).x AND y - mosqu(z).y < 10 AND y - mosqu(z).y > 0 AND mosqu(z).state = 1 THEN
-  mosqu(z).state = 2: mosqu(z).f1 = 1: mosqu(z).t = TIMER: tmve = 1: GOTO 20
- END IF
- IF mosqu(z).state = 2 THEN
-  IF TIMER - mosqu(z).t > 1 THEN mosqu(z).state = 3: mosqu(z).f2 = 1: mosqu(z).t = TIMER: tmve = 1
-  GOTO 20
- END IF
- '***************************
- IF mosqu(z).state = 3 THEN
-  IF TIMER - mosqu(z).t > 1 THEN
-   IF mosqu(z).f2 = 1 THEN
-    mosqu(z).f2 = 2: mosqu(z).t = TIMER: tmve = 1: GOTO 20
-   ELSE
-    mosqu(z).state = 4: tmve = 1: GOTO 20
-   END IF
-  END IF
- END IF
- IF mosqu(z).state = 4 THEN
-  IF TIMER - mosqu(z).t > .7 THEN
-   IF a(mosqu(z).x, mosqu(z).y + 1) = 1 THEN mosqu(z).state = 5: tmve = 1: GOTO 20
-   mosqu(z).y = mosqu(z).y + 1: tmve = 1
-   mosqu(z).t = TIMER: mosqu(z).f2 = 2
-   a(mosqu(z).x, mosqu(z).y) = 71
-   a(mosqu(z).x, mosqu(z).y - 1) = 0
-
-  END IF
- END IF
-20
- IF tmve = 1 THEN
-  temp1 = mosqu(z).x: temp2 = mosqu(z).y
-  ReDrawAround temp1, temp2
-  IF OS(temp1, temp2) = 1 THEN ReDrawObj temp1, temp2, temp1 - strx, temp2 - stry, z
- END IF
-NEXT
-tmve = 0
 '*****************************************************
 FOR z = 1 TO bcnt(2)
  IF rm(z).state = 1 THEN

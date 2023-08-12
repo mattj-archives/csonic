@@ -158,6 +158,10 @@ if __name__ == "__main__":
     sprite_state("PLAYER.WAIT1", "SWAIT2", "SWAIT2")
     sprite_state("PLAYER.SPIN1", "SPIN1", "SPIN1")
     sprite_state("PLAYER.SPIN2", "SPIN2", "SPIN2")
+    sprite_state("MOSQU.NORMAL", "MOSQU1", "MOSQU2")
+    sprite_state("MOSQU.ATTACK1", "MOSQU3", "MOSQU3")
+    sprite_state("MOSQU.ATTACK2", "MOSQU4", "MOSQU4")
+
     sprite_state("BPOT1", "P1", "P1")
 
     for i in range(1, 7):
@@ -170,8 +174,9 @@ if __name__ == "__main__":
     state("PLAYER.STAND1", 30, "PLAYER.STAND1", "PLAYER.STAND")
     state("PLAYER.WAIT1", 30/5, "PLAYER.WAIT2", "PLAYER.WAIT0")
     state("PLAYER.WAIT2", 30/5, "PLAYER.WAIT1", "PLAYER.WAIT1")
-    state("PLAYER.SPIN1", 30/5, "PLAYER.SPIN2", "PLAYER.SPIN1")
-    state("PLAYER.SPIN2", 30/5, "PLAYER.SPIN1", "PLAYER.SPIN2")
+    state("PLAYER.SPIN1", 2, "PLAYER.SPIN2", "PLAYER.SPIN1")
+    state("PLAYER.SPIN2", 2, "PLAYER.SPIN1", "PLAYER.SPIN2")
+
     state("BPOT_IDLE", 1, "BPOT1", "BPOT1", 0)
     state("BPOT1", 10, "BPOT2", "BPOT1", 1)
     state("BPOT2", 10, "BPOT3", "BPOT1", 1)
@@ -179,6 +184,16 @@ if __name__ == "__main__":
     state("BPOT4", 10, "BPOT5", "BPOT1", 2)
     state("BPOT5", 10, "BPOT6", "BPOT1", 2)
     state("BPOT6", 10, "BPOT1", "BPOT1", 2)
+
+    state("MOSQU.IDLE", 1, "MOSQU.PATROL", "MOSQU.NORMAL", 0)
+    state("MOSQU.PATROL", 10, "MOSQU.PATROL", "MOSQU.NORMAL", 3)
+    state("MOSQU.ATTACK1", 10, "MOSQU.ATTACK2", "MOSQU.ATTACK1", 0) # First rotation
+    state("MOSQU.ATTACK2", 10, "MOSQU.ATTACK3", "MOSQU.ATTACK2", 0) # Second rotation
+    state("MOSQU.ATTACK3", 10, "MOSQU.ATTACK3", "MOSQU.ATTACK2", 4) # Moving down
+    state("MOSQU.ATTACK4", 60, "MOSQU.ATTACK4", "MOSQU.ATTACK2") # DONE
+
+
+
 
     state("RING1", 1, "RING2", "RING1")
     state("RING2", 1, "RING3", "RING2")
