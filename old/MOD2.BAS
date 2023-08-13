@@ -1,0 +1,30 @@
+DEFINT A-Z
+DECLARE SUB ReDrawAround (tx, ty)
+DECLARE FUNCTION OS (tx, ty)
+DECLARE SUB ReDrawObj (tx, ty, ttx, tty, n)
+DECLARE SUB DrawGfx (n)
+DECLARE SUB enemy.mgr1 ()
+'Cool Sonic ver 1.0 MODULE 2
+' $DYNAMIC
+TYPE badguy
+x AS INTEGER
+y AS INTEGER
+x1 AS INTEGER
+x2 AS INTEGER
+y1 AS INTEGER
+y2 AS INTEGER
+t AS LONG
+f1 AS INTEGER
+f2 AS INTEGER
+f3 AS INTEGER
+state AS INTEGER
+last AS INTEGER
+num AS INTEGER
+step AS INTEGER
+END TYPE
+
+COMMON SHARED bcnt()
+COMMON SHARED bpot() AS badguy, mosqu() AS badguy, rm() AS badguy
+COMMON SHARED stage, SonicDir
+COMMON SHARED act, strx, stry
+
