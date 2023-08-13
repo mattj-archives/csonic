@@ -169,6 +169,9 @@ if __name__ == "__main__":
     sprite_state("MOSQU.ATTACK1", "MOSQU3", "MOSQU3")
     sprite_state("MOSQU.ATTACK2", "MOSQU4", "MOSQU4")
 
+    sprite_state("RM.WAIT", "RM1", "RM1")
+    sprite_state("RM.WALK", "RM3", "RM2")
+
     sprite_state("BPOT1", "P1", "P1")
 
     sprite_state("BOX.RING", "BOX.RNG", "BOX.RNG")
@@ -215,6 +218,10 @@ if __name__ == "__main__":
     state("MOSQU.ATTACK2", 10, "MOSQU.ATTACK3", "MOSQU.ATTACK2", 0) # Second rotation
     state("MOSQU.ATTACK3", 10, "MOSQU.ATTACK3", "MOSQU.ATTACK2", 4) # Moving down
     state("MOSQU.ATTACK4", 60, "MOSQU.ATTACK4", "MOSQU.ATTACK2") # DONE
+
+    state("RM.IDLE", 1, "RM.WAIT", "RM.WAIT")
+    state("RM.WAIT", 10, "RM.WAIT", "RM.WAIT", 5)
+    state("RM.WALK", 10, "RM.WALK", "RM.WALK", 5)
 
     state("RING1", 2, "RING2", "RING1")
     state("RING2", 2, "RING3", "RING2")

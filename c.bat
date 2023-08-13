@@ -1,4 +1,5 @@
-cd src
+cd src\asm
 call kbd
 cd ..
-c:\vbdos\bin\vbdos.exe src\csonic.mak /l src\kbd.qlb
+cd ..
+c:\vbdos\bin\vbdos.exe src\csonic.mak /l src\asm\kbd.qlb
