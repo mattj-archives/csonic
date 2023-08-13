@@ -174,6 +174,12 @@ if __name__ == "__main__":
     sprite_state("BOX.RING", "BOX.RNG", "BOX.RNG")
     sprite_state("BOX.STATIC", "BOX.ST", "BOX.ST")
 
+    sprite_state("SPRING.YELLOW1", "SPRINGL1", "SPRINGL1")
+    sprite_state("SPRING.YELLOW2", "SPRINGL2", "SPRINGL2")
+
+    sprite_state("SPRING.RED1", "SPRINGR1", "SPRINGR1")
+    sprite_state("SPRING.RED2", "SPRINGR2", "SPRINGR2")
+
     for i in range(1, 7):
         sprite_state(f"RING{i}", f"RING{i}", f"RING{i}")
 
@@ -186,11 +192,11 @@ if __name__ == "__main__":
     state("PLAYER.WAIT2", 30/5, "PLAYER.WAIT1", "PLAYER.WAIT1")
     state("PLAYER.SPIN1", 2, "PLAYER.SPIN2", "PLAYER.SPIN1")
     state("PLAYER.SPIN2", 2, "PLAYER.SPIN1", "PLAYER.SPIN2")
-    state("EXPLODE1", 40, "EXPLODE2", "EXPLODE5")
-    state("EXPLODE2", 40, "EXPLODE3", "EXPLODE4")
-    state("EXPLODE3", 40, "EXPLODE4", "EXPLODE3")
-    state("EXPLODE4", 40, "EXPLODE5", "EXPLODE2")
-    state("EXPLODE5", 40, "EXPLODE1", "EXPLODE1", 999)
+    state("EXPLODE1", 4, "EXPLODE2", "EXPLODE5")
+    state("EXPLODE2", 4, "EXPLODE3", "EXPLODE4")
+    state("EXPLODE3", 4, "EXPLODE4", "EXPLODE3")
+    state("EXPLODE4", 4, "EXPLODE5", "EXPLODE2")
+    state("EXPLODE5", 4, "EXPLODE1", "EXPLODE1", 999)
 
     state("BOX.RING1", 20, "BOX.RING2", "BOX.RING")
     state("BOX.RING2", 4, "BOX.RING1", "BOX.STATIC")
@@ -223,6 +229,12 @@ if __name__ == "__main__":
     state("CHILI4", 2, "CHILI5", "CHILI4")
     state("CHILI5", 2, "CHILI6", "CHILI5")
     state("CHILI6", 2, "CHILI1", "CHILI6")
+
+    state("SPRING1.IDLE", 30, "SPRING1.IDLE", "SPRING.YELLOW1")
+    state("SPRING1.USE", 10, "SPRING1.IDLE", "SPRING.YELLOW2")
+
+    state("SPRING2.IDLE", 30, "SPRING2.IDLE", "SPRING.RED1")
+    state("SPRING2.USE", 10, "SPRING2.IDLE", "SPRING.RED2")
 
     data = bytearray()
 
