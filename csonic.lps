@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <PathDelim Value="\"/>
+    <Version Value="12"/>
+    <BuildModes Active="Default"/>
+    <Units>
+      <Unit>
+        <Filename Value="csonic.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <CursorPos X="16" Y="10"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\app.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="80"/>
+        <CursorPos X="22" Y="139"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="engine\src\sdl\text.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Text"/>
+        <EditorIndex Value="8"/>
+        <TopLine Value="43"/>
+        <CursorPos X="28" Y="110"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="engine\src\sdl\image.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Image"/>
+        <EditorIndex Value="10"/>
+        <CursorPos Y="33"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="engine\src\GFX.PAS"/>
+        <EditorIndex Value="5"/>
+        <TopLine Value="24"/>
+        <CursorPos X="3" Y="86"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="engine\src\sdl\gfx_sdl.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="GFX_SDL"/>
+        <EditorIndex Value="6"/>
+        <TopLine Value="96"/>
+        <CursorPos X="10" Y="138"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="engine\src\sdl\gfx_sdl_core.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="GFX_SDL_Core"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="3" Y="11"/>
+        <UsageCount Value="20"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="engine\src\sdl\keybrd.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <WindowIndex Value="-1"/>
+        <TopLine Value="-1"/>
+        <CursorPos X="-1" Y="-1"/>
+        <UsageCount Value="20"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="engine\src\sdl\sfx.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <WindowIndex Value="-1"/>
+        <TopLine Value="-1"/>
+        <CursorPos X="-1" Y="-1"/>
+        <UsageCount Value="20"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="engine\src\sdl\sys.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <WindowIndex Value="-1"/>
+        <TopLine Value="-1"/>
+        <CursorPos X="-1" Y="-1"/>
+        <UsageCount Value="20"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="engine\src\sdl\timer.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <WindowIndex Value="-1"/>
+        <TopLine Value="-1"/>
+        <CursorPos X="-1" Y="-1"/>
+        <UsageCount Value="20"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="engine\src\engine.pas"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="94"/>
+        <CursorPos X="3" Y="105"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="engine\external\sdl2\sdlrenderer.inc"/>
+        <EditorIndex Value="9"/>
+        <TopLine Value="171"/>
+        <CursorPos X="10" Y="197"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="engine\external\sdl2\sdlsurface.inc"/>
+        <EditorIndex Value="7"/>
+        <TopLine Value="152"/>
+        <CursorPos X="10" Y="178"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\common.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="4"/>
+        <TopLine Value="10"/>
+        <CursorPos X="17" Y="58"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\entity.pas"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="5"/>
+        <CursorPos X="23" Y="23"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+    </Units>
+    <JumpHistory HistoryIndex="29">
+      <Position>
+        <Filename Value="engine\src\sdl\gfx_sdl.pas"/>
+        <Caret Line="194" TopLine="181"/>
+      </Position>
+      <Position>
+        <Filename Value="engine\src\sdl\gfx_sdl.pas"/>
+        <Caret Line="195" Column="20" TopLine="181"/>
+      </Position>
+      <Position>
+        <Filename Value="engine\src\sdl\gfx_sdl.pas"/>
+      </Position>
+      <Position>
+        <Filename Value="engine\src\sdl\gfx_sdl.pas"/>
+        <Caret Line="41" Column="71"/>
+      </Position>
+      <Position>
+        <Filename Value="engine\src\sdl\gfx_sdl.pas"/>
+        <Caret Line="42" Column="33"/>
+      </Position>
+      <Position>
+        <Filename Value="engine\src\sdl\gfx_sdl.pas"/>
+        <Caret Line="67" Column="74" TopLine="32"/>
+      </Position>
+      <Position>
+        <Filename Value="engine\src\sdl\gfx_sdl.pas"/>
+        <Caret Line="72" Column="43" TopLine="32"/>
+      </Position>
+      <Position>
+        <Filename Value="engine\src\sdl\gfx_sdl.pas"/>
+        <Caret Line="75" Column="42" TopLine="53"/>
+      </Position>
+      <Position>
+        <Filename Value="engine\src\sdl\gfx_sdl.pas"/>
+        <Caret Line="77" Column="86" TopLine="62"/>
+      </Position>
+      <Position>
+        <Filename Value="engine\src\sdl\gfx_sdl.pas"/>
+        <Caret Line="129" Column="59" TopLine="103"/>
+      </Position>
+      <Position>
+        <Filename Value="engine\src\sdl\image.pas"/>
+        <Caret Line="28"/>
+      </Position>
+      <Position>
+        <Filename Value="engine\src\sdl\image.pas"/>
+        <Caret Line="43" Column="48"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="49" Column="5" TopLine="2"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="86" Column="7" TopLine="42"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="92" Column="14" TopLine="44"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="97" Column="19" TopLine="49"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="53" Column="13" TopLine="27"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="61" Column="11" TopLine="46"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="66" Column="39" TopLine="35"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="20" Column="23"/>
+      </Position>
+      <Position>
+        <Filename Value="src\common.pas"/>
+        <Caret Line="57" Column="10" TopLine="9"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="101" Column="20" TopLine="76"/>
+      </Position>
+      <Position>
+        <Filename Value="src\common.pas"/>
+        <Caret Line="46" Column="14" TopLine="10"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="88" Column="72" TopLine="72"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="132" Column="13" TopLine="84"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="143" Column="23" TopLine="100"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="142" Column="24" TopLine="104"/>
+      </Position>
+      <Position>
+        <Filename Value="src\entity.pas"/>
+        <Caret Line="14" Column="22"/>
+      </Position>
+      <Position>
+        <Filename Value="src\entity.pas"/>
+        <Caret Line="19" Column="14"/>
+      </Position>
+      <Position>
+        <Filename Value="src\entity.pas"/>
+        <Caret Line="20" Column="14"/>
+      </Position>
+    </JumpHistory>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes ActiveMode=""/>
+    </RunParams>
+  </ProjectSession>
+</CONFIG>

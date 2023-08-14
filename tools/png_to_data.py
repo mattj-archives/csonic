@@ -148,7 +148,7 @@ if __name__ == "__main__":
     png_to_data()
     print(sprites)
 
-    res_file = open("src/res/CONST.BI", "wt")
+    # res_file = open("src/res/CONST.BI", "wt")
 
     sprite_state("NONE", "", "")
     sprite_state("PLAYER.RUN1", "SL1", "SR1")
@@ -247,7 +247,7 @@ if __name__ == "__main__":
 
     def write_res(s: str):
         print(s)
-        res_file.write(f"{s}\n")
+        #res_file.write(f"{s}\n")
 
     for sprite in sprites_arr:
         print("Sprite...", sprite)
@@ -328,4 +328,4 @@ if __name__ == "__main__":
     print(f"Sprite States: 0 to {len(sprite_states) - 1}")
     print(f"States: 0 to {len(states) - 1}")
 
-    res_file.close()
+    #res_file.close()
