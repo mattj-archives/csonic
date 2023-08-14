@@ -1,2 +1,6 @@
 lib/
 gfx2/
+*.ppu
+backup/
+*.o
+

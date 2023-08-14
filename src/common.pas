@@ -5,8 +5,7 @@ unit common;
 interface
 
 uses
-  Classes, SysUtils;
-
+  Classes, SysUtils, res_enum;
 const
   MAX_ENTITIES = 128;
 
@@ -34,6 +33,7 @@ type
   TTile = record
     entity: PEntity;
     tile: integer;
+    color: integer;
   end;
 
   TSpriteState = record
@@ -42,8 +42,8 @@ type
 
   TEntityState = record
     duration: integer;
-    nextState: integer;
-    spriteState: integer;
+    nextState: entityStates;
+    spriteState: spriteStates;
     func: integer;
   end;
 

@@ -56,6 +56,7 @@
       <Unit>
         <Filename Value="engine\src\sdl\keybrd.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Keybrd"/>
       </Unit>
       <Unit>
         <Filename Value="engine\src\sdl\sfx.pas"/>
@@ -64,6 +65,7 @@
       <Unit>
         <Filename Value="engine\src\sdl\sys.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Sys"/>
       </Unit>
       <Unit>
         <Filename Value="engine\src\sdl\timer.pas"/>
@@ -77,6 +79,10 @@
         <Filename Value="src\entity.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
+      <Unit>
+        <Filename Value="src\res\res.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -87,8 +93,8 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);engine\src\inc"/>
-      <Libraries Value="C:\lazarus\fpc\3.2.2\units\SDL2\"/>
-      <OtherUnitFiles Value="src;engine\src;engine\src\sdl;engine\external\sdl2"/>
+      <Libraries Value="C:\lazarus\fpc\3.2.2\units\SDL2"/>
+      <OtherUnitFiles Value="src;engine\src;engine\src\sdl;engine\external\sdl2;src\res"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

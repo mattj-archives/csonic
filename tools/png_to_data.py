@@ -6,25 +6,6 @@ from os.path import isfile, join
 import PIL.Image
 
 
-class SpriteState:
-
-    def __init__(self, name, left, right) -> None:
-        super().__init__()
-        self.name = name
-        self.left = left
-        self.right = right
-
-
-class State:
-    def __init__(self, name, duration, next_state, sprite_state, func=0) -> None:
-        super().__init__()
-
-        self.name = name
-        self.duration = int(duration)
-        self.next_state = next_state
-        self.sprite_state = sprite_state
-        self.func = func
-
 
 hi = 0xff
 pal = [
@@ -47,14 +28,7 @@ pal = [
     (hi, hi, hi),
 ]
 
-cur_sprite = 0
 
-sprites = {}
-sprites_arr = []
-sprite_states = {}
-sprite_states_arr: [SpriteState] = []
-states = {}
-states_arr: [State] = []
 
 def BSAVE(file_name: str, _bytes: bytearray):
     with open(file_name, "wb") as f:
@@ -131,17 +105,7 @@ def png_to_data():
     # res_file.close()
 
 
-
-def sprite_state(name, left, right):
-    _sprite_state = SpriteState(name, left, right)
-    sprite_states[name] = _sprite_state
-    sprite_states_arr.append(_sprite_state)
-
-
-def state(name, duration, next_state, sprite_state, func=0):
-    _state = State(name, duration, next_state, sprite_state, func=func)
-    states[name] = _state
-    states_arr.append(_state)
+)
 
 
 if __name__ == "__main__":
@@ -149,99 +113,6 @@ if __name__ == "__main__":
     print(sprites)
 
     # res_file = open("src/res/CONST.BI", "wt")
-
-    sprite_state("NONE", "", "")
-    sprite_state("PLAYER.RUN1", "SL1", "SR1")
-    sprite_state("PLAYER.RUN2", "SL2", "SR2")
-    sprite_state("PLAYER.STAND", "SLS", "SRS")
-    sprite_state("PLAYER.WAIT0", "SWAIT1", "SWAIT1")
-    sprite_state("PLAYER.WAIT1", "SWAIT2", "SWAIT2")
-    sprite_state("PLAYER.SPIN1", "SPIN1", "SPIN1")
-    sprite_state("PLAYER.SPIN2", "SPIN2", "SPIN2")
-
-    for i in range(1, 6):
-        sprite_state(f"EXPLODE{i}", f"E{i}", f"E{i}")
-
-    for i in range(1, 7):
-        sprite_state(f"CHILI{i}", f"CHILI{i}", f"CHILI{i}")
-
-    sprite_state("MOSQU.NORMAL", "MOSQU1", "MOSQU2")
-    sprite_state("MOSQU.ATTACK1", "MOSQU3", "MOSQU3")
-    sprite_state("MOSQU.ATTACK2", "MOSQU4", "MOSQU4")
-
-    sprite_state("RM.WAIT", "RM1", "RM1")
-    sprite_state("RM.WALK", "RM3", "RM2")
-
-    sprite_state("BPOT1", "P1", "P1")
-
-    sprite_state("BOX.RING", "BOX.RNG", "BOX.RNG")
-    sprite_state("BOX.STATIC", "BOX.ST", "BOX.ST")
-
-    sprite_state("SPRING.YELLOW1", "SPRINGL1", "SPRINGL1")
-    sprite_state("SPRING.YELLOW2", "SPRINGL2", "SPRINGL2")
-
-    sprite_state("SPRING.RED1", "SPRINGR1", "SPRINGR1")
-    sprite_state("SPRING.RED2", "SPRINGR2", "SPRINGR2")
-
-    for i in range(1, 7):
-        sprite_state(f"RING{i}", f"RING{i}", f"RING{i}")
-
-    state("NONE", 60, "NONE", "NONE")
-
-    state("PLAYER.RUN1", 2, "PLAYER.RUN2", "PLAYER.RUN1")
-    state("PLAYER.RUN2", 2, "PLAYER.RUN1", "PLAYER.RUN2")
-    state("PLAYER.STAND1", 30, "PLAYER.STAND1", "PLAYER.STAND")
-    state("PLAYER.WAIT1", 30/5, "PLAYER.WAIT2", "PLAYER.WAIT0")
-    state("PLAYER.WAIT2", 30/5, "PLAYER.WAIT1", "PLAYER.WAIT1")
-    state("PLAYER.SPIN1", 2, "PLAYER.SPIN2", "PLAYER.SPIN1")
-    state("PLAYER.SPIN2", 2, "PLAYER.SPIN1", "PLAYER.SPIN2")
-    state("EXPLODE1", 4, "EXPLODE2", "EXPLODE5")
-    state("EXPLODE2", 4, "EXPLODE3", "EXPLODE4")
-    state("EXPLODE3", 4, "EXPLODE4", "EXPLODE3")
-    state("EXPLODE4", 4, "EXPLODE5", "EXPLODE2")
-    state("EXPLODE5", 4, "EXPLODE1", "EXPLODE1", 999)
-
-    state("BOX.RING1", 20, "BOX.RING2", "BOX.RING")
-    state("BOX.RING2", 4, "BOX.RING1", "BOX.STATIC")
-
-    state("BPOT_IDLE", 1, "BPOT1", "BPOT1", 0)
-    state("BPOT1", 10, "BPOT2", "BPOT1", 1)
-    state("BPOT2", 10, "BPOT3", "BPOT1", 1)
-    state("BPOT3", 10, "BPOT4", "BPOT1", 1)
-    state("BPOT4", 10, "BPOT5", "BPOT1", 2)
-    state("BPOT5", 10, "BPOT6", "BPOT1", 2)
-    state("BPOT6", 10, "BPOT1", "BPOT1", 2)
-
-    state("MOSQU.IDLE", 1, "MOSQU.PATROL", "MOSQU.NORMAL", 0)
-    state("MOSQU.PATROL", 10, "MOSQU.PATROL", "MOSQU.NORMAL", 3)
-    state("MOSQU.ATTACK1", 10, "MOSQU.ATTACK2", "MOSQU.ATTACK1", 0) # First rotation
-    state("MOSQU.ATTACK2", 10, "MOSQU.ATTACK3", "MOSQU.ATTACK2", 0) # Second rotation
-    state("MOSQU.ATTACK3", 10, "MOSQU.ATTACK3", "MOSQU.ATTACK2", 4) # Moving down
-    state("MOSQU.ATTACK4", 60, "MOSQU.ATTACK4", "MOSQU.ATTACK2") # DONE
-
-    state("RM.IDLE", 1, "RM.WAIT", "RM.WAIT")
-    state("RM.WAIT", 10, "RM.WAIT", "RM.WAIT", 5)
-    state("RM.WALK", 10, "RM.WALK", "RM.WALK", 5)
-
-    state("RING1", 2, "RING2", "RING1")
-    state("RING2", 2, "RING3", "RING2")
-    state("RING3", 2, "RING4", "RING3")
-    state("RING4", 2, "RING5", "RING4")
-    state("RING5", 2, "RING6", "RING5")
-    state("RING6", 2, "RING1", "RING6")
-
-    state("CHILI1", 2, "CHILI2", "CHILI1")
-    state("CHILI2", 2, "CHILI3", "CHILI2")
-    state("CHILI3", 2, "CHILI4", "CHILI3")
-    state("CHILI4", 2, "CHILI5", "CHILI4")
-    state("CHILI5", 2, "CHILI6", "CHILI5")
-    state("CHILI6", 2, "CHILI1", "CHILI6")
-
-    state("SPRING1.IDLE", 30, "SPRING1.IDLE", "SPRING.YELLOW1")
-    state("SPRING1.USE", 10, "SPRING1.IDLE", "SPRING.YELLOW2")
-
-    state("SPRING2.IDLE", 30, "SPRING2.IDLE", "SPRING.RED1")
-    state("SPRING2.USE", 10, "SPRING2.IDLE", "SPRING.RED2")
 
     data = bytearray()
 

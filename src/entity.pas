@@ -18,10 +18,15 @@ begin
       e := @entities[i];
 
       if (e^.flags and 1) = 0 then begin
-        e^.x := x;
-        e^.y := y;
+        e^.x := x * 24;
+        e^.y := y * 24;
         e^.flags := 1;
         e^.entityNum:= i;
+        e^.state = 0;
+        e^.stateFrames:= 60;
+        e^.t:= = entityType;
+        e^.nextTileEntity:= nil;
+        //Entity_AddToTile(
 
         SpawnEntity := e;
         exit;
