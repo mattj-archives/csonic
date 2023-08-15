@@ -173,6 +173,8 @@ begin
 
         1:
           R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[SPRITE_T2]^);
+        4:
+          R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[SPRITE_T2SLOPE]^);
 
       end;
     end;
@@ -203,6 +205,7 @@ var
   destPoint: TVector2;
   deltaX: integer;
 begin
+  Exit;
   deltaX := 0;
 
   destPoint := self^.p[self^.dest];
@@ -261,14 +264,16 @@ begin
   img := Image_Load('gfx3/AFSPIKE.png');
   img2 := Image_Load('gfx3/SRS.png');
 
-  e := SpawnEntity(4 * 24, 4 * 24, -1);
+  map[14 * 168 + 5].tile:=4;
+  map[14 * 168 + 6].tile:=1;
+  e := SpawnEntity(3 * 24, 4 * 24, -1);
   gPlayer.ent := e;
   Entity_SetState(e, STATE_PLAYER_STAND1);
 
   for i := 0 to 1 do
   begin
-    e := SpawnEntity(24 * (6 + i), 14 * 24, 38);
-    Entity_SetState(e, STATE_BOX_RING1);
+    //e := SpawnEntity(24 * (6 + i), 14 * 24, 38);
+    //Entity_SetState(e, STATE_BOX_RING1);
   end;
 
   mp := PEntityMovingPlatform(SpawnEntity(7 * 24, 12 * 24, 13));

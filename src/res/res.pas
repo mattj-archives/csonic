@@ -91,7 +91,8 @@ const
 	SPRITE_T1 = 87;
 	SPRITE_T10 = 88;
 	SPRITE_T2 = 89;
-	SPRITE_WFP = 90;
+	SPRITE_T2SLOPE = 90;
+	SPRITE_WFP = 91;
 const
 sprite_states: array[0..37] of TSpriteState = (
 	(sprites: (0, 0)),

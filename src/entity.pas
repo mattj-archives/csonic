@@ -107,7 +107,7 @@ procedure Entity_GetMoveBy(self: PEntity; deltaX, deltaY: integer;
 var
   delta, adj, adjVector: TVector2;
   this, other: TBoundingBox;
-  tx0, tx1, ty0, ty1, x, y, i: integer;
+  tx0, tx1, ty0, ty1, x, y, i, j, h: integer;
   e: PEntity;
 begin
   resultVector.x := 0;
@@ -151,6 +151,22 @@ begin
           adj.y := adjVector.y;
           Result.hitType := 1;
         end;
+      end;
+
+      if map[y * 168 + x].tile = 4 then begin
+         for i := 0 to 23 do begin
+           h := other.bottom - i;
+           //writeln('h: ', h);
+           if (this.bottom > h) and (this.right >= other.left + i) then
+           begin
+             adjVector.y := h - this.bottom;
+             if abs(adjVector.y) > abs(adj.y) then
+             begin
+               adj.y := adjVector.y;
+               Result.hitType := 1;
+             end;
+           end;
+         end;
       end;
     end;
   end;
