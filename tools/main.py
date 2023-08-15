@@ -27,7 +27,7 @@ class Tool(object):
 
         self.gfx_files: [GFXFile] = []
 
-        self.cur_sprite = 0
+        self.cur_sprite = 1
 
         self.sprites = {}
         self.sprites_arr = []
@@ -88,9 +88,22 @@ class Tool(object):
 
         # self.write_res('type')
 
-
-
         self.write_res('const')
+        self.write_res(f'sprite_states: array[0..{len(self.sprite_states) - 1}] of TSpriteState = (')
+        sprite_state: SpriteState
+        for sprite_state in self.sprite_states_arr:
+            is_last = self.sprite_states_arr.index(sprite_state) == len(self.sprite_states_arr) - 1
+
+            left_name = f"SPRITE_{sprite_state.left}"
+            right_name = f"SPRITE_{sprite_state.right}"
+            if not sprite_state.left:
+                left_name = "0"
+
+            if not sprite_state.right:
+                right_name = "0"
+
+            self.write_res(f"\t(sprites: ({left_name}, {right_name})){[',', ''][is_last]}")
+        self.write_res(');')
 
         self.write_res(f'entity_states: array[0..{len(self.states) - 1}] of TEntityState = (')
         entity_state: State
@@ -113,7 +126,7 @@ class Tool(object):
         self.enumFile.close()
 
     def collect_gfx_files(self, path):
-        num = 0
+        num = 1
         for f in sorted(os.listdir(path)):
             infile = join(path, f)
 
@@ -196,6 +209,8 @@ if __name__ == "__main__":
         sprite_state("SPRING.RED1", "SPRINGR1", "SPRINGR1")
         sprite_state("SPRING.RED2", "SPRINGR2", "SPRINGR2")
 
+        sprite_state("MPLAT", "MPLAT", "MPLAT")
+
         for i in range(1, 7):
             sprite_state(f"RING{i}", f"RING{i}", f"RING{i}")
 
@@ -255,3 +270,5 @@ if __name__ == "__main__":
 
         state("SPRING2.IDLE", 30, "SPRING2.IDLE", "SPRING.RED1")
         state("SPRING2.USE", 10, "SPRING2.IDLE", "SPRING.RED2")
+
+        state("MPLAT", 30, "MPLAT", "MPLAT")

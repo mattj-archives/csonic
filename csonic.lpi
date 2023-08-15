@@ -70,6 +70,7 @@
       <Unit>
         <Filename Value="engine\src\sdl\timer.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Timer"/>
       </Unit>
       <Unit>
         <Filename Value="src\common.pas"/>
@@ -83,6 +84,15 @@
         <Filename Value="src\res\res.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
+      <Unit>
+        <Filename Value="src\player.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Player"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\entity.inc"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -93,7 +103,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);engine\src\inc"/>
-      <Libraries Value="C:\lazarus\fpc\3.2.2\units\SDL2"/>
+      <Libraries Value="C:\lazarus\fpc\3.2.2\units\SDL2\"/>
       <OtherUnitFiles Value="src;engine\src;engine\src\sdl;engine\external\sdl2;src\res"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
