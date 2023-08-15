@@ -54,49 +54,51 @@ end;
 
 procedure LoadGFX;
 var
-  DirInfo: TSearchRec;
   i: integer;
-  f: file;
+  f: TFile;
   numFiles: integer;
   strLen: integer;
   fileName: string;
 begin
-  Assign(f, 'gfxlist.dat');
-  reset(f, 1);
-  BlockRead(f, numFiles, sizeof(integer));
+  File_Open('gfxlist.dat', f);
+
+  File_BlockRead(f, numFiles, sizeof(integer));
   //writeln('Num files: ', numFiles);
 
   for i := 0 to numFiles - 1 do
   begin
-    BlockRead(f, strLen, 1);
-    Seek(f, FilePos(f) - 1);
-    BlockRead(f, filename, strLen + 1);
+    File_BlockRead(f, strLen, 1);
+    File_Seek(f, File_Pos(f) - 1);
+    File_BlockRead(f, filename, strLen + 1);
 
     writeln(i + 1, ' ', fileName);
 
     textures[i + 1] := Image_Load('GFX3/' + fileName + '.png');
   end;
 
-  System.Close(f);
+  File_Close(f);
 end;
+
 
 procedure LoadLevel(fileName: string);
 var
-  f: file;
+  f: TFile;
   x, y, tn, tc: integer;
   p0, p1, p2, p3: integer;
   tile: ^TTile;
   e: PEntity;
 begin
-  Assign(f, fileName);
-  Reset(f, 1);
-  while not EOF(f) do
+  File_Open(fileName, f);
+
+  //Assign(f, fileName);
+  //Reset(f, 1);
+  while not EOF(f._file) do
   begin
 
-    BlockRead(f, x, sizeof(integer));
-    BlockRead(f, y, sizeof(integer));
-    BlockRead(f, tn, sizeof(integer));
-    BlockRead(f, tc, sizeof(integer));
+    File_BlockRead(f, x, sizeof(integer));
+    File_BlockRead(f, y, sizeof(integer));
+    File_BlockRead(f, tn, sizeof(integer));
+    File_BlockRead(f, tc, sizeof(integer));
 
     if (x < 0) or (x >= 168) or (y < 0) or (y >= 54) then continue;
 
@@ -114,10 +116,10 @@ begin
       end;
       13: { Moving Platform }
       begin
-        BlockRead(f, p0, sizeof(integer));
-        BlockRead(f, p1, sizeof(integer));
-        BlockRead(f, p2, sizeof(integer));
-        BlockRead(f, p3, sizeof(integer));
+        File_BlockRead(f, p0, sizeof(integer));
+        File_BlockRead(f, p1, sizeof(integer));
+        File_BlockRead(f, p2, sizeof(integer));
+        File_BlockRead(f, p3, sizeof(integer));
       end;
       17: begin
         e := SpawnEntity(x * 24, y * 24, tn);
@@ -138,18 +140,17 @@ begin
       end;
       71: { Enemy "mosquito" }
       begin
-        BlockRead(f, x, sizeof(integer));
-        BlockRead(f, x, sizeof(integer));
-        BlockRead(f, y, sizeof(integer));
-        BlockRead(f, tn, sizeof(integer));
-        BlockRead(f, tc, sizeof(integer));
+        File_BlockRead(f, x, sizeof(integer));
+        File_BlockRead(f, x, sizeof(integer));
+        File_BlockRead(f, y, sizeof(integer));
+        File_BlockRead(f, tn, sizeof(integer));
+        File_BlockRead(f, tc, sizeof(integer));
       end;
-
     end;
   end;
 
 
-  System.Close(f);
+  File_Close(f);
 end;
 
 procedure DrawMap;
@@ -264,8 +265,8 @@ begin
   img := Image_Load('gfx3/AFSPIKE.png');
   img2 := Image_Load('gfx3/SRS.png');
 
-  map[14 * 168 + 5].tile:=4;
-  map[14 * 168 + 6].tile:=1;
+  map[14 * 168 + 5].tile := 4;
+  map[14 * 168 + 6].tile := 1;
   e := SpawnEntity(3 * 24, 4 * 24, -1);
   gPlayer.ent := e;
   Entity_SetState(e, STATE_PLAYER_STAND1);
