@@ -18,7 +18,8 @@ procedure Player_Update(self: PEntity);
 
 var
   gPlayer: TPlayer;
-
+var
+  playerInAir: boolean;
 implementation
 
 type
@@ -31,7 +32,6 @@ type
     );
 
 var
-  playerInAir: boolean;
   mode: SonicModes;
   modeTime: longint;
 
@@ -237,6 +237,7 @@ begin
 
     //if gPlayer.velY >= 0 then
     //begin
+    // Run the Y sensors, check if feet on ground
     Entity_GetMoveBy(self, 0, 1, resultVector, Result);
 
     if Result.hitType = 0 then

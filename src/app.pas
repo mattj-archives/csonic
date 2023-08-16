@@ -382,6 +382,7 @@ begin
     R_DrawText(0, 0, 'Player: ');
     R_DrawText(42, 0, IntToStr(gPlayer.ent^.x));
     R_DrawText(42, 9, IntToStr(gPlayer.ent^.y));
+    if playerInAir then R_DrawText(0, 18, 'In air');
     for i := 1 to MAX_ENTITIES do
     begin
       if (entities[i].flags and 1) = 0 then continue;
