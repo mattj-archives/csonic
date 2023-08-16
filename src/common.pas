@@ -5,7 +5,7 @@ unit common;
 interface
 
 uses
-  Classes, SysUtils, res_enum;
+  res_enum;
 
 const
   MAX_ENTITIES = 128;

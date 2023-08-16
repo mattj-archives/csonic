@@ -1,19 +1,23 @@
 unit app;
 
 {$mode TP}
-
+{$H+}
 interface
-
 
 
 uses
   Engine, Sys, Event, Text, Image, Timer,
   common, entity, player,
-  GFX_SDL, res, res_enum,
+   res, res_enum,
   Classes, SysUtils
-  {$ifdef fpc}
-  ,SDL2
-  {$endif};
+  {$ifdef SDL2}
+    ,SDL2
+    ,GFX_SDL
+  {$endif}
+  {$ifdef WASM}
+    ,GFX_EXT
+  {$endif}
+  ;
 
 procedure Main;
 
@@ -60,23 +64,28 @@ var
   strLen: integer;
   fileName: string;
 begin
-  File_Open('gfxlist.dat', f);
+  if File_Open('gfxlist.dat', f) then begin
+    ConsoleLog('...');
+    ConsoleLog1('test' + IntToStr(123));
 
-  File_BlockRead(f, numFiles, sizeof(integer));
-  //writeln('Num files: ', numFiles);
+    File_BlockRead(f, numFiles, sizeof(integer));
+    ConsoleLog('Num files: ' + IntToStr(numFiles));
 
-  for i := 0 to numFiles - 1 do
-  begin
-    File_BlockRead(f, strLen, 1);
-    File_Seek(f, File_Pos(f) - 1);
-    File_BlockRead(f, filename, strLen + 1);
+    for i := 0 to numFiles - 1 do
+    begin
+      File_BlockRead(f, strLen, 1);
+      File_Seek(f, File_Pos(f) - 1);
+      File_BlockRead(f, filename, strLen + 1);
 
-    writeln(i + 1, ' ', fileName);
+  //    writeln(i + 1, ' ', fileName);
 
-    textures[i + 1] := Image_Load('GFX3/' + fileName + '.png');
-  end;
+      textures[i + 1] := Image_Load('GFX3/' + fileName + '.png');
+    end;
 
-  File_Close(f);
+    File_Close(f);
+  end else begin
+    ConsoleLog('couldnt open gfxlist.dat');
+   end;
 end;
 
 
@@ -90,11 +99,9 @@ var
 begin
   File_Open(fileName, f);
 
-  //Assign(f, fileName);
-  //Reset(f, 1);
-  while not EOF(f._file) do
+  while not File_EOF(f) do
   begin
-
+    ConsoleLog('read stuff...');
     File_BlockRead(f, x, sizeof(integer));
     File_BlockRead(f, y, sizeof(integer));
     File_BlockRead(f, tn, sizeof(integer));
@@ -106,8 +113,8 @@ begin
     tile := @map[y * 168 + x];
 
     case tn of
-      -1:
-        writeln('player ', x, ' ', y);
+      // -1:
+      //   writeln('player ', x, ' ', y);
       0, 1:
       begin
         //writeln('terrain');
@@ -149,7 +156,7 @@ begin
     end;
   end;
 
-
+    ConsoleLog('close...');
   File_Close(f);
 end;
 
@@ -194,8 +201,8 @@ begin
   { writeln('draw state ', ord(state), ' at ', x, ' ', y); }
   if not Assigned(img) then
   begin
-    writeln('error...', Ord(state), ' ', direction, ' sprite index ',
-      ss^.sprites[direction], ' at ', x, ' ', y);
+    // writeln('error...', Ord(state), ' ', direction, ' sprite index ',
+    //   ss^.sprites[direction], ' at ', x, ' ', y);
   end;
   if Assigned(img) then R_DrawSprite(x, y, img^);
 end;
@@ -238,25 +245,14 @@ begin
   end;
 end;
 
-procedure Main;
+procedure G_Init; alias: 'G_Init';
 var
   img, img2: pimage_t;
   x, i: integer;
   e: PEntity;
   mp: PEntityMovingPlatform;
 begin
-  x := 0;
-
-  {$ifdef fpc}
-  if SDL_Init(SDL_INIT_VIDEO or SDL_INIT_AUDIO) < 0 then
-  begin
-    writeln('SDL_Init failed');
-    Halt;
-  end;
-  {$endif}
-
-  InitDriver;
-  R_Init;
+  ConsoleLog('G_Init');
 
   LoadGFX;
 
@@ -294,9 +290,12 @@ begin
 
   map[0 * 168 + 0].tile := 1;
   map[1 * 168 + 1].tile := 1;
+end;
 
-  while (not shouldQuit) do
-  begin
+procedure G_RunFrame; alias: 'G_RunFrame';
+  var i: integer;
+  e: PEntity;
+begin
 
     Sys_PollEvents;
     Event_ProcessEvents;
@@ -336,6 +335,33 @@ begin
     camera.y := gPlayer.ent^.y - 4 * 24;
     if camera.x < 0 then camera.x := 0;
     if camera.y < 0 then camera.y := 0;
+end;
+
+procedure Main;
+var
+  img, img2: pimage_t;
+  x, i: integer;
+  e: PEntity;
+  mp: PEntityMovingPlatform;
+begin
+  x := 0;
+
+  {$ifdef SDL2}
+  if SDL_Init(SDL_INIT_VIDEO or SDL_INIT_AUDIO) < 0 then
+  begin
+    // writeln('SDL_Init failed');
+    Halt;
+  end;
+  {$endif}
+
+  InitDriver;
+  R_Init;
+
+  G_Init;
+
+  while (not shouldQuit) do
+  begin
+    G_RunFrame;
 
     DrawMap;
 

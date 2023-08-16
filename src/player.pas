@@ -5,7 +5,7 @@ unit Player;
 interface
 
 uses
-  Classes, SysUtils, res, res_enum, common, engine, entity, timer;
+  res, res_enum, common, engine, entity, timer;
 
 type
   TPlayer = record
@@ -59,13 +59,13 @@ procedure Player_Jump(self: PEntity);
 begin
   if gPlayer.velY <> 0 then
   begin
-    writeln('cant jump, vel is ', gPlayer.velY);
+    // writeln('cant jump, vel is ', gPlayer.velY);
     Exit;
 
   end;
   if playerInAir then
   begin
-    writeln('cant jump, player is in air');
+    // writeln('cant jump, player is in air');
     Exit;
   end;
 
@@ -87,7 +87,7 @@ begin
       gPlayer.velY := -12;
 
       explode := SpawnEntity(e^.x, e^.y, 100);
-      writeln('explode at ', e^.x, ' ', e^.y);
+      // writeln('explode at ', e^.x, ' ', e^.y);
       Entity_SetState(explode, entityStates.STATE_EXPLODE1);
 
       e^.flags := 0;
@@ -126,14 +126,14 @@ begin
 
     if e^.t = 17 then
     begin
-      writeln('touch spring');
+      // writeln('touch spring');
       gPlayer.velY := -16;
       Entity_SetState(e, STATE_SPRING1_USE);
     end;
 
     if e^.t = 43 then
     begin
-      writeln('touch ring');
+      // writeln('touch ring');
       e^.flags := 0;
     end;
     if e^.t = 44 then
@@ -244,7 +244,7 @@ begin
       if not playerInAir then
       begin
         playerInAir := True;
-        writeln('player is now in air, ', gPlayer.velY);
+        // writeln('player is now in air, ', gPlayer.velY);
       end;
     end
     else
@@ -261,7 +261,7 @@ begin
       if playerInAir then
       begin
         playerInAir := False;
-        writeln('player is no longer in air');
+        // writeln('player is no longer in air');
       end;
     end;
     //end;

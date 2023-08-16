@@ -13,23 +13,21 @@ program csonic;
 
 
 uses
+  app
     {$ifdef UNIX}
-    cthreads,
-    {$ifdef fpc}
-    classes,
-    {$endif}
-    app;
+    ,cthreads
+      {$ifdef fpc}
+        {$ifndef WASM}
+        ,classes
+        {$endif}
+      {$endif}
     {$endif}
 
   {$ifdef WINDOWS}
-  Windows,
-  classes,
-  app, Image;
+  ,Windows
+  ,Casses
   {$endif}
-
-  {$ifndef fpc}
-  app;
-  {$endif}
+  ;
 
 {$ifdef WINDOWS}
 procedure MoveConsoleWindow;

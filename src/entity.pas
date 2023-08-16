@@ -5,7 +5,7 @@ unit entity;
 interface
 
 uses
-  common, Classes, SysUtils, res, res_enum;
+  common, res, res_enum;
 
 function SpawnEntity(x, y, entityType: integer): PEntity;
 procedure Entity_GetMoveBy(self: PEntity; deltaX, deltaY: integer;
@@ -38,7 +38,7 @@ begin
       e^.nextTileEntity := nil;
       e^.direction := 3;
       //Entity_AddToTile(
-      writeln(' spawn entity ', i, ' type ', entityType);
+      // writeln(' spawn entity ', i, ' type ', entityType);
       SpawnEntity := e;
       exit;
     end;
