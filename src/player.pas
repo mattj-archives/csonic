@@ -145,7 +145,7 @@ end;
 
 procedure Player_Update(self: PEntity);
 var
-  delta: TVector2;
+  delta, origin: TVector2;
   playerWasInAir: boolean;
   Result: THitResult;
   resultVector: TVector2;
@@ -202,6 +202,8 @@ begin
 
     Entity_MoveBy(self, 0, gPlayer.velY, Result);
 
+    gPlayer.groundEntity:=nil;
+
     if Result.hitType = 0 then
     begin
 
@@ -227,7 +229,6 @@ begin
       begin
         playerInAir := True;
       end;
-
     end;
   end
   else
@@ -251,12 +252,12 @@ begin
     begin
       if Result.hitType = 1 then
       begin
-         gPlayer.groundEntity:=nil;
+        gPlayer.groundEntity := nil;
       end;
 
       if Result.hitType = 2 then
       begin
-         gPlayer.groundEntity:=Result.entity;
+        gPlayer.groundEntity := Result.entity;
       end;
       if playerInAir then
       begin
@@ -270,7 +271,20 @@ begin
   if gPlayer.velX <> 0 then
   begin
 
-    Entity_MoveBy(self, gPlayer.velX, 0, Result);
+    if playerInAir then
+    begin
+      Entity_MoveBy(self, gPlayer.velX, 0, Result);
+    end
+    else
+    begin
+      origin.x := self^.x + 12;
+      origin.y := self^.y + 24;
+      Entity_GetMoveBy2(self, origin, gPlayer.velX, 0, resultVector, result);
+
+      Inc(self^.x, resultVector.x);
+      Inc(self^.y, resultVector.y);
+
+    end;
     if gPlayer.velX > 0 then self^.direction := 4;
     if gPlayer.velX < 0 then self^.direction := 3;
   end;

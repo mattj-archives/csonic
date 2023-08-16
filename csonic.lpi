@@ -93,6 +93,11 @@
         <Filename Value="src\entity.inc"/>
         <IsPartOfProject Value="True"/>
       </Unit>
+      <Unit>
+        <Filename Value="src\terrainmove.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="TerrainMove"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -118,6 +123,12 @@
         <DebugInfoType Value="dsDwarf2Set"/>
       </Debugging>
     </Linking>
+    <Other>
+      <CustomOptions Value="-dSDL2"/>
+      <OtherDefines Count="1">
+        <Define0 Value="SDL2"/>
+      </OtherDefines>
+    </Other>
   </CompilerOptions>
   <Debugging>
     <Exceptions>

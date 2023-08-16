@@ -25,7 +25,7 @@ uses
 
   {$ifdef WINDOWS}
   ,Windows
-  ,Casses
+  ,Classes
   {$endif}
   ;
 
