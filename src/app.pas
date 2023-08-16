@@ -1,17 +1,19 @@
 unit app;
 
 {$mode TP}
-{$H+}
+{$H-}
 interface
 
 
 uses
   Engine, Sys, Event, Text, Image, Timer,
   common, entity, player,
+  TerrainMove,
    res, res_enum,
   Classes, SysUtils
   {$ifdef SDL2}
     ,SDL2
+  , sdl2_ttf
     ,GFX_SDL
   {$endif}
   {$ifdef WASM}
@@ -63,21 +65,20 @@ var
   numFiles: integer;
   strLen: integer;
   fileName: string;
+
 begin
   if File_Open('gfxlist.dat', f) then begin
-    ConsoleLog('...');
-    ConsoleLog1('test' + IntToStr(123));
-
     File_BlockRead(f, numFiles, sizeof(integer));
     ConsoleLog('Num files: ' + IntToStr(numFiles));
 
     for i := 0 to numFiles - 1 do
     begin
       File_BlockRead(f, strLen, 1);
+
       File_Seek(f, File_Pos(f) - 1);
       File_BlockRead(f, filename, strLen + 1);
 
-  //    writeln(i + 1, ' ', fileName);
+      //writeln(i + 1, ' ', fileName);
 
       textures[i + 1] := Image_Load('GFX3/' + fileName + '.png');
     end;
@@ -101,7 +102,6 @@ begin
 
   while not File_EOF(f) do
   begin
-    ConsoleLog('read stuff...');
     File_BlockRead(f, x, sizeof(integer));
     File_BlockRead(f, y, sizeof(integer));
     File_BlockRead(f, tn, sizeof(integer));
@@ -163,7 +163,7 @@ end;
 procedure DrawMap;
 var
   tileStartX, tileStartY: integer;
-  x, y: integer;
+  x, y, i: integer;
   tile: ^TTile;
 begin
   tileStartX := camera.X div 24;
@@ -181,8 +181,18 @@ begin
 
         1:
           R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[SPRITE_T2]^);
-        4:
-          R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[SPRITE_T2SLOPE]^);
+        4: begin
+          //R_DrawLine(x * 24 - camera.x, y * 24 - camera.y, x * 24 - camera.x + 24, y * 24 - camera.y + 24, 255, 255, 255, 255);
+          R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[SPRITE_T1]^);
+          for i := 0 to 23 do begin
+            R_DrawLine(
+            x * 24 + i - camera.x,
+            y * 24 + 24 - camera.y,
+            x * 24 + i - camera.x,
+            (y * 24 + 24 - heights[1][i]) - camera.y, 1, 127, 0, 255);
+          end;
+          //R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[SPRITE_T2SLOPE]^);
+        end;
 
       end;
     end;
@@ -213,7 +223,7 @@ var
   destPoint: TVector2;
   deltaX: integer;
 begin
-  Exit;
+
   deltaX := 0;
 
   destPoint := self^.p[self^.dest];
@@ -263,6 +273,7 @@ begin
 
   map[14 * 168 + 5].tile := 4;
   map[14 * 168 + 6].tile := 1;
+  //map[13 * 168 + 6].tile := 1;
   e := SpawnEntity(3 * 24, 4 * 24, -1);
   gPlayer.ent := e;
   Entity_SetState(e, STATE_PLAYER_STAND1);
@@ -277,7 +288,7 @@ begin
 
   mp^.p[0].x := mp^.x;
   mp^.p[0].y := mp^.y;
-  mp^.p[1].x := mp^.x + 24 * 4;
+  mp^.p[1].x := mp^.x + 24 * 3;
   mp^.p[1].y := mp^.y;
   mp^.dest := 1;
 
@@ -288,8 +299,8 @@ begin
 
   LoadLevel('levels/1_1.l2');
 
-  map[0 * 168 + 0].tile := 1;
-  map[1 * 168 + 1].tile := 1;
+  //map[0 * 168 + 0].tile := 1;
+  //map[1 * 168 + 1].tile := 1;
 end;
 
 procedure G_RunFrame; alias: 'G_RunFrame';
@@ -352,6 +363,9 @@ begin
     // writeln('SDL_Init failed');
     Halt;
   end;
+  if TTF_Init < 0 then begin
+    writeln('error ' , SDL_GetError);
+  end;
   {$endif}
 
   InitDriver;
@@ -365,6 +379,10 @@ begin
 
     DrawMap;
 
+    R_DrawText(0, 0, 'Player: ');
+    R_DrawText(42, 0, IntToStr(gPlayer.ent^.x));
+    R_DrawText(42, 9, IntToStr(gPlayer.ent^.y));
+    if playerInAir then R_DrawText(0, 18, 'In air');
     for i := 1 to MAX_ENTITIES do
     begin
       if (entities[i].flags and 1) = 0 then continue;
@@ -374,7 +392,6 @@ begin
       if e^.x > camera.x + 320 then continue;
       if e^.y < camera.y - 24 then continue;
       if e^.y > camera.y + 240 then continue;
-
 
       //writeln('draw entity ', i, ' type ', e^.t);
       DrawState(e^.x - camera.x, e^.y - camera.y, e^.state, e^.direction);

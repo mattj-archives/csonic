@@ -11,9 +11,15 @@ function SpawnEntity(x, y, entityType: integer): PEntity;
 procedure Entity_GetMoveBy(self: PEntity; deltaX, deltaY: integer;
   var resultVector: TVector2; var Result: THitResult);
 procedure Entity_MoveBy(self: PEntity; deltaX, deltaY: integer; var Result: THitResult);
-procedure Entity_SetState(data: Pointer; state: entityStates);
+procedure Entity_SetState(Data: Pointer; state: entityStates);
+procedure Entity_GetMoveBy2(self: PEntity; origin: TVector2;
+  deltaX, deltaY: integer; var resultVector: TVector2; var Result: THitResult);
+procedure GetBoxAdjustment(this, other: TBoundingBox; delta: TVector2;
+  var adjVector: TVector2);
 
 implementation
+
+uses TerrainMove;
 
 function SpawnEntity(x, y, entityType: integer): PEntity;
 var
@@ -102,6 +108,13 @@ begin
 
 end;
 
+procedure Entity_GetMoveBy2(self: PEntity; origin: TVector2;
+  deltaX, deltaY: integer; var resultVector: TVector2; var Result: THitResult);
+
+begin
+  DoTerrainMove(origin, deltaX, deltaY, resultVector, Result);
+end;
+
 procedure Entity_GetMoveBy(self: PEntity; deltaX, deltaY: integer;
   var resultVector: TVector2; var Result: THitResult);
 var
@@ -153,20 +166,22 @@ begin
         end;
       end;
 
-      if map[y * 168 + x].tile = 4 then begin
-         for i := 0 to 23 do begin
-           h := other.bottom - i;
-           //writeln('h: ', h);
-           if (this.bottom > h) and (this.right >= other.left + i) then
-           begin
-             adjVector.y := h - this.bottom;
-             if abs(adjVector.y) > abs(adj.y) then
-             begin
-               adj.y := adjVector.y;
-               Result.hitType := 1;
-             end;
-           end;
-         end;
+      if map[y * 168 + x].tile = 4 then
+      begin
+        for i := 0 to 23 do
+        begin
+          h := other.bottom - i;
+          //writeln('h: ', h);
+          if (this.bottom > h) and (this.right >= other.left + i) then
+          begin
+            adjVector.y := h - this.bottom;
+            if abs(adjVector.y) > abs(adj.y) then
+            begin
+              adj.y := adjVector.y;
+              Result.hitType := 1;
+            end;
+          end;
+        end;
       end;
     end;
   end;
@@ -247,8 +262,9 @@ NEXT i
 END FUNCTION
 }
 
-procedure Entity_SetState(data: Pointer; state: entityStates);
-var self: PEntity absolute data;
+procedure Entity_SetState(Data: Pointer; state: entityStates);
+var
+  self: PEntity absolute Data;
 begin
   self^.state := state;
   self^.stateFrames := entity_states[Ord(state)].duration;
