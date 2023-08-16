@@ -8,6 +8,7 @@ interface
 uses
   Engine, Sys, Event, Text, Image, Timer,
   common, entity, player,
+  TerrainMove,
    res, res_enum,
   Classes, SysUtils
   {$ifdef SDL2}
@@ -162,7 +163,7 @@ end;
 procedure DrawMap;
 var
   tileStartX, tileStartY: integer;
-  x, y: integer;
+  x, y, i: integer;
   tile: ^TTile;
 begin
   tileStartX := camera.X div 24;
@@ -180,8 +181,18 @@ begin
 
         1:
           R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[SPRITE_T2]^);
-        4:
-          R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[SPRITE_T2SLOPE]^);
+        4: begin
+          //R_DrawLine(x * 24 - camera.x, y * 24 - camera.y, x * 24 - camera.x + 24, y * 24 - camera.y + 24, 255, 255, 255, 255);
+          R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[SPRITE_T1]^);
+          for i := 0 to 23 do begin
+            R_DrawLine(
+            x * 24 + i - camera.x,
+            y * 24 + 24 - camera.y,
+            x * 24 + i - camera.x,
+            (y * 24 + 24 - heights[1][i]) - camera.y, 1, 127, 0, 255);
+          end;
+          //R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[SPRITE_T2SLOPE]^);
+        end;
 
       end;
     end;
@@ -262,7 +273,7 @@ begin
 
   map[14 * 168 + 5].tile := 4;
   map[14 * 168 + 6].tile := 1;
-  map[13 * 168 + 6].tile := 1;
+  //map[13 * 168 + 6].tile := 1;
   e := SpawnEntity(3 * 24, 4 * 24, -1);
   gPlayer.ent := e;
   Entity_SetState(e, STATE_PLAYER_STAND1);
@@ -288,8 +299,8 @@ begin
 
   LoadLevel('levels/1_1.l2');
 
-  map[0 * 168 + 0].tile := 1;
-  map[1 * 168 + 1].tile := 1;
+  //map[0 * 168 + 0].tile := 1;
+  //map[1 * 168 + 1].tile := 1;
 end;
 
 procedure G_RunFrame; alias: 'G_RunFrame';

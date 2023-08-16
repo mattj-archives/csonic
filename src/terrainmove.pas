@@ -10,6 +10,16 @@ uses
 procedure DoTerrainMove(origin: TVector2; deltaX, deltaY: integer;
   var resultVector: TVector2; var Result: THitResult);
 
+const
+  heights: array[0..2, 0..23] of integer =
+    (
+    (1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 5, 6, 7, 8, 8, 8, 8, 9, 9, 10, 10, 10, 10, 10),
+    (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+    18, 19, 20, 21, 22, 23, 24),
+    (24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
+    24, 24, 24, 24, 24, 24, 24, 24)
+    );
+
 implementation
 
 uses Math, entity;
@@ -20,21 +30,18 @@ var
   traceXValue: integer;
   sensorStartY: integer;
 
-const
-  heights: array[0..2, 0..23] of integer =
-    (
-    (0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 5, 6, 7, 8, 8, 8, 8, 9, 9, 10, 10),
-    (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
-    18, 19, 20, 21, 22, 23),
-    (23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-    23, 23, 23, 23, 23, 23, 23, 23)
-    );
+
 
 procedure TraceY(x, startY, endY: integer);
 var
-  tx, ty, ty0, ty1, h, idx: integer;
+  tx, ty, ty0, ty1, h, idx, delta: integer;
   other: TBoundingBox;
 begin
+  traceYResult.hitType := 0;
+  if startY > endY then delta := -1
+  else
+    delta := 1;
+
   tx := x div 24;
   ty0 := startY div 24;
   ty1 := endY div 24;
@@ -50,7 +57,9 @@ begin
 
     if map[ty * 168 + tx].tile = 1 then
     begin
-      h := other.top;
+      //h := other.top;
+      //h := other.bottom - 23;
+      h := other.bottom - 24;
       traceYResult.hitType := 1;
     end;
 
@@ -67,7 +76,7 @@ begin
 
     if (h < traceYValue) and (h > sensorStartY) then
     begin
-      traceYValue := h;
+      traceYValue := h - 1;
     end;
   end;
 end;
@@ -202,8 +211,10 @@ begin
 end;
 *)
 
-const SONIC_RADIUS_R = 11;
+const
+  SONIC_RADIUS_R = 11;
   SONIC_RADIUS_L = SONIC_RADIUS_R + 1;
+
 procedure DoTerrainMove(origin: TVector2; deltaX, deltaY: integer;
   var resultVector: TVector2; var Result: THitResult);
 
@@ -211,12 +222,13 @@ var
   v0: TVector2;
   this, other: TBoundingBox;
   h, x, y: integer;
+  leftResult, rightResult: integer;
 
 begin
 
   if deltaX > 0 then
   begin
-    TraceX(origin.y - 12, origin.x + SONIC_RADIUS_R, origin.x + SONIC_RADIUS_R + deltaX);
+    TraceX(origin.y - 11, origin.x + SONIC_RADIUS_R, origin.x + SONIC_RADIUS_R + deltaX);
     writeln('traceXValue: ', traceXValue);
     resultVector.x := traceXValue - (origin.x + SONIC_RADIUS_R);
 
@@ -225,7 +237,7 @@ begin
 
   if deltaX < 0 then
   begin
-    TraceX(origin.y - 12, origin.x - SONIC_RADIUS_L, origin.x - SONIC_RADIUS_L + deltaX);
+    TraceX(origin.y - 11, origin.x - SONIC_RADIUS_L, origin.x - SONIC_RADIUS_L + deltaX);
     writeln('traceXValue: ', traceXValue);
     resultVector.x := traceXValue - (origin.x - SONIC_RADIUS_L);
 
@@ -233,30 +245,40 @@ begin
   end;
 
   // The "origin" should be the center point under the feet, ideally
-  v0.y := origin.y + deltaY - 12;
+  v0.y := origin.y + deltaY - 11;
   sensorStartY := v0.y;
 
-  traceYValue := v0.y + 12;
+  traceYValue := v0.y + 16;
+
+  leftResult := 0;
+  rightResult := 0;
 
   //writeln('tile x, y ', x, ' ', ty0);
-
+  writeln('TraceY ', v0.y, ' -> ', v0.y + 16);
   //v0.x := origin.x + deltaX + 12;
-  v0.x := origin.x + 11;
-  TraceY(v0.x, v0.y, v0.y + 12);
+  v0.x := origin.x + SONIC_RADIUS_R;
+
+
+  TraceY(v0.x, v0.y, v0.y + 16);
+  leftResult := traceYResult.hitType;
 
   //v0.x := origin.x + deltaX - 12;
-  v0.x := origin.x - 12;
-  TraceY(v0.x, v0.y, v0.y + 12);
+  begin
+    v0.x := origin.x - SONIC_RADIUS_L;
+    TraceY(v0.x, v0.y, v0.y + 16);
+    rightResult := traceYResult.hitType;
+  end;
 
-  //resultVector.x := deltaX;
-  resultVector.y := traceYValue - origin.Y;
+  if (leftResult = 0) and (rightResult = 0) then
+  begin
+    writeln('Y sensors did''t find anything');
+    resultVector.y := deltaY;
+  end
+  else
+  begin
+    resultVector.y := traceYValue - origin.Y;
+  end;
 
-  { Now, clip the box's motion ... }
-
-  //if abs(resultVector.y) > abs(resultVector.x) then begin
-  //   resultVector.x := 0;
-  //   resultVector.y := 0; // Sign(resultVector.y) * abs(deltaX);
-  //end;
   writeln('result ', resultVector.x, ' ', resultVector.y);
 end;
 

@@ -278,7 +278,7 @@ begin
     else
     begin
       origin.x := self^.x + 12;
-      origin.y := self^.y + 24;
+      origin.y := self^.y + 23;
       Entity_GetMoveBy2(self, origin, gPlayer.velX, 0, resultVector, result);
 
       Inc(self^.x, resultVector.x);
