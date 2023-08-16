@@ -4,6 +4,7 @@ import struct
 from os.path import join
 
 from common import SpriteState, State
+from heightmap import HeightMapTool
 
 
 class GFXFile:
@@ -166,6 +167,9 @@ class Tool(object):
 
 if __name__ == "__main__":
     print("main")
+    heightmap_tool = HeightMapTool()
+    heightmap_tool.run()
+
     with Tool() as tool:
 
         def sprite_state(name, left, right):
