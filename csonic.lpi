@@ -98,6 +98,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="TerrainMove"/>
       </Unit>
+      <Unit>
+        <Filename Value="src\sensor.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Sensor"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

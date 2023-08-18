@@ -5,7 +5,7 @@ unit Player;
 interface
 
 uses
-  res, res_enum, common, engine, entity, timer;
+  res, res_enum, common, engine, entity, timer, Sensor;
 
 type
   TPlayer = record
@@ -149,6 +149,8 @@ var
   playerWasInAir: boolean;
   Result: THitResult;
   resultVector: TVector2;
+  sensorXResult, sensorYResult, sensorYResult2, adj, adj2: integer;
+  endX, endY: integer;
 
 begin
 
@@ -199,9 +201,28 @@ begin
   begin
     Inc(gPlayer.velY);
     if gPlayer.velY > 12 then gPlayer.velY := 12;
+    //if gPlayer.velY > 1 then gPlayer.velY := 1;
 
-    Entity_MoveBy(self, 0, gPlayer.velY, Result);
+    endY := self^.y + 23 + gPlayer.velY;
 
+    sensorYResult := SensorY(self^.x, self^.y + 11, endY);
+    adj := (sensorYResult - endY);
+
+    sensorYResult2 := SensorY(self^.x + 23, self^.y + 11, endY);
+    adj2 := (sensorYResult2 - endY);
+
+    // Is the 2nd trace push back more?
+    if (adj2 < adj) then adj := adj2;
+
+    writeln('Falling,', self^.y + 11, ' -> ', endY);
+    writeln('         sensorYResult: ', sensorYResult, ', original start was ', self^.y + 11, ', diff from endY: ', sensorYResult - endY);
+
+    if adj <> 0 then begin
+      result.HitType := 1;
+    end;
+
+    //Entity_MoveBy(self, 0, gPlayer.velY, Result);
+    Inc(self^.y, gPlayer.velY + adj);
     gPlayer.groundEntity:=nil;
 
     if Result.hitType = 0 then
@@ -238,52 +259,100 @@ begin
     //if gPlayer.velY >= 0 then
     //begin
     // Run the Y sensors, check if feet on ground
-    Entity_GetMoveBy(self, 0, 1, resultVector, Result);
 
-    if Result.hitType = 0 then
-    begin
+    endY := self^.y + 26;
+
+    sensorYResult := SensorY(self^.x, self^.y + 11, endY);
+    adj := (sensorYResult - endY);
+
+    sensorYResult2 := SensorY(self^.x + 23, self^.y + 11, endY);
+    adj2 := (sensorYResult2 - endY);
+
+    //writeln('Ground check: ', sensorYResult, ' ', sensorYResult2, ' adj ', adj, adj2);
+
+    if (sensorYResult <> self^.y + 23) and (sensorYResult2 <> self^.y + 23) then begin
       gPlayer.groundEntity := nil;
       if not playerInAir then
       begin
         playerInAir := True;
-        // writeln('player is now in air, ', gPlayer.velY);
-      end;
-    end
-    else
-    begin
-      if Result.hitType = 1 then
-      begin
-        gPlayer.groundEntity := nil;
-      end;
-
-      if Result.hitType = 2 then
-      begin
-        gPlayer.groundEntity := Result.entity;
-      end;
-      if playerInAir then
-      begin
-        playerInAir := False;
-        // writeln('player is no longer in air');
+        writeln('player is now in air, ', gPlayer.velY);
       end;
     end;
+
+    //sensorYResult := SensorY(self^.x, self^.y + 23, self^.y + 24);
+    //writeln('sensorYResult: ', sensorYResult, ', original start was ', self^.y + 23);
+
+    //Entity_GetMoveBy(self, 0, 1, resultVector, Result);
+
+    //if Result.hitType = 0 then
+    //begin
+    //  gPlayer.groundEntity := nil;
+    //  if not playerInAir then
+    //  begin
+    //    playerInAir := True;
+    //    // writeln('player is now in air, ', gPlayer.velY);
+    //  end;
+    //end
+    //else
+    //begin
+    //  if Result.hitType = 1 then
+    //  begin
+    //    gPlayer.groundEntity := nil;
+    //  end;
+    //
+    //  if Result.hitType = 2 then
+    //  begin
+    //    gPlayer.groundEntity := Result.entity;
+    //  end;
+    //  if playerInAir then
+    //  begin
+    //    playerInAir := False;
+    //    // writeln('player is no longer in air');
+    //  end;
+    //end;
     //end;
   end;
 
   if gPlayer.velX <> 0 then
   begin
 
-    if playerInAir then
+    if gPlayer.velX > 0 then
     begin
-      Entity_MoveBy(self, gPlayer.velX, 0, Result);
+      sensorXResult := SensorX(self^.y + 11, self^.x + 23, self^.x + 23 + gPlayer.velX);
+      self^.x := sensorXResult - 23;
     end
     else
     begin
-      origin.x := self^.x + 12;
-      origin.y := self^.y + 23;
-      Entity_GetMoveBy2(self, origin, gPlayer.velX, 0, resultVector, result);
+      sensorXResult :=
+        SensorX(self^.y + 11, self^.x, self^.x + gPlayer.velX);
+      self^.x := sensorXResult;
+    end;
 
-      Inc(self^.x, resultVector.x);
-      Inc(self^.y, resultVector.y);
+    if playerInAir then
+    begin
+      //Entity_MoveBy(self, gPlayer.velX, 0, Result);
+    end
+    else
+    begin
+
+
+
+      { Keep player stuck to the ground, if possible... }
+      endY := self^.y + 28;
+
+      sensorYResult := SensorY(self^.x, self^.y + 11, endY);
+      adj := (sensorYResult - endY);
+
+      sensorYResult2 := SensorY(self^.x + 23, self^.y + 11, endY);
+      adj2 := (sensorYResult2 - endY);
+
+
+      writeln('Terrain move sensorY results: ', sensorYResult, ' ', sensorYResult2, ' adj: ', adj, ' ', adj2);
+
+      if sensorYResult2 < sensorYResult then sensorYResult := sensorYResult2;
+
+      self^.y := sensorYResult - 23;
+
 
     end;
     if gPlayer.velX > 0 then self^.direction := 4;
