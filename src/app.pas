@@ -25,6 +25,8 @@ procedure Main;
 
 var
   textures: array[0 .. 200] of pimage_t;
+  isPaused: boolean;
+  frameCount: longint;
 
 implementation
 
@@ -67,6 +69,12 @@ var
   fileName: string;
 
 begin
+  if File_Open('height.dat', f) then begin
+
+     writeln('loading heights');
+     File_BlockRead(f, heights, 256 * 24);
+     File_Close(f);
+  end;
   if File_Open('gfxlist.dat', f) then begin
     File_BlockRead(f, numFiles, sizeof(integer));
     ConsoleLog('Num files: ' + IntToStr(numFiles));
@@ -118,7 +126,8 @@ begin
       0, 1:
       begin
         //writeln('terrain');
-        tile^.tile := 1;
+        tile^.tile := 4;
+        tile^.description:=0;
         tile^.color := tc;
       end;
       13: { Moving Platform }
@@ -163,7 +172,7 @@ end;
 procedure DrawMap;
 var
   tileStartX, tileStartY: integer;
-  x, y, i: integer;
+  x, y, i, c: integer;
   tile: ^TTile;
 begin
   tileStartX := camera.X div 24;
@@ -184,12 +193,16 @@ begin
         4: begin
           //R_DrawLine(x * 24 - camera.x, y * 24 - camera.y, x * 24 - camera.x + 24, y * 24 - camera.y + 24, 255, 255, 255, 255);
           R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[SPRITE_T1]^);
+
+          c := $aa;
+          if ((x + y) mod 2) = 0 then c := $7f;
+
           for i := 0 to 23 do begin
             R_DrawLine(
             x * 24 + i - camera.x,
             y * 24 + 24 - camera.y,
             x * 24 + i - camera.x,
-            (y * 24 + 24 - heights[1][i]) - camera.y, 1, 127, 0, 255);
+            (y * 24 + 24 - heights[tile^.description][i]) - camera.y, 0, c, 0, 255);
           end;
           //R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[SPRITE_T2SLOPE]^);
         end;
@@ -271,8 +284,38 @@ begin
   img := Image_Load('gfx3/AFSPIKE.png');
   img2 := Image_Load('gfx3/SRS.png');
 
+    LoadLevel('levels/1_1.l2');
+
   map[14 * 168 + 5].tile := 4;
-  map[14 * 168 + 6].tile := 1;
+  map[14 * 168 + 5].description := 2;
+  map[14 * 168 + 6].tile := 4;
+  map[14 * 168 + 6].description := 3;
+
+  map[14 * 168 + 7].tile := 4;
+  map[14 * 168 + 7].description := 27;
+  map[14 * 168 + 8].tile := 4;
+  map[14 * 168 + 8].description := 28;
+  map[14 * 168 + 9].tile := 4;
+  map[14 * 168 + 9].description := 29;
+  map[14 * 168 + 10].tile := 4;
+  map[14 * 168 + 10].description := 30;
+  map[14 * 168 + 11].tile := 4;
+  map[14 * 168 + 11].description := 31;
+
+  map[15 * 168 + 11].tile := 4;
+  map[15 * 168 + 11].description := 0;
+
+  map[15 * 168 + 12].tile := 4;
+  map[15 * 168 + 12].description := 33;
+  map[15 * 168 + 13].tile := 4;
+  map[15 * 168 + 13].description := 34;
+  map[15 * 168 + 14].tile := 4;
+  map[15 * 168 + 14].description := 35;
+  map[15 * 168 + 15].tile := 4;
+  map[15 * 168 + 15].description := 36;
+  //map[14 * 168 + 6].tile := 1;
+
+
   //map[13 * 168 + 6].tile := 1;
   e := SpawnEntity(3 * 24, 4 * 24, -1);
   gPlayer.ent := e;
@@ -297,7 +340,7 @@ begin
   Event_SetKeyDownProc(OnKeyDown);
   Event_SetKeyUpProc(OnKeyUp);
 
-  LoadLevel('levels/1_1.l2');
+
 
   //map[0 * 168 + 0].tile := 1;
   //map[1 * 168 + 1].tile := 1;
@@ -315,6 +358,17 @@ begin
     begin
       shouldQuit := True;
     end;
+
+    if I_WasKeyPressed(kP) then begin
+      isPaused := not isPaused;
+    end;
+
+    if isPaused then begin
+       if not I_WasKeyPressed(kA) then Exit;
+    end;
+
+    Inc(frameCount);
+    if isPaused then writeln('Frame ', frameCount, ' ===================');
 
     Player_Update(gPlayer.ent);
 
@@ -354,8 +408,11 @@ var
   x, i: integer;
   e: PEntity;
   mp: PEntityMovingPlatform;
+
 begin
   x := 0;
+  isPaused := false;
+  frameCount := 0;
 
   {$ifdef SDL2}
   if SDL_Init(SDL_INIT_VIDEO or SDL_INIT_AUDIO) < 0 then
@@ -382,7 +439,10 @@ begin
     R_DrawText(0, 0, 'Player: ');
     R_DrawText(42, 0, IntToStr(gPlayer.ent^.x));
     R_DrawText(42, 9, IntToStr(gPlayer.ent^.y));
+
     if playerInAir then R_DrawText(0, 18, 'In air');
+    if isPaused then R_DrawText(0, 27, 'Paused');
+
     for i := 1 to MAX_ENTITIES do
     begin
       if (entities[i].flags and 1) = 0 then continue;

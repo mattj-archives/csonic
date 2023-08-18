@@ -33,6 +33,7 @@ type
 
   TTile = record
     entity: PEntity;
+    description: integer;      { For now, index into the height table }
     tile: integer;
     color: integer;
   end;

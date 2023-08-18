@@ -10,16 +10,8 @@ uses
 procedure DoTerrainMove(origin: TVector2; deltaX, deltaY: integer;
   var resultVector: TVector2; var Result: THitResult);
 
-const
-  heights: array[0..2, 0..23] of integer =
-    (
-    (1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 5, 6, 7, 8, 8, 8, 8, 9, 9, 10, 10, 10, 10, 10),
-    (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
-    18, 19, 20, 21, 22, 23, 24),
-    (24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
-    24, 24, 24, 24, 24, 24, 24, 24)
-    );
-
+var
+  heights: array[0..255, 0..23] of byte;
 implementation
 
 uses Math, entity;
@@ -69,7 +61,7 @@ begin
       if idx < 0 then idx := 0;
       if idx > 23 then idx := 23;
 
-      h := other.bottom - heights[1][idx];
+      h := other.bottom - heights[map[ty * 168 + tx].description][idx];
       traceYResult.hitType := 1;
       writeln('h ', h);
     end;
@@ -108,8 +100,9 @@ begin
     if idx > 23 then idx := 23;
 
     h := y + 24;
+
     if tile^.tile = 1 then h := otherBottom - 24;
-    if tile^.tile = 4 then h := otherBottom - heights[1][idx];
+    if tile^.tile = 4 then h := otherBottom - heights[map[ty * 168 + tx].description][idx];
 
     if h <= y then
     begin
