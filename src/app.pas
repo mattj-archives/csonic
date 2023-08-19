@@ -63,57 +63,62 @@ end;
 procedure LoadGFX;
 var
   i: integer;
-  f: TFile;
+  f: file;
   numFiles: integer;
   strLen: integer;
   fileName: string;
 
 begin
-  if File_Open('height.dat', f) then begin
 
-     writeln('loading heights');
-     File_BlockRead(f, heights, 256 * 24);
-     File_Close(f);
-  end;
-  if File_Open('gfxlist.dat', f) then begin
-    File_BlockRead(f, numFiles, sizeof(integer));
-    ConsoleLog('Num files: ' + IntToStr(numFiles));
+  Assign(f, 'height.dat');
+  Reset(f, 1);
+  writeln('loading heights');
+  BlockRead(f, heights, 256 * 24);
+
+  System.Close(f);
+
+  Assign(f, 'gfxlist.dat');
+  Reset(f, 1);
+  BlockRead(f, numFiles, sizeof(integer));
+    writeln('Num files: ', numFiles);
 
     for i := 0 to numFiles - 1 do
     begin
-      File_BlockRead(f, strLen, 1);
+      BlockRead(f, strLen, 1);
 
-      File_Seek(f, File_Pos(f) - 1);
-      File_BlockRead(f, filename, strLen + 1);
+      Seek(f, FilePos(f) - 1);
+      BlockRead(f, filename, strLen + 1);
 
-      //writeln(i + 1, ' ', fileName);
+      // writeln(i + 1, ' ', fileName);
 
       textures[i + 1] := Image_Load('GFX3/' + fileName + '.png');
     end;
 
-    File_Close(f);
-  end else begin
-    ConsoleLog('couldnt open gfxlist.dat');
-   end;
+    System.Close(f);
+
 end;
 
 
 procedure LoadLevel(fileName: string);
 var
-  f: TFile;
+  f: file;
   x, y, tn, tc: integer;
   p0, p1, p2, p3: integer;
   tile: ^TTile;
   e: PEntity;
 begin
-  File_Open(fileName, f);
 
-  while not File_EOF(f) do
+  writeln('LoadLevel ', fileName);
+
+  Assign(f, fileName);
+  Reset(f, 1);
+
+  while not EOF(f) do
   begin
-    File_BlockRead(f, x, sizeof(integer));
-    File_BlockRead(f, y, sizeof(integer));
-    File_BlockRead(f, tn, sizeof(integer));
-    File_BlockRead(f, tc, sizeof(integer));
+    BlockRead(f, x, sizeof(integer));
+    BlockRead(f, y, sizeof(integer));
+    BlockRead(f, tn, sizeof(integer));
+    BlockRead(f, tc, sizeof(integer));
 
     if (x < 0) or (x >= 168) or (y < 0) or (y >= 54) then continue;
 
@@ -132,10 +137,10 @@ begin
       end;
       13: { Moving Platform }
       begin
-        File_BlockRead(f, p0, sizeof(integer));
-        File_BlockRead(f, p1, sizeof(integer));
-        File_BlockRead(f, p2, sizeof(integer));
-        File_BlockRead(f, p3, sizeof(integer));
+        BlockRead(f, p0, sizeof(integer));
+        BlockRead(f, p1, sizeof(integer));
+        BlockRead(f, p2, sizeof(integer));
+        BlockRead(f, p3, sizeof(integer));
       end;
       17: begin
         e := SpawnEntity(x * 24, y * 24, tn);
@@ -156,17 +161,15 @@ begin
       end;
       71: { Enemy "mosquito" }
       begin
-        File_BlockRead(f, x, sizeof(integer));
-        File_BlockRead(f, x, sizeof(integer));
-        File_BlockRead(f, y, sizeof(integer));
-        File_BlockRead(f, tn, sizeof(integer));
-        File_BlockRead(f, tc, sizeof(integer));
+        BlockRead(f, x, sizeof(integer));
+        BlockRead(f, x, sizeof(integer));
+        BlockRead(f, y, sizeof(integer));
+        BlockRead(f, tn, sizeof(integer));
+        BlockRead(f, tc, sizeof(integer));
       end;
     end;
   end;
-
-    ConsoleLog('close...');
-  File_Close(f);
+  System.Close(f);
 end;
 
 procedure DrawMap;
@@ -275,16 +278,13 @@ var
   e: PEntity;
   mp: PEntityMovingPlatform;
 begin
-  ConsoleLog('G_Init');
+  writeln('G_Init');
 
   LoadGFX;
 
   FillChar(entities, sizeof(TEntity) * MAX_ENTITIES, 0);
-
-  img := Image_Load('gfx3/AFSPIKE.png');
-  img2 := Image_Load('gfx3/SRS.png');
-
-    LoadLevel('levels/1_1.l2');
+  
+  LoadLevel('levels/1_1.l2');
 
   map[14 * 168 + 5].tile := 4;
   map[14 * 168 + 5].description := 2;
@@ -318,7 +318,7 @@ begin
 
   //map[13 * 168 + 6].tile := 1;
   //e := SpawnEntity(3 * 24, 4 * 24, -1);
-    e := SpawnEntity(3 * 24, 12 * 24, -1);
+  e := SpawnEntity(3 * 24, 12 * 24, -1);
   gPlayer.ent := e;
   Entity_SetState(e, STATE_PLAYER_STAND1);
 
@@ -340,6 +340,8 @@ begin
 
   Event_SetKeyDownProc(OnKeyDown);
   Event_SetKeyUpProc(OnKeyUp);
+
+  writeln('G_Init: done');
 
 
 
@@ -403,6 +405,40 @@ begin
     if camera.y < 0 then camera.y := 0;
 end;
 
+procedure G_Draw; alias:'G_Draw';
+  var
+  img, img2: pimage_t;
+  x, i: integer;
+  e: PEntity;
+  mp: PEntityMovingPlatform;
+
+begin
+    DrawMap;
+
+    R_DrawText(0, 0, 'Player: ');
+    R_DrawText(42, 0, IntToStr(gPlayer.ent^.x));
+    R_DrawText(42, 9, IntToStr(gPlayer.ent^.y));
+
+    if playerInAir then R_DrawText(0, 18, 'In air');
+    if isPaused then R_DrawText(0, 27, 'Paused');
+
+    for i := 1 to MAX_ENTITIES do
+    begin
+      if (entities[i].flags and 1) = 0 then continue;
+      e := @entities[i];
+
+      if e^.x < camera.x - 24 then continue;
+      if e^.x > camera.x + 320 then continue;
+      if e^.y < camera.y - 24 then continue;
+      if e^.y > camera.y + 240 then continue;
+
+      //writeln('draw entity ', i, ' type ', e^.t);
+      DrawState(e^.x - camera.x, e^.y - camera.y, e^.state, e^.direction);
+    end;
+    
+    R_SwapBuffers;
+end;
+
 procedure Main;
 var
   img, img2: pimage_t;
@@ -435,29 +471,8 @@ begin
   begin
     G_RunFrame;
 
-    DrawMap;
+    G_Draw;
 
-    R_DrawText(0, 0, 'Player: ');
-    R_DrawText(42, 0, IntToStr(gPlayer.ent^.x));
-    R_DrawText(42, 9, IntToStr(gPlayer.ent^.y));
-
-    if playerInAir then R_DrawText(0, 18, 'In air');
-    if isPaused then R_DrawText(0, 27, 'Paused');
-
-    for i := 1 to MAX_ENTITIES do
-    begin
-      if (entities[i].flags and 1) = 0 then continue;
-      e := @entities[i];
-
-      if e^.x < camera.x - 24 then continue;
-      if e^.x > camera.x + 320 then continue;
-      if e^.y < camera.y - 24 then continue;
-      if e^.y > camera.y + 240 then continue;
-
-      //writeln('draw entity ', i, ' type ', e^.t);
-      DrawState(e^.x - camera.x, e^.y - camera.y, e^.state, e^.direction);
-    end;
-    R_SwapBuffers;
     Timer_Delay(16 * 2);
   end;
 end;

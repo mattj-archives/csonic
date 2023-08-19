@@ -153,6 +153,7 @@ var
   endX, endY: integer;
 
 begin
+  FillChar(Result, sizeof(THitResult), 0);
 
   if mode = SonicModes.None then
   begin
@@ -214,8 +215,9 @@ begin
     // Is the 2nd trace push back more?
     if (adj2 < adj) then adj := adj2;
 
-    writeln('Falling,', self^.y + 11, ' -> ', endY);
-    writeln('         sensorYResult: ', sensorYResult, ', original start was ', self^.y + 11, ', diff from endY: ', sensorYResult - endY);
+    // writeln('in air, velY ', gPlayer.velY, ' adj ', adj);
+    // writeln('Falling,', self^.y + 11, ' -> ', endY);
+    // writeln('         sensorYResult: ', sensorYResult, ', original start was ', self^.y + 11, ', diff from endY: ', sensorYResult - endY);
 
     if adj <> 0 then begin
       result.HitType := 1;
@@ -236,7 +238,7 @@ begin
         playerInAir := False;
         //writeln('hit while in air, no longer in air');
       end;
-
+      
       // Hit something
       gPlayer.velY := 0;
 
@@ -275,7 +277,7 @@ begin
       if not playerInAir then
       begin
         playerInAir := True;
-        writeln('player is now in air, ', gPlayer.velY);
+        // writeln('player is now in air, ', gPlayer.velY);
       end;
     end;
 
@@ -347,7 +349,7 @@ begin
       adj2 := (sensorYResult2 - endY);
 
 
-      writeln('Terrain move sensorY results: ', sensorYResult, ' ', sensorYResult2, ' adj: ', adj, ' ', adj2);
+      // writeln('Terrain move sensorY results: ', sensorYResult, ' ', sensorYResult2, ' adj: ', adj, ' ', adj2);
 
       if sensorYResult2 < sensorYResult then sensorYResult := sensorYResult2;
 

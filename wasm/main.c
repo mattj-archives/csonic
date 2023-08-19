@@ -1,48 +1,90 @@
 #include "raylib.h"
 #include <stdio.h>
-
+#include <stdlib.h>
+#include <string.h>
 // extern int pastest();
 // extern void ctest();
 extern void G_RunFrame();
 
 extern void G_Init();
+extern void G_Draw();
 
-typedef struct TFile {
-    FILE *file;
-} TFile;
+Image mainImage;
 
-bool File_OpenImpl(const char *fileName, TFile *file) {
+typedef struct image_t {
+    unsigned short width;
+    unsigned short height;
+    void *data;
+} image_t;
 
-    file->file = fopen(fileName, "rb");
-        printf("File_OpenImpl: %s, %d\n", fileName, file->file);
+void Image_Load_Impl(const char *filename, image_t *img) {
+    printf("Image_Load_Impl %s\n", filename);
 
-    return file->file != NULL;
+    Image i = LoadImage(filename);
+
+    img->width = i.width;
+    img->height = i.height;
+
+    img->data = malloc(sizeof(Image));
+    memcpy(img->data, &i, sizeof(Image));
 }
-//function File_BlockReadImpl(_file: PFile; var buf; size: integer): integer; external;
 
-int File_BlockReadImpl(TFile *file, void *buf, int size) {
-    return fread(buf, size, 1, file->file);
+void DrawSubImageTransparent(image_t img, int dstX, int dstY, int srcX, int srcY, int srcWidth, int srcHeight) {
+    Rectangle srcRect = {srcX, srcY, srcWidth, srcHeight};
+    Rectangle dstRect = {dstX, dstY, srcWidth, srcHeight};
+    ImageDraw(&mainImage, *(Image*)img.data,
+        srcRect,
+        dstRect,
+        WHITE);
 }
 
-void ConsoleLogImpl(const char *s) {
-    printf("%s\n", s);
+void DrawLineImpl(int x0, int y0, int x1, int y1, int r, int g, int b, int a) {
+    Color c = {r, g, b, a};
+    ImageDrawLine(&mainImage, x0, y0, x1, y1, c);
+}
+
+void DrawTextImpl(int x, int y, const char *str) {
+    ImageDrawText(&mainImage, str, x, y, 12, WHITE);
 }
 
 int main(void)
 {
-    InitWindow(800, 450, "raylib [core] example - basic window");
+    extern void InitWasmEmbeddedBackend();
+    InitWasmEmbeddedBackend();
+
+    extern void InitDriver();
+    InitDriver();
+
+    G_Init();
+
+    InitWindow(320 * 2, 240 * 2, "raylib [core] example - basic window");
+
+    mainImage = GenImageColor(320, 240, BLANK);
+    Texture t = LoadTextureFromImage(mainImage);
+
+    SetTraceLogLevel(LOG_WARNING);
+    SetTargetFPS(30);
     // ctest();
 
     // printf("%d\n", pastest());
-    G_Init();
+    
 
     while (!WindowShouldClose())
     {
         G_RunFrame();
         
         BeginDrawing();
-            ClearBackground(RAYWHITE);
-            DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
+            // ClearBackground(RAYWHITE);
+            // DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
+
+            // ImageClearBackground(&mainImage, RED);
+
+            G_Draw();
+
+            UpdateTexture(t, mainImage.data);
+            Vector2 pos = {0, 0};
+
+            DrawTextureEx(t, (Vector2){0, 0}, 0, 2, WHITE);
         EndDrawing();
     }
 

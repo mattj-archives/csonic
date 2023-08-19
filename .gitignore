@@ -3,4 +3,4 @@ gfx2/
 *.ppu
 backup/
 *.o
-
+vfs/

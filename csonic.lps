@@ -8,17 +8,19 @@
       <Unit>
         <Filename Value="csonic.lpr"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="11" Y="28"/>
-        <UsageCount Value="189"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
+        <CursorPos X="76" Y="28"/>
+        <UsageCount Value="214"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
         <Filename Value="src\app.pas"/>
         <IsPartOfProject Value="True"/>
-        <IsVisibleTab Value="True"/>
         <TopLine Value="331"/>
-        <CursorPos Y="344"/>
-        <UsageCount Value="189"/>
+        <CursorPos X="50" Y="348"/>
+        <UsageCount Value="214"/>
         <Loaded Value="True"/>
       </Unit>
       <Unit>
@@ -28,7 +30,7 @@
         <EditorIndex Value="13"/>
         <TopLine Value="93"/>
         <CursorPos X="5" Y="55"/>
-        <UsageCount Value="189"/>
+        <UsageCount Value="214"/>
         <Loaded Value="True"/>
       </Unit>
       <Unit>
@@ -37,7 +39,7 @@
         <UnitName Value="Image"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="42" Y="11"/>
-        <UsageCount Value="189"/>
+        <UsageCount Value="214"/>
       </Unit>
       <Unit>
         <Filename Value="engine\src\sdl\gfx_sdl.pas"/>
@@ -46,7 +48,7 @@
         <EditorIndex Value="7"/>
         <TopLine Value="30"/>
         <CursorPos X="6" Y="28"/>
-        <UsageCount Value="189"/>
+        <UsageCount Value="214"/>
         <Loaded Value="True"/>
       </Unit>
       <Unit>
@@ -55,16 +57,15 @@
         <UnitName Value="GFX_SDL_Core"/>
         <EditorIndex Value="8"/>
         <CursorPos X="29" Y="12"/>
-        <UsageCount Value="189"/>
+        <UsageCount Value="214"/>
         <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
         <Filename Value="engine\src\sdl\keybrd.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Keybrd"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="189"/>
+        <UsageCount Value="214"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
@@ -74,19 +75,18 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="189"/>
+        <UsageCount Value="214"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
         <Filename Value="engine\src\sdl\sys.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Sys"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="3"/>
         <TopLine Value="126"/>
         <CursorPos X="11" Y="144"/>
-        <UsageCount Value="189"/>
+        <UsageCount Value="214"/>
         <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
         <Filename Value="engine\src\sdl\timer.pas"/>
@@ -94,7 +94,7 @@
         <UnitName Value="Timer"/>
         <EditorIndex Value="-1"/>
         <CursorPos Y="7"/>
-        <UsageCount Value="189"/>
+        <UsageCount Value="214"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
@@ -103,7 +103,7 @@
         <EditorIndex Value="4"/>
         <TopLine Value="9"/>
         <CursorPos X="5" Y="37"/>
-        <UsageCount Value="189"/>
+        <UsageCount Value="214"/>
         <Loaded Value="True"/>
       </Unit>
       <Unit>
@@ -112,7 +112,7 @@
         <EditorIndex Value="6"/>
         <TopLine Value="187"/>
         <CursorPos X="3" Y="115"/>
-        <UsageCount Value="189"/>
+        <UsageCount Value="214"/>
         <Loaded Value="True"/>
       </Unit>
       <Unit>
@@ -121,7 +121,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="40"/>
         <CursorPos X="29" Y="53"/>
-        <UsageCount Value="188"/>
+        <UsageCount Value="213"/>
       </Unit>
       <Unit>
         <Filename Value="src\player.pas"/>
@@ -130,70 +130,15 @@
         <EditorIndex Value="5"/>
         <TopLine Value="173"/>
         <CursorPos X="49" Y="191"/>
-        <UsageCount Value="183"/>
+        <UsageCount Value="208"/>
         <Loaded Value="True"/>
-      </Unit>
-      <Unit>
-        <Filename Value="engine\src\engine.pas"/>
-        <EditorIndex Value="11"/>
-        <TopLine Value="94"/>
-        <CursorPos X="5" Y="135"/>
-        <UsageCount Value="49"/>
-        <Loaded Value="True"/>
-      </Unit>
-      <Unit>
-        <Filename Value="engine\external\sdl2\sdlrenderer.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="606"/>
-        <CursorPos X="10" Y="634"/>
-        <UsageCount Value="12"/>
-      </Unit>
-      <Unit>
-        <Filename Value="C:\lazarus\fpc\3.2.2\source\rtl\inc\file.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="380"/>
-        <CursorPos X="3" Y="393"/>
-        <UsageCount Value="9"/>
-      </Unit>
-      <Unit>
-        <Filename Value="src\res\res_enum.pas"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="13" Y="10"/>
-        <UsageCount Value="31"/>
       </Unit>
       <Unit>
         <Filename Value="src\entity.inc"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos Y="16"/>
-        <UsageCount Value="166"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit>
-      <Unit>
-        <Filename Value="engine\src\inc\sys.inc"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos Y="10"/>
-        <UsageCount Value="9"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit>
-      <Unit>
-        <Filename Value="C:\lazarus\fpc\3.2.2\source\rtl\inc\system.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="290"/>
-        <CursorPos X="6" Y="309"/>
-        <UsageCount Value="8"/>
-      </Unit>
-      <Unit>
-        <Filename Value="C:\lazarus\fpc\3.2.2\source\rtl\inc\text.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="436"/>
-        <CursorPos X="3" Y="438"/>
-        <UsageCount Value="8"/>
-      </Unit>
-      <Unit>
-        <Filename Value="engine\src\inc\image.inc"/>
-        <EditorIndex Value="-1"/>
-        <UsageCount Value="1"/>
+        <UsageCount Value="191"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
@@ -203,50 +148,8 @@
         <EditorIndex Value="9"/>
         <TopLine Value="61"/>
         <CursorPos Y="70"/>
-        <UsageCount Value="121"/>
+        <UsageCount Value="146"/>
         <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit>
-      <Unit>
-        <Filename Value="engine\external\sdl2\sdlerror.inc"/>
-        <EditorIndex Value="12"/>
-        <CursorPos X="10" Y="10"/>
-        <UsageCount Value="56"/>
-        <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit>
-      <Unit>
-        <Filename Value="engine\external\sdl2\sdl2_ttf.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="156"/>
-        <CursorPos X="10" Y="183"/>
-        <UsageCount Value="13"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit>
-      <Unit>
-        <Filename Value="engine\external\sdl2\sdl.inc"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="24" Y="8"/>
-        <UsageCount Value="13"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit>
-      <Unit>
-        <Filename Value="C:\lazarus\fpc\3.2.2\source\rtl\objpas\sysutils\sysutils.inc"/>
-        <EditorIndex Value="3"/>
-        <TopLine Value="770"/>
-        <CursorPos X="3" Y="821"/>
-        <UsageCount Value="41"/>
-        <Loaded Value="True"/>
-      </Unit>
-      <Unit>
-        <Filename Value="engine\src\event.pas"/>
-        <UnitName Value="Event"/>
-        <EditorIndex Value="1"/>
-        <TopLine Value="32"/>
-        <CursorPos X="3" Y="96"/>
-        <UsageCount Value="36"/>
-        <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
         <Filename Value="src\sensor.pas"/>
@@ -255,9 +158,95 @@
         <EditorIndex Value="10"/>
         <TopLine Value="12"/>
         <CursorPos X="20" Y="31"/>
-        <UsageCount Value="23"/>
+        <UsageCount Value="48"/>
         <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="engine\src\engine.pas"/>
+        <EditorIndex Value="11"/>
+        <TopLine Value="94"/>
+        <CursorPos X="5" Y="135"/>
+        <UsageCount Value="62"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="engine\external\sdl2\sdlrenderer.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="606"/>
+        <CursorPos X="10" Y="634"/>
+        <UsageCount Value="9"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\lazarus\fpc\3.2.2\source\rtl\inc\file.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="380"/>
+        <CursorPos X="3" Y="393"/>
+        <UsageCount Value="6"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\res\res_enum.pas"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="13" Y="10"/>
+        <UsageCount Value="28"/>
+      </Unit>
+      <Unit>
+        <Filename Value="engine\src\inc\sys.inc"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos Y="10"/>
+        <UsageCount Value="6"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\lazarus\fpc\3.2.2\source\rtl\inc\system.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="290"/>
+        <CursorPos X="6" Y="309"/>
+        <UsageCount Value="5"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\lazarus\fpc\3.2.2\source\rtl\inc\text.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="436"/>
+        <CursorPos X="3" Y="438"/>
+        <UsageCount Value="5"/>
+      </Unit>
+      <Unit>
+        <Filename Value="engine\external\sdl2\sdlerror.inc"/>
+        <EditorIndex Value="12"/>
+        <CursorPos X="10" Y="10"/>
+        <UsageCount Value="69"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="engine\external\sdl2\sdl2_ttf.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="156"/>
+        <CursorPos X="10" Y="183"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="engine\external\sdl2\sdl.inc"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="24" Y="8"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\lazarus\fpc\3.2.2\source\rtl\objpas\sysutils\sysutils.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="770"/>
+        <CursorPos X="3" Y="821"/>
+        <UsageCount Value="38"/>
+      </Unit>
+      <Unit>
+        <Filename Value="engine\src\event.pas"/>
+        <UnitName Value="Event"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="32"/>
+        <CursorPos X="3" Y="96"/>
+        <UsageCount Value="49"/>
+        <Loaded Value="True"/>
       </Unit>
     </Units>
     <Debugger>
@@ -403,7 +392,6 @@
       <List Name="LaunchingApplication" Type="File" Count="1">
         <Item1 Value="C:\Windows\system32\cmd.exe /C ${TargetCmdLine}"/>
       </List>
-      <List Name="CommandLineParameters" Count="1"/>
     </HistoryLists>
   </ProjectSession>
   <Debugging>
