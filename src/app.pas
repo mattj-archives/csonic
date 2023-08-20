@@ -159,13 +159,22 @@ begin
         e := SpawnEntity(x * 24, y * 24, tn);
         Entity_SetState(e, entityStates.STATE_CHILI1);
       end;
+      70: {Enemy "Rabid Mushroom" }
+      begin
+           e := SpawnEntity(x * 24, y * 24, tn);
+         Entity_SetState(e, STATE_RM_IDLE);
+      end;
       71: { Enemy "mosquito" }
       begin
+        //"temp, x1, y1, x2, y2"
         BlockRead(f, x, sizeof(integer));
         BlockRead(f, x, sizeof(integer));
         BlockRead(f, y, sizeof(integer));
-        BlockRead(f, tn, sizeof(integer));
         BlockRead(f, tc, sizeof(integer));
+        BlockRead(f, tc, sizeof(integer));
+
+        e := SpawnEntity(x * 24, y * 24, tn);
+        Entity_SetState(e, STATE_MOSQU_IDLE);
       end;
     end;
   end;

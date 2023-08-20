@@ -8,7 +8,7 @@ uses
   res_enum;
 
 const
-  MAX_ENTITIES = 128;
+  MAX_ENTITIES = 256;
 
 type
 
@@ -54,6 +54,10 @@ type
     entity: PEntity;
     x: integer;
     y: integer;
+
+    { May be filled out so collision response knows the incoming velocity }
+    velX: integer;
+    velY: integer;
   end;
 
   TBoundingBox = record

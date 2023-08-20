@@ -96,7 +96,21 @@ begin
     if mode = SonicModes.Spinning then
     begin
 
-      gPlayer.velY := -12;
+      if gPlayer.velY > 0 then gPlayer.velY := -12;
+
+      explode := SpawnEntity(e^.x, e^.y, 100);
+      // writeln('explode at ', e^.x, ' ', e^.y);
+      Entity_SetState(explode, entityStates.STATE_EXPLODE1);
+
+      e^.flags := 0;
+    end;
+  end;
+
+  if (e^.t = 70) or (e^.t = 71) then
+  begin
+    if mode = SonicModes.Spinning then
+    begin
+      if result.velY > 0 then gPlayer.velY := -12;
 
       explode := SpawnEntity(e^.x, e^.y, 100);
       // writeln('explode at ', e^.x, ' ', e^.y);
@@ -273,15 +287,20 @@ begin
 
     // Does the 2nd trace push back more?
 
-    if gPlayer.velY > 0 then begin
-      if sensorYResult2.y < sensorYResult.y then begin
+    if gPlayer.velY > 0 then
+    begin
+      if sensorYResult2.y < sensorYResult.y then
+      begin
         finalSensor := sensorYResult2;
       end;
-       //if (adj2 < adj) then adj := adj2;
-    end else begin
+      //if (adj2 < adj) then adj := adj2;
+    end
+    else
+    begin
       //if (adj2 > adj) then adj := adj2;
 
-      if sensorYResult2.y > sensorYResult.y then begin
+      if sensorYResult2.y > sensorYResult.y then
+      begin
         finalSensor := sensorYResult2;
       end;
     end;
@@ -292,15 +311,19 @@ begin
 
     //Entity_MoveBy(self, 0, gPlayer.velY, Result);
     //Inc(self^.y, gPlayer.velY + adj);
-    if gPlayer.velY > 0 then begin
-       self^.y := finalSensor.y - 23;
-    end else begin
+    if gPlayer.velY > 0 then
+    begin
+      self^.y := finalSensor.y - 23;
+    end
+    else
+    begin
       self^.y := finalSensor.y;
     end;
 
     gPlayer.groundEntity := nil;
 
-    if (finalSensor.hitType = 2) and (gPlayer.velY > 0) then begin
+    if (finalSensor.hitType = 2) and (gPlayer.velY > 0) then
+    begin
       gPlayer.groundEntity := finalSensor.entity;
     end;
 
@@ -311,6 +334,7 @@ begin
         playerInAir := False;
         //writeln('hit while in air, no longer in air');
       end;
+      finalSensor.velY := gPlayer.velY;;
 
       // Hit something
       gPlayer.velY := 0;
@@ -318,6 +342,7 @@ begin
       if finalSensor.hitType = 2 then
       begin
         Player_HitEntity(self, finalSensor.entity, finalSensor);
+        { TODO: Player may have been bounced! }
       end;
 
       // If the player has been bounced back upwards again, then stay in the air
@@ -408,12 +433,12 @@ begin
 
     if gPlayer.velX > 0 then
     begin
-       SensorX(self^.y + 11, self^.x + 23, self^.x + 23 + gPlayer.velX, sensorXResult);
+      SensorX(self^.y + 11, self^.x + 23, self^.x + 23 + gPlayer.velX, sensorXResult);
       self^.x := sensorXResult.x - 23;
     end
     else
     begin
-        SensorX(self^.y + 11, self^.x, self^.x + gPlayer.velX, sensorXResult);
+      SensorX(self^.y + 11, self^.x, self^.x + gPlayer.velX, sensorXResult);
       self^.x := sensorXResult.x;
     end;
 
