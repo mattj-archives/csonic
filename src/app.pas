@@ -364,7 +364,10 @@ end;
 procedure G_RunFrame; alias: 'G_RunFrame';
   var i: integer;
   e: PEntity;
+  doRunFrame: boolean;
 begin
+
+    doRunFrame := true;
 
     Sys_PollEvents;
     Event_ProcessEvents;
@@ -385,42 +388,48 @@ begin
     end;
 
     if isPaused then begin
-       if not I_WasKeyPressed(kA) then Exit;
+      doRunFrame := false;
+       if I_WasKeyPressed(kA) then doRunFrame := true;
     end;
 
-    Inc(frameCount);
-    if isPaused then writeln('Frame ', frameCount, ' ===================');
+    if doRunFrame then begin
+      Inc(frameCount);
+      if isPaused then writeln('Frame ', frameCount, ' ===================');
 
-    Player_Update(gPlayer.ent);
+      Player_Update(gPlayer.ent);
 
-    for i := 1 to MAX_ENTITIES do
-    begin
-      if (entities[i].flags and 1) = 0 then continue;
-      e := @entities[i];
-
-      Dec(e^.stateFrames);
-
-      if e^.stateFrames <= 0 then
+      for i := 1 to MAX_ENTITIES do
       begin
-        e^.state := entity_states[Ord(e^.state)].nextState;
-        e^.stateFrames := entity_states[Ord(e^.state)].duration;
+        if (entities[i].flags and 1) = 0 then continue;
+        e := @entities[i];
 
-        if entity_states[Ord(e^.state)].func = 999 then
+        Dec(e^.stateFrames);
+
+        if e^.stateFrames <= 0 then
         begin
-          e^.flags := 0;
+          e^.state := entity_states[Ord(e^.state)].nextState;
+          e^.stateFrames := entity_states[Ord(e^.state)].duration;
+
+          if entity_states[Ord(e^.state)].func = 999 then
+          begin
+            e^.flags := 0;
+          end;
+        end;
+
+        if e^.t = 13 then
+        begin
+          MovingPlatform_Update(e);
         end;
       end;
 
-      if e^.t = 13 then
-      begin
-        MovingPlatform_Update(e);
-      end;
-    end;
+      camera.x := gPlayer.ent^.x - 6 * 24;
+      camera.y := gPlayer.ent^.y - 4 * 24;
+      if camera.x < 0 then camera.x := 0;
+      if camera.y < 0 then camera.y := 0;
 
-    camera.x := gPlayer.ent^.x - 6 * 24;
-    camera.y := gPlayer.ent^.y - 4 * 24;
-    if camera.x < 0 then camera.x := 0;
-    if camera.y < 0 then camera.y := 0;
+    end;
+    
+    engine.prevKeys := engine.keys;
 end;
 
 procedure G_Draw; alias:'G_Draw';
