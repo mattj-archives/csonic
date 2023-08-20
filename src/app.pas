@@ -424,14 +424,6 @@ procedure G_Draw; alias:'G_Draw';
 begin
     DrawMap;
 
-    R_DrawText(0, 0, 'Player: ');
-    R_DrawText(42, 0, IntToStr(gPlayer.ent^.x));
-    R_DrawText(42, 9, IntToStr(gPlayer.ent^.y));
-
-    if playerInAir then R_DrawText(0, 18, 'In air');
-    if isPaused then R_DrawText(0, 27, 'Paused');
-    if gPlayer.debugMode then R_DrawText(0, 36, 'Debug mode');
-
     for i := 1 to MAX_ENTITIES do
     begin
       if (entities[i].flags and 1) = 0 then continue;
@@ -445,7 +437,15 @@ begin
       //writeln('draw entity ', i, ' type ', e^.t);
       DrawState(e^.x - camera.x, e^.y - camera.y, e^.state, e^.direction);
     end;
-    
+
+    R_DrawText(0, 0, 'Player: ');
+    R_DrawText(42, 0, IntToStr(gPlayer.ent^.x));
+    R_DrawText(42, 9, IntToStr(gPlayer.ent^.y));
+
+    if playerInAir then R_DrawText(0, 18, 'In air');
+    if isPaused then R_DrawText(0, 27, 'Paused');
+    if gPlayer.debugMode then R_DrawText(0, 36, 'Debug mode');
+
     R_SwapBuffers;
 end;
 

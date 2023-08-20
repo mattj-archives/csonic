@@ -87,6 +87,7 @@ begin
   begin
     // writeln('touch spring');
     gPlayer.velY := -16;
+    self^.y := e^.y - 16;
     Entity_SetState(e, STATE_SPRING1_USE);
   end;
 

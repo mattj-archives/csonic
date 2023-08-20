@@ -264,6 +264,13 @@ begin
     other.top := e^.y;
     other.bottom := e^.y + 24;
 
+    if e^.t = 17 then begin
+      other.left := e^.x;
+      other.right := e^.x + 24;
+      other.bottom := e^.y + 24;
+      other.top := other.bottom - 5;
+    end;
+
     //GetBoxAdjustment(this, other, delta, adjVector);
 
     if deltaX <> 0 then
