@@ -291,6 +291,9 @@ begin
   map[14 * 168 + 6].tile := 4;
   map[14 * 168 + 6].description := 3;
 
+  map[11 * 168 + 3].tile := 4;
+  map[11 * 168 + 3].description := 0;
+
   map[14 * 168 + 7].tile := 4;
   map[14 * 168 + 7].description := 27;
   map[14 * 168 + 8].tile := 4;
@@ -366,6 +369,12 @@ begin
       isPaused := not isPaused;
     end;
 
+    if I_WasKeyPressed(kD) then begin
+      gPlayer.debugMode := not gPlayer.debugMode;
+      gPlayer.velX:=0;
+      gPlayer.velY:= 0;
+    end;
+
     if isPaused then begin
        if not I_WasKeyPressed(kA) then Exit;
     end;
@@ -421,6 +430,7 @@ begin
 
     if playerInAir then R_DrawText(0, 18, 'In air');
     if isPaused then R_DrawText(0, 27, 'Paused');
+    if gPlayer.debugMode then R_DrawText(0, 36, 'Debug mode');
 
     for i := 1 to MAX_ENTITIES do
     begin

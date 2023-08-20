@@ -12,14 +12,17 @@ type
     velX, velY: integer;
     groundEntity: PEntity;
     ent: PEntity;
+    debugMode: boolean;
   end;
 
 procedure Player_Update(self: PEntity);
 
 var
   gPlayer: TPlayer;
+
 var
   playerInAir: boolean;
+
 implementation
 
 type
@@ -79,6 +82,14 @@ var
 begin
   if Result.hitType <> 2 then Exit;
 
+
+  if e^.t = 17 then
+  begin
+    // writeln('touch spring');
+    gPlayer.velY := -16;
+    Entity_SetState(e, STATE_SPRING1_USE);
+  end;
+
   if e^.t = 38 then
   begin
     if mode = SonicModes.Spinning then
@@ -124,12 +135,6 @@ begin
     if this.top >= other.bottom then continue;
     if this.bottom <= other.top then continue;
 
-    if e^.t = 17 then
-    begin
-      // writeln('touch spring');
-      gPlayer.velY := -16;
-      Entity_SetState(e, STATE_SPRING1_USE);
-    end;
 
     if e^.t = 43 then
     begin
@@ -143,23 +148,66 @@ begin
   end;
 end;
 
+procedure DebugMove(self: PEntity);
+begin
+  if I_IsKeyDown(kUp) then
+  begin
+    Inc(gPlayer.velY, -2);
+    if gPlayer.velY < -8 then gPlayer.velY := -8;
+  end;
+
+  if I_IsKeyDown(kDn) then
+  begin
+    Inc(gPlayer.velY, 2);
+    if gPlayer.velY > 8 then gPlayer.velY := 8;
+  end;
+
+  if I_IsKeyDown(kLf) then
+  begin
+    Inc(gPlayer.velX, -2);
+    if gPlayer.velX < -8 then gPlayer.velX := -8;
+  end;
+
+  if I_IsKeyDown(kRt) then
+  begin
+    Inc(gPlayer.velX, 2);
+    if gPlayer.velX > 8 then gPlayer.velX := 8;
+  end;
+
+  if gPlayer.velX < 0 then Inc(gPlayer.velX);
+  if gPlayer.velX > 0 then Dec(gPlayer.velX);
+
+  if gPlayer.velY < 0 then Inc(gPlayer.velY);
+  if gPlayer.velY > 0 then Dec(gPlayer.velY);
+
+  Inc(self^.x, gPlayer.velX);
+  Inc(self^.y, gPlayer.velY);
+
+end;
+
 procedure Player_Update(self: PEntity);
 var
   delta, origin: TVector2;
   playerWasInAir: boolean;
-  Result: THitResult;
   resultVector: TVector2;
-  sensorXResult, sensorYResult, sensorYResult2, adj, adj2: integer;
+  finalSensor, sensorXResult, sensorYResult, sensorYResult2: THitResult;
+  adj, adj2: integer;
   endX, endY: integer;
 
 begin
-  FillChar(Result, sizeof(THitResult), 0);
+
+  if gPlayer.debugMode then
+  begin
+    DebugMove(self);
+    Exit;
+  end;
+
+  //FillChar(Result, sizeof(THitResult), 0);
 
   if mode = SonicModes.None then
   begin
     mode := SonicModes.Standing;
-    self^.state := entityStates.STATE_PLAYER_STAND1;
-    self^.stateFrames := 10;
+    Entity_SetState(self, STATE_PLAYER_STAND1);
     modeTime := Timer_GetTicks;
   end;
 
@@ -196,6 +244,8 @@ begin
 
   delta.y := gPlayer.velY;
 
+  traceEntitySkip := self;
+
   // check what's below us, if we're not moving up
 
   if playerInAir then
@@ -204,47 +254,69 @@ begin
     if gPlayer.velY > 12 then gPlayer.velY := 12;
     //if gPlayer.velY > 1 then gPlayer.velY := 1;
 
-    endY := self^.y + 23 + gPlayer.velY;
+    if gPlayer.velY > 0 then
+    begin
+      endY := self^.y + 23 + gPlayer.velY;
+    end
+    else
+    begin
+      endY := self^.y + gPlayer.velY;
+    end;
 
-    sensorYResult := SensorY(self^.x, self^.y + 11, endY);
-    adj := (sensorYResult - endY);
+    SensorY(self^.x, self^.y + 11, endY, sensorYResult);
+    finalSensor := sensorYResult;
+    adj := (sensorYResult.y - endY);
 
-    sensorYResult2 := SensorY(self^.x + 23, self^.y + 11, endY);
-    adj2 := (sensorYResult2 - endY);
+    SensorY(self^.x + 23, self^.y + 11, endY, sensorYResult2);
+    adj2 := (sensorYResult2.y - endY);
 
-    // Is the 2nd trace push back more?
-    if (adj2 < adj) then adj := adj2;
+    // Does the 2nd trace push back more?
+
+    if gPlayer.velY > 0 then begin
+      if sensorYResult2.y < sensorYResult.y then begin
+        finalSensor := sensorYResult2;
+      end;
+       //if (adj2 < adj) then adj := adj2;
+    end else begin
+      //if (adj2 > adj) then adj := adj2;
+
+      if sensorYResult2.y > sensorYResult.y then begin
+        finalSensor := sensorYResult2;
+      end;
+    end;
 
     // writeln('in air, velY ', gPlayer.velY, ' adj ', adj);
     // writeln('Falling,', self^.y + 11, ' -> ', endY);
     // writeln('         sensorYResult: ', sensorYResult, ', original start was ', self^.y + 11, ', diff from endY: ', sensorYResult - endY);
 
-    if adj <> 0 then begin
-      result.HitType := 1;
+    //Entity_MoveBy(self, 0, gPlayer.velY, Result);
+    //Inc(self^.y, gPlayer.velY + adj);
+    if gPlayer.velY > 0 then begin
+       self^.y := finalSensor.y - 23;
+    end else begin
+      self^.y := finalSensor.y;
     end;
 
-    //Entity_MoveBy(self, 0, gPlayer.velY, Result);
-    Inc(self^.y, gPlayer.velY + adj);
-    gPlayer.groundEntity:=nil;
+    gPlayer.groundEntity := nil;
 
-    if Result.hitType = 0 then
-    begin
+    if (finalSensor.hitType = 2) and (gPlayer.velY > 0) then begin
+      gPlayer.groundEntity := finalSensor.entity;
+    end;
 
-    end
-    else
+    if finalSensor.hitType <> 0 then
     begin
       if gPlayer.velY > 0 then
       begin
         playerInAir := False;
         //writeln('hit while in air, no longer in air');
       end;
-      
+
       // Hit something
       gPlayer.velY := 0;
 
-      if Result.hitType = 2 then
+      if finalSensor.hitType = 2 then
       begin
-        Player_HitEntity(self, Result.entity, Result);
+        Player_HitEntity(self, finalSensor.entity, finalSensor);
       end;
 
       // If the player has been bounced back upwards again, then stay in the air
@@ -264,20 +336,35 @@ begin
 
     endY := self^.y + 26;
 
-    sensorYResult := SensorY(self^.x, self^.y + 11, endY);
-    adj := (sensorYResult - endY);
+    SensorY(self^.x, self^.y + 11, endY, sensorYResult);
+    adj := (sensorYResult.y - endY);
 
-    sensorYResult2 := SensorY(self^.x + 23, self^.y + 11, endY);
-    adj2 := (sensorYResult2 - endY);
+    SensorY(self^.x + 23, self^.y + 11, endY, sensorYResult2);
+    adj2 := (sensorYResult2.y - endY);
+
+    { TODO: Touch entities hit by gravity }
 
     //writeln('Ground check: ', sensorYResult, ' ', sensorYResult2, ' adj ', adj, adj2);
 
-    if (sensorYResult <> self^.y + 23) and (sensorYResult2 <> self^.y + 23) then begin
+    if (sensorYResult.y <> self^.y + 23) and (sensorYResult2.y <> self^.y + 23) then
+    begin
       gPlayer.groundEntity := nil;
       if not playerInAir then
       begin
         playerInAir := True;
         // writeln('player is now in air, ', gPlayer.velY);
+      end;
+    end;
+
+    if sensorYResult.hitType = 2 then
+    begin
+      Player_HitEntity(self, sensorYResult.entity, sensorYResult);
+    end
+    else
+    begin
+      if sensorYResult2.hitType = 2 then
+      begin
+        Player_HitEntity(self, sensorYResult2.entity, sensorYResult2);
       end;
     end;
 
@@ -301,7 +388,7 @@ begin
     //  begin
     //    gPlayer.groundEntity := nil;
     //  end;
-    //
+
     //  if Result.hitType = 2 then
     //  begin
     //    gPlayer.groundEntity := Result.entity;
@@ -320,41 +407,32 @@ begin
 
     if gPlayer.velX > 0 then
     begin
-      sensorXResult := SensorX(self^.y + 11, self^.x + 23, self^.x + 23 + gPlayer.velX);
-      self^.x := sensorXResult - 23;
+       SensorX(self^.y + 11, self^.x + 23, self^.x + 23 + gPlayer.velX, sensorXResult);
+      self^.x := sensorXResult.x - 23;
     end
     else
     begin
-      sensorXResult :=
-        SensorX(self^.y + 11, self^.x, self^.x + gPlayer.velX);
-      self^.x := sensorXResult;
+        SensorX(self^.y + 11, self^.x, self^.x + gPlayer.velX, sensorXResult);
+      self^.x := sensorXResult.x;
     end;
 
-    if playerInAir then
+    if not playerInAir then
     begin
-      //Entity_MoveBy(self, gPlayer.velX, 0, Result);
-    end
-    else
-    begin
-
-
 
       { Keep player stuck to the ground, if possible... }
       endY := self^.y + 28;
 
-      sensorYResult := SensorY(self^.x, self^.y + 11, endY);
-      adj := (sensorYResult - endY);
+      SensorY(self^.x, self^.y + 11, endY, sensorYResult);
+      adj := (sensorYResult.y - endY);
 
-      sensorYResult2 := SensorY(self^.x + 23, self^.y + 11, endY);
-      adj2 := (sensorYResult2 - endY);
-
+      SensorY(self^.x + 23, self^.y + 11, endY, sensorYResult2);
+      adj2 := (sensorYResult2.y - endY);
 
       // writeln('Terrain move sensorY results: ', sensorYResult, ' ', sensorYResult2, ' adj: ', adj, ' ', adj2);
 
-      if sensorYResult2 < sensorYResult then sensorYResult := sensorYResult2;
+      if sensorYResult2.y < sensorYResult.y then sensorYResult := sensorYResult2;
 
-      self^.y := sensorYResult - 23;
-
+      self^.y := sensorYResult.y - 23;
 
     end;
     if gPlayer.velX > 0 then self^.direction := 4;
@@ -417,5 +495,5 @@ begin
   playerInAir := True;
   mode := SonicModes.None;
   gPlayer.groundEntity := nil;
-
+  gPlayer.debugMode := False;
 end.

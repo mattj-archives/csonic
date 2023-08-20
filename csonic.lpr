@@ -34,7 +34,7 @@ procedure MoveConsoleWindow;
 var wnd: HWND;
 begin
   wnd := GetConsoleWindow;
-  SetWindowPos(wnd, 0, 640 * 2 - 5, 0, 600, 1040, 0);
+  SetWindowPos(wnd, 0, 740, 0, 1000, 1040, 0);
 end;
 {$endif}
 
