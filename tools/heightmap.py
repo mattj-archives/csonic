@@ -1,3 +1,5 @@
+import json
+
 import PIL.Image
 
 
@@ -11,7 +13,7 @@ class HeightMapTool:
         heights = [0 for i in range(0, 24)]
         for x in range(0, 24):
             for y in range(ty * 24, ty * 24 + 24):
-                if img[y * img.size[1] + (tx * 24 + x)] == (255, 255, 255):
+                if img[y * img.size[1] + (tx * 24 + x)] == (255, 255, 255, 255):
                     h = 24 - (y - ty * 24)
                     # print(f'height found at x={x}', h)
                     heights[x] = h
@@ -27,10 +29,13 @@ class HeightMapTool:
         heights = []
 
         for ty in range(0, 16):
-            for tx in range(0, 16):
+            for tx in range(0, 24):
                 heights.append(self.get_heights(data, tx, ty))
 
         print("heights:", heights)
+
+        with open("dev/height.json", "wt") as heightsjson:
+            heightsjson.write(json.dumps(heights))
 
         with open("height.dat", "wb") as f:
             for h in heights:

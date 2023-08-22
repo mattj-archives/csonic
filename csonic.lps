@@ -16,7 +16,8 @@
       <Unit>
         <Filename Value="src\app.pas"/>
         <IsPartOfProject Value="True"/>
-        <TopLine Value="134"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="178"/>
         <CursorPos Y="165"/>
         <UsageCount Value="269"/>
         <Loaded Value="True"/>
@@ -126,10 +127,9 @@
         <Filename Value="src\player.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Player"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="3"/>
         <TopLine Value="86"/>
-        <CursorPos X="51" Y="113"/>
+        <CursorPos X="39" Y="96"/>
         <UsageCount Value="263"/>
         <Loaded Value="True"/>
       </Unit>
@@ -138,21 +138,14 @@
         <EditorIndex Value="10"/>
         <TopLine Value="87"/>
         <CursorPos X="36" Y="110"/>
-        <UsageCount Value="97"/>
+        <UsageCount Value="109"/>
         <Loaded Value="True"/>
-      </Unit>
-      <Unit>
-        <Filename Value="engine\external\sdl2\sdlrenderer.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="606"/>
-        <CursorPos X="10" Y="634"/>
-        <UsageCount Value="3"/>
       </Unit>
       <Unit>
         <Filename Value="src\res\res_enum.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="13" Y="10"/>
-        <UsageCount Value="21"/>
+        <UsageCount Value="18"/>
       </Unit>
       <Unit>
         <Filename Value="src\entity.inc"/>
@@ -182,18 +175,10 @@
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
-        <Filename Value="engine\external\sdl2\sdl2_ttf.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="156"/>
-        <CursorPos X="10" Y="183"/>
-        <UsageCount Value="3"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit>
-      <Unit>
         <Filename Value="engine\external\sdl2\sdl.inc"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="24" Y="8"/>
-        <UsageCount Value="3"/>
+        <UsageCount Value="0"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
@@ -201,7 +186,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="763"/>
         <CursorPos X="3" Y="821"/>
-        <UsageCount Value="86"/>
+        <UsageCount Value="83"/>
       </Unit>
       <Unit>
         <Filename Value="engine\src\event.pas"/>
@@ -209,7 +194,7 @@
         <EditorIndex Value="1"/>
         <TopLine Value="32"/>
         <CursorPos X="3" Y="96"/>
-        <UsageCount Value="84"/>
+        <UsageCount Value="100"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
@@ -220,7 +205,7 @@
         <EditorIndex Value="8"/>
         <TopLine Value="237"/>
         <CursorPos X="15" Y="264"/>
-        <UsageCount Value="119"/>
+        <UsageCount Value="151"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
