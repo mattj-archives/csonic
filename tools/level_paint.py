@@ -3,8 +3,12 @@ import json
 import random
 
 import xml.etree.ElementTree as ET
+from xml.dom import minidom
+
 import PIL.Image
 from PIL import ImageDraw
+
+from tiledlib import Tileset, TiledLayer, TiledMap
 
 
 class LevelPaintTool:
@@ -179,6 +183,24 @@ class LevelPaintTool:
 
 
 def testAddLayer():
+
+    # Tileset.from_file("dev/Height.tsx")
+
+    map = TiledMap.from_file("dev/testmap.tmx")
+    # map.tilesets[0].newfirstgid = 300
+    map.tilesets[1].newfirstgid = 500
+    map.apply_new_firstgids()
+    with open("dev/test1.tmx", "wt") as f:
+        _bytes = ET.tostring(map.to_xml(), xml_declaration=True, encoding='UTF-8')
+
+        xmlstr = minidom.parseString(_bytes).toprettyxml(indent="   ")
+
+        f.write(xmlstr)
+    print(ET.tostring(map.to_xml(), xml_declaration=True, encoding='UTF-8'))
+    # tree = ET.ElementTree(root_element)
+    # tree.write("tiled_map.xml"
+    return
+
     tree = ET.parse("dev/testmap.tmx")
     root = tree.getroot()
     newtree = copy.deepcopy(tree)
@@ -194,6 +216,9 @@ def testAddLayer():
     print(ET.tostring(newroot))
 
     layer1 = root.find('.//layer[@name="Tile Layer 1"]')
+
+    l = TiledLayer.from_element(layer1)
+
     layer1.set("id", "1")
     newroot.append(layer1)
 
