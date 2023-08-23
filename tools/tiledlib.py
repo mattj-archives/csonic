@@ -1,5 +1,6 @@
 import os
 import xml.etree.ElementTree as ET
+from xml.dom import minidom
 
 
 class TilesetImage:
@@ -9,11 +10,26 @@ class TilesetImage:
         self.width = width
         self.height = height
 
+    def to_xml(self):
+        elem = ET.Element("image")
+        elem.set("source", self.source)
+        elem.set("trans", self.trans)
+        elem.set("width", str(self.width))
+        elem.set("height", str(self.height))
+
+        return elem
+
 
 class Tileset:
 
-    def __init__(self, name, tilewidth, tileheight, tilecount, columns, backgroundcolor) -> None:
+    def __init__(self,
+                 version="1.8",
+                 tiledversion="1.8.2",
+                 name="", tilewidth=16, tileheight=16, tilecount=256, columns=16,
+                 backgroundcolor='#000000') -> None:
         super().__init__()
+        self.version=version
+        self.tiledversion=tiledversion
         self.name = name
         self.tilewidth = tilewidth
         self.tileheight = tileheight
@@ -21,7 +37,22 @@ class Tileset:
         self.columns = columns
         self.backgroundcolor = backgroundcolor
 
-        self.image = None
+        self.image: TilesetImage = None
+
+    def to_xml(self):
+        elem = ET.Element("tileset")
+        elem.set('version', self.version)
+        elem.set('tiledversion', self.tiledversion)
+        elem.set('name', self.name)
+        elem.set('tilewidth', str(self.tilewidth))
+        elem.set('tileheight', str(self.tileheight))
+        elem.set('tilecount', str(self.tilecount))
+        elem.set('columns', str(self.columns))
+        elem.set('backgroundcolor', self.backgroundcolor)
+
+        elem.append(self.image.to_xml())
+
+        return elem
 
     def load_from_element(self, root: ET.Element):
         for c in root:
@@ -42,6 +73,8 @@ class Tileset:
     @staticmethod
     def from_element(elem: ET.Element):
         tileset = Tileset(
+            elem.get("version"),
+            elem.get("tiledversion"),
             elem.get("name"),
             int(elem.get("tilewidth")),
             int(elem.get("tileheight")),
@@ -52,6 +85,14 @@ class Tileset:
         tileset.load_from_element(elem)
 
         return tileset
+
+    def write_to_file(self, path):
+        with open(path, "wt") as f:
+            _bytes = ET.tostring(self.to_xml(), xml_declaration=True, encoding='UTF-8')
+
+            xmlstr = minidom.parseString(_bytes).toprettyxml(indent="   ")
+
+            f.write(xmlstr)
 
 
 class TiledLayer:
@@ -99,7 +140,7 @@ class TiledLayer:
 
     def to_xml(self):
         elem = ET.Element("layer")
-        elem.set("id", self.id)
+        elem.set("id", str(self.id))
         elem.set("name", self.name)
         elem.set("width", str(self.width))
         elem.set("height", str(self.height))
@@ -282,3 +323,28 @@ class TiledMap:
                     layer.tiles[i] = new_value
 
         return True
+
+    def layer_for_name(self, name):
+        try:
+            return next(layer for layer in self.layers if layer.name == name)
+        except StopIteration:
+            return None
+
+    def get_next_firstgid(self):
+        max_firstgid = 0
+        for ts in self.tilesets:
+            v = ts.firstgid + ts.tileset.tilecount
+            if v > max_firstgid:
+                max_firstgid = v
+
+        return max_firstgid
+
+    def write_to_file(self, path):
+        with open(path, "wt") as f:
+            _bytes = ET.tostring(self.to_xml(), xml_declaration=True, encoding='UTF-8')
+
+            xmlstr = minidom.parseString(_bytes).toprettyxml(indent="   ")
+
+            f.write(xmlstr)
+
+

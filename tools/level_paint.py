@@ -8,7 +8,7 @@ from xml.dom import minidom
 import PIL.Image
 from PIL import ImageDraw
 
-from tiledlib import Tileset, TiledLayer, TiledMap
+from tiledlib import Tileset, TiledLayer, TiledMap, TilesetImage, TilesetDef
 
 
 class LevelPaintTool:
@@ -33,20 +33,23 @@ class LevelPaintTool:
             self.heights = json.loads(s)
             # print(self.heights)
 
-        tree = ET.parse(map_file_name)
-        root = tree.getroot()
+        tilemap = TiledMap.from_file(map_file_name)
+        layer = tilemap.layer_for_name("Tile Layer 1")
+        # tree = ET.parse(map_file_name)
+        # root = tree.getroot()
 
-        layer = root.find('.//layer[@name="Tile Layer 1"]')
+        # layer = root.find('.//layer[@name="Tile Layer 1"]')
 
         # Get the data element containing the tile data
-        data = layer.find('data')
+        # data = layer.find('data')
 
         # Split the tile data into a list of integers
-        self.tiles = [int(x) for x in data.text.strip().split(',')]
+        # self.tiles = [int(x) for x in data.text.strip().split(',')]
+        self.tiles = layer.tiles
         print(self.tiles)
 
-        self.map_width = 64  # 168
-        self.map_height = 24  # 54
+        self.map_width = tilemap.width
+        self.map_height = tilemap.height
 
         maskImage = PIL.Image.new(mode='1', size=(self.map_width * 24, self.map_height * 24))
 
@@ -136,6 +139,8 @@ class LevelPaintTool:
 
         tileset_image = PIL.Image.new(mode='RGB', size=(16 * 24, 16 * 24))
 
+        new_tile_indices = [0 for _ in range(self.map_width * self.map_height)]
+
         # Generate hashes for each tile
         for ty in range(0, self.map_height):
             for tx in range(0, self.map_width):
@@ -158,10 +163,47 @@ class LevelPaintTool:
                 if h not in tile_hashes:
                     # print('add...')
                     tile_hashes[h] = [tile_count, tx, ty]
+                    idx = tile_count
                     tile_count += 1
+                else:
+                    idx = tile_hashes[h][0]
 
-        tileset_image.show()
-        canvas.show()
+                new_tile_indices[ty * self.map_width + tx] = idx
+
+        print(new_tile_indices)
+
+        tileset_image.save("dev/TEST_rendered.png")
+
+        tileset = Tileset(name="TEST_rendered",
+                          tilewidth=24,
+                          tileheight=24,
+                          tilecount=16 * 16,
+                          columns=16,
+                          backgroundcolor="#000000")
+
+        tileset.image = TilesetImage(source="TEST_rendered.png", trans="00ffff", width=16 * 24, height=16 * 24)
+
+        tileset.write_to_file("dev/TEST_rendered.tsx")
+
+        next_firstgid = tilemap.get_next_firstgid()
+        print('next firstgid: ', next_firstgid)
+
+        tileset_test = TilesetDef(next_firstgid, 'TEST_rendered.tsx', directory='./dev')
+        tilemap.tilesets.append(tileset_test)
+
+        bg_layer = tilemap.layer_for_name("_rendered")
+        if not bg_layer:
+            bg_layer = TiledLayer(100, "_rendered", tilemap.width, tilemap.height)
+
+        bg_layer.tiles = [tileset_test.firstgid + x for x in new_tile_indices]
+
+        tilemap.layers.append(bg_layer)
+        _bytes = ET.tostring(tilemap.to_xml(), xml_declaration=True)
+        print(_bytes)
+        tilemap.write_to_file("dev/test1.tmx")
+
+        # tileset_image.show()
+        # canvas.show()
 
     def is_masked_pixel(self, x, y):
         tx = x // 24
@@ -197,8 +239,6 @@ def testAddLayer():
 
         f.write(xmlstr)
     print(ET.tostring(map.to_xml(), xml_declaration=True, encoding='UTF-8'))
-    # tree = ET.ElementTree(root_element)
-    # tree.write("tiled_map.xml"
     return
 
     tree = ET.parse("dev/testmap.tmx")
@@ -245,6 +285,6 @@ def testAddLayer():
 
 
 if __name__ == "__main__":
-    testAddLayer()
+    # testAddLayer()
 
-    # LevelPaintTool("dev/testmap.tmx")
+    LevelPaintTool("dev/testmap.tmx")
