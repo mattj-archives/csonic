@@ -72,7 +72,7 @@ class LevelPaintTool:
         map_width_pixels = self.map_width * 24
 
         mask_data = maskImage.getdata()
-        canvas = PIL.Image.new(mode='RGB', size=(self.map_width * 24, self.map_height * 24))
+        canvas = PIL.Image.new(mode='RGBA', size=(self.map_width * 24, self.map_height * 24))
 
         # Draw the background mask first
 
@@ -137,7 +137,7 @@ class LevelPaintTool:
         tile_hashes = {}
         tile_count = 0
 
-        tileset_image = PIL.Image.new(mode='RGB', size=(16 * 24, 16 * 24))
+        tileset_image = PIL.Image.new(mode='RGBA', size=(16 * 24, 16 * 24))
 
         new_tile_indices = [0 for _ in range(self.map_width * self.map_height)]
 
@@ -179,7 +179,7 @@ class LevelPaintTool:
                           tileheight=24,
                           tilecount=16 * 16,
                           columns=16,
-                          backgroundcolor="#000000")
+                          backgroundcolor="#00000000")
 
         tileset.image = TilesetImage(source="TEST_rendered.png", trans="00ffff", width=16 * 24, height=16 * 24)
 
@@ -188,7 +188,9 @@ class LevelPaintTool:
         next_firstgid = tilemap.get_next_firstgid()
         print('next firstgid: ', next_firstgid)
 
-        tileset_test = TilesetDef(next_firstgid, 'TEST_rendered.tsx', directory='./dev')
+        # Find tileset with tileset_type="rendered"
+
+        tileset_test = TilesetDef.from_source(next_firstgid, 'TEST_rendered.tsx', directory='./dev')
         tilemap.tilesets.append(tileset_test)
 
         bg_layer = tilemap.layer_for_name("_rendered")
@@ -203,7 +205,7 @@ class LevelPaintTool:
         tilemap.write_to_file("dev/test1.tmx")
 
         # tileset_image.show()
-        # canvas.show()
+        canvas.show()
 
     def is_masked_pixel(self, x, y):
         tx = x // 24
@@ -228,17 +230,19 @@ def testAddLayer():
 
     # Tileset.from_file("dev/Height.tsx")
 
-    map = TiledMap.from_file("dev/testmap.tmx")
+    # map = TiledMap.from_file("dev/testmap.tmx")
+    map = TiledMap.from_file("dev/test1.tmx")
     # map.tilesets[0].newfirstgid = 300
-    map.tilesets[1].newfirstgid = 500
-    map.apply_new_firstgids()
-    with open("dev/test1.tmx", "wt") as f:
-        _bytes = ET.tostring(map.to_xml(), xml_declaration=True, encoding='UTF-8')
-
-        xmlstr = minidom.parseString(_bytes).toprettyxml(indent="   ")
-
-        f.write(xmlstr)
+    # map.tilesets[1].newfirstgid = 500
+    # map.apply_new_firstgids()
+    # with open("dev/test1.tmx", "wt") as f:
+    #     _bytes = ET.tostring(map.to_xml(), xml_declaration=True, encoding='UTF-8')
+    #
+    #     xmlstr = minidom.parseString(_bytes).toprettyxml(indent="   ")
+    #
+    #     f.write(xmlstr)
     print(ET.tostring(map.to_xml(), xml_declaration=True, encoding='UTF-8'))
+    map.write_to_file("dev/test1b.tmx")
     return
 
     tree = ET.parse("dev/testmap.tmx")
@@ -285,6 +289,6 @@ def testAddLayer():
 
 
 if __name__ == "__main__":
-    # testAddLayer()
+    testAddLayer()
 
-    LevelPaintTool("dev/testmap.tmx")
+    # LevelPaintTool("dev/testmap.tmx")

@@ -2,6 +2,34 @@ import os
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 
+class Property:
+    def __init__(self, name, value):
+        self.name = name
+        self.value = value
+
+
+def read_properties(elem: ET.Element):
+    props = []
+    for c in elem:
+        if c.tag == 'property':
+            prop = Property(c.get("name"), c.get("value"))
+            props.append(prop)
+            continue
+
+        print('read_properties: unknown tag ', c.tag)
+
+    return props
+
+
+def write_properties(props) -> ET.Element:
+    elem_props = ET.Element("properties")
+    p: Property
+    for p in props:
+        elem_prop = ET.Element("property")
+        elem_prop.set("name", p.name)
+        elem_prop.set("value", p.value)
+        elem_props.append(elem_prop)
+    return elem_props
 
 class TilesetImage:
     def __init__(self, source, trans, width, height):
@@ -39,10 +67,13 @@ class Tileset:
 
         self.image: TilesetImage = None
 
-    def to_xml(self):
-        elem = ET.Element("tileset")
-        elem.set('version', self.version)
-        elem.set('tiledversion', self.tiledversion)
+        self.properties = []
+
+    def write_to_xml_element(self, elem: ET.Element):
+        if self.version:
+            elem.set('version', self.version)
+        if self.tiledversion:
+            elem.set('tiledversion', self.tiledversion)
         elem.set('name', self.name)
         elem.set('tilewidth', str(self.tilewidth))
         elem.set('tileheight', str(self.tileheight))
@@ -52,6 +83,12 @@ class Tileset:
 
         elem.append(self.image.to_xml())
 
+        if self.properties:
+            elem.append(write_properties(self.properties))
+
+    def to_xml(self):
+        elem = ET.Element("tileset")
+        self.write_to_xml_element(elem)
         return elem
 
     def load_from_element(self, root: ET.Element):
@@ -63,6 +100,14 @@ class Tileset:
                 height = int(c.get("height"))
 
                 self.image = TilesetImage(source, trans, width, height)
+
+                continue
+
+            if c.tag == 'properties':
+                self.properties = read_properties(c)
+                continue
+
+            print("Tileset: unknown tag", c.tag)
 
     @staticmethod
     def from_file(path):
@@ -153,26 +198,48 @@ class TiledLayer:
 
 
 class TilesetDef:
-    def __init__(self, firstgid, source, directory="./"):
-        self.firstgid = int(firstgid)
-        self.source = source
 
+    def __init__(self,
+                 firstgid: int,
+                 source=None,
+                 tileset: Tileset = None,
+                 directory="./"):
+        self.firstgid = firstgid
         self.newfirstgid = self.firstgid
 
-        self.tileset: Tileset = Tileset.from_file(f'{directory}/{self.source}')
+        self.source = source
+
+        if self.source:
+            self.tileset = Tileset.from_file(f'{directory}/{self.source}')
+        else:
+            self.tileset = tileset
+
+    @staticmethod
+    def from_source(firstgid: int, source: str, directory="./"):
+        return TilesetDef(firstgid=firstgid, source=source, directory=directory)
 
     @staticmethod
     def from_element(elem: ET.Element, directory="."):
-        return TilesetDef(
-            elem.get("firstgid"),
-            elem.get("source"),
-            directory
+
+        if not elem.get("source"):
+            return TilesetDef(firstgid=int(elem.get("firstgid")),
+                              source=None,
+                              tileset=Tileset.from_element(elem),
+                              directory=directory)
+
+        return TilesetDef.from_source(
+            firstgid=int(elem.get("firstgid")),
+            source=elem.get("source"),
+            directory=directory
         )
 
     def to_xml(self):
         elem = ET.Element("tileset")
         elem.set("firstgid", str(self.firstgid))
-        elem.set("source", self.source)
+        if self.source is not None:
+            elem.set("source", self.source)
+        else:
+            self.tileset.write_to_xml_element(elem)
 
         return elem
 
@@ -208,6 +275,8 @@ class TiledMap:
 
         self.tilesets: [TilesetDef] = []
         self.layers: [TiledLayer] = []
+
+        self.properties = []
 
     @staticmethod
     def from_element(elem: ET.Element, directory="."):
@@ -248,7 +317,10 @@ class TiledMap:
                 self.layers.append(layer)
                 continue
 
-            print("unknown tag: ", c)
+            if c.tag == 'properties':
+                self.properties = read_properties(c)
+
+            print("TiledMap: unknown tag: ", c)
 
     def to_xml(self):
         elem = ET.Element("map")
@@ -269,6 +341,9 @@ class TiledMap:
 
         for c in self.layers:
             elem.append(c.to_xml())
+
+        if self.properties:
+            elem.append(write_properties(self.properties))
 
         return elem
 
