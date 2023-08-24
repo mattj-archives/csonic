@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 
 class Property:
-    def __init__(self, name, value):
+    def __init__(self, *, name, value):
         self.name = name
         self.value = value
 
@@ -12,7 +12,7 @@ def read_properties(elem: ET.Element):
     props = []
     for c in elem:
         if c.tag == 'property':
-            prop = Property(c.get("name"), c.get("value"))
+            prop = Property(name=c.get("name"), value=c.get("value"))
             props.append(prop)
             continue
 
@@ -67,7 +67,7 @@ class Tileset:
 
         self.image: TilesetImage = None
 
-        self.properties = []
+        self.properties: [Property] = []
 
     def write_to_xml_element(self, elem: ET.Element):
         if self.version:
@@ -142,12 +142,14 @@ class Tileset:
 
 class TiledLayer:
 
-    def __init__(self, id, name, width, height) -> None:
+    def __init__(self, id, name, width, height, visible, locked) -> None:
         super().__init__()
         self.id = id
         self.name = name
         self.width = width
         self.height = height
+        self.visible = visible
+        self.locked = locked
         self.tiles = []
 
     @staticmethod
@@ -156,7 +158,9 @@ class TiledLayer:
             elem.get("id"),
             elem.get("name"),
             int(elem.get("width")),
-            int(elem.get("height"))
+            int(elem.get("height")),
+            int(elem.get("visible") or 1),
+            int(elem.get("locked") or 0)
         )
         layer.load_from_element(elem)
         return layer
@@ -189,6 +193,8 @@ class TiledLayer:
         elem.set("name", self.name)
         elem.set("width", str(self.width))
         elem.set("height", str(self.height))
+        elem.set("visible", str(self.visible))
+        elem.set("locked", str(self.locked))
 
         elem_data = ET.Element("data")
         elem_data.set("encoding", "csv")
@@ -244,7 +250,7 @@ class TilesetDef:
         return elem
 
     def __repr__(self) -> str:
-        return f'<TilesetDef firstgid={self.firstgid} newfirstgid={self.newfirstgid} source={self.source}>'
+        return f'<TilesetDef firstgid={self.firstgid} newfirstgid={self.newfirstgid} source={self.source} tileset.name={self.tileset.name}>'
 
 
 class TiledMap:
@@ -394,8 +400,12 @@ class TiledMap:
                     offs = t - ts.firstgid
 
                     new_value = ts.newfirstgid + offs
-                    print(t, '->', new_value)
+                    if t != new_value:
+                        print(t, '->', new_value)
                     layer.tiles[i] = new_value
+
+        for ts in self.tilesets:
+            ts.firstgid = ts.newfirstgid
 
         return True
 
@@ -413,6 +423,17 @@ class TiledMap:
                 max_firstgid = v
 
         return max_firstgid
+
+    def clean_firstgids(self):
+        firstgid = 1
+        ts: TilesetDef
+        for ts in self.tilesets:
+            print(f'new first gid for {ts.tileset.name}: {firstgid}')
+            ts.newfirstgid = firstgid
+            firstgid += ts.tileset.tilecount + 1
+            firstgid += (firstgid % 100)
+
+        self.apply_new_firstgids()
 
     def write_to_file(self, path):
         with open(path, "wt") as f:

@@ -8,12 +8,12 @@ from xml.dom import minidom
 import PIL.Image
 from PIL import ImageDraw
 
-from tiledlib import Tileset, TiledLayer, TiledMap, TilesetImage, TilesetDef
+from tiledlib import Tileset, TiledLayer, TiledMap, TilesetImage, TilesetDef, Property
 
 
 class LevelPaintTool:
 
-    def __init__(self, map_file_name) -> None:
+    def __init__(self, map_file_name, out_map_file_name) -> None:
         super().__init__()
 
         self.grass_upper = []
@@ -46,11 +46,11 @@ class LevelPaintTool:
         # Split the tile data into a list of integers
         # self.tiles = [int(x) for x in data.text.strip().split(',')]
         self.tiles = layer.tiles
-        print(self.tiles)
 
         self.map_width = tilemap.width
         self.map_height = tilemap.height
 
+        print("Generating mask image")
         maskImage = PIL.Image.new(mode='1', size=(self.map_width * 24, self.map_height * 24))
 
         for ty in range(0, self.map_height):
@@ -181,31 +181,34 @@ class LevelPaintTool:
                           columns=16,
                           backgroundcolor="#00000000")
 
+        tileset.properties.append(Property(name="tileset_type", value="_rendered"))
+
         tileset.image = TilesetImage(source="TEST_rendered.png", trans="00ffff", width=16 * 24, height=16 * 24)
-
-        tileset.write_to_file("dev/TEST_rendered.tsx")
-
         next_firstgid = tilemap.get_next_firstgid()
-        print('next firstgid: ', next_firstgid)
 
-        # Find tileset with tileset_type="rendered"
+        tileset_def = get_map_tilesetdef_with_property(tilemap, "tileset_type", "_rendered")
 
-        tileset_test = TilesetDef.from_source(next_firstgid, 'TEST_rendered.tsx', directory='./dev')
-        tilemap.tilesets.append(tileset_test)
+        if tileset_def:
+            tilemap.tilesets.remove(tileset_def)
+
+        tileset_def = TilesetDef(firstgid=next_firstgid, source=None, tileset=tileset)
+        tilemap.tilesets.append(tileset_def)
 
         bg_layer = tilemap.layer_for_name("_rendered")
-        if not bg_layer:
-            bg_layer = TiledLayer(100, "_rendered", tilemap.width, tilemap.height)
+        if bg_layer:
+            tilemap.layers.remove(bg_layer)
 
-        bg_layer.tiles = [tileset_test.firstgid + x for x in new_tile_indices]
+        bg_layer = TiledLayer(100, "_rendered", tilemap.width, tilemap.height, locked=1, visible=1)
+
+        bg_layer.tiles = [tileset_def.firstgid + x for x in new_tile_indices]
 
         tilemap.layers.append(bg_layer)
-        _bytes = ET.tostring(tilemap.to_xml(), xml_declaration=True)
-        print(_bytes)
-        tilemap.write_to_file("dev/test1.tmx")
+
+        tilemap.clean_firstgids()
+        tilemap.write_to_file(out_map_file_name)
 
         # tileset_image.show()
-        canvas.show()
+        # canvas.show()
 
     def is_masked_pixel(self, x, y):
         tx = x // 24
@@ -226,12 +229,24 @@ class LevelPaintTool:
         return tile_bottom - tile_heights[x % 24] <= tile_top + (y % 24)
 
 
-def testAddLayer():
+def get_map_tilesetdef_with_property(map: TiledMap, name, value):
+    ts: TilesetDef
 
+    for ts in map.tilesets:
+        for prop in ts.tileset.properties:
+            if prop.name == name and prop.value == value:
+                return ts
+
+    return None
+
+
+def testAddLayer():
     # Tileset.from_file("dev/Height.tsx")
 
     # map = TiledMap.from_file("dev/testmap.tmx")
     map = TiledMap.from_file("dev/test1.tmx")
+    tsd = get_map_tilesetdef_with_property(map, "tileset_type", "_rendered")
+    print(tsd)
     # map.tilesets[0].newfirstgid = 300
     # map.tilesets[1].newfirstgid = 500
     # map.apply_new_firstgids()
@@ -280,7 +295,7 @@ def testAddLayer():
 
     layer_data = ET.Element("data")
     layer_data.set("encoding", "csv")
-    layer_data.text = ','.join(['0' for i in range(64*32)])
+    layer_data.text = ','.join(['0' for i in range(64 * 32)])
     layer.append(layer_data)
 
     root.append(layer)
@@ -289,6 +304,7 @@ def testAddLayer():
 
 
 if __name__ == "__main__":
-    testAddLayer()
+    # testAddLayer()
 
-    # LevelPaintTool("dev/testmap.tmx")
+    # LevelPaintTool("dev/testmap.tmx", "dev/test1.tmx")
+    LevelPaintTool("dev/test1.tmx", "dev/test1.tmx")
