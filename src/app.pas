@@ -244,10 +244,10 @@ begin
 
           //R_DrawLine(x * 24 - camera.x, y * 24 - camera.y, x * 24 - camera.x + 24, y * 24 - camera.y + 24, 255, 255, 255, 255);
           R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[SPRITE_T1]^);
-
+{
           c := $aa;
           if ((x + y) mod 2) = 0 then c := $7f;
-{
+
           for i := 0 to 23 do begin
             R_DrawLine(
             x * 24 + i - camera.x,

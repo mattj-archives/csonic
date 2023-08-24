@@ -14,6 +14,11 @@ cp levels/*.l2 vfs/levels
 mkdir vfs/GFX3
 cp gfx3/* vfs/GFX3
 
+mkdir vfs/dev
+cp dev/out_test.l3 vfs/dev
+cp dev/TEST_rendered.png vfs/dev
+
+
 FPC=~/bin/ppcrosswasm32-embedded
 FPC_FLAGS=@fpcwasm.cfg
 

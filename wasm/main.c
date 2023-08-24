@@ -29,7 +29,22 @@ void Image_Load_Impl(const char *filename, image_t *img) {
     memcpy(img->data, &i, sizeof(Image));
 }
 
-void DrawSubImageTransparent(image_t img, int dstX, int dstY, int srcX, int srcY, int srcWidth, int srcHeight) {
+void DrawSubImageTransparent(image_t img, short dstX, short dstY, short srcX, short srcY, short srcWidth, short srcHeight) {
+    if(dstX < 0) {
+        srcX -= dstX;
+        srcWidth += dstX;
+        dstX = 0;
+    }
+
+    if(dstY < 0) {
+        srcY -= dstY;
+        srcHeight += dstY;
+        dstY = 0;
+    }
+
+    //if (srcWidth <= 0) return;
+
+
     Rectangle srcRect = {srcX, srcY, srcWidth, srcHeight};
     Rectangle dstRect = {dstX, dstY, srcWidth, srcHeight};
     ImageDraw(&mainImage, *(Image*)img.data,
@@ -82,7 +97,6 @@ int main(void)
             G_Draw();
 
             UpdateTexture(t, mainImage.data);
-            Vector2 pos = {0, 0};
 
             DrawTextureEx(t, (Vector2){0, 0}, 0, 2, WHITE);
         EndDrawing();
