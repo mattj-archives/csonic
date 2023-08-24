@@ -25,6 +25,7 @@ procedure Main;
 
 var
   textures: array[0 .. 200] of pimage_t;
+  renderedTiles: pimage_t;
   isPaused: boolean;
   frameCount: longint;
 
@@ -96,8 +97,42 @@ begin
 
     System.Close(f);
 
+    renderedTiles := Image_Load('dev/TEST_rendered.png');
+
 end;
 
+procedure LoadLevel2(fileName: string);
+var f: file;
+  width, height, tile_type: byte;
+  x, y: integer;
+  tile_desc, tile_vis: integer;
+  tile: ^TTile;
+  begin
+      writeln('LoadLevel2 ', fileName);
+      Assign(f, fileName);
+      Reset(f, 1);
+      BlockRead(f, width, 1);
+      BlockRead(f, height, 1);
+
+      for y := 0 to height - 1 do begin
+        for x := 0 to width - 1 do begin
+            BlockRead(f, tile_type, 1);
+            BlockRead(f, tile_desc, sizeof(integer));
+            BlockRead(f, tile_vis, sizeof(integer));
+
+            tile := @map[y * 168 + x];
+            tile^.tile := 0;
+            if tile_type = 1 then begin
+              tile^.tile := 4;
+              tile^.description:=tile_desc;
+              tile^.color := tile_vis;
+              { vis }
+            end;
+        end;
+      end;
+
+      System.close(f);
+  end;
 
 procedure LoadLevel(fileName: string);
 var
@@ -184,7 +219,8 @@ end;
 procedure DrawMap;
 var
   tileStartX, tileStartY: integer;
-  x, y, i, c: integer;
+  x, y, i, c, tx, ty: integer;
+  idx: integer;
   tile: ^TTile;
 begin
   tileStartX := camera.X div 24;
@@ -203,12 +239,15 @@ begin
         1:
           R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[SPRITE_T2]^);
         4: begin
+          tx := tile^.color mod 16;
+          ty := tile^.color div 16;
+
           //R_DrawLine(x * 24 - camera.x, y * 24 - camera.y, x * 24 - camera.x + 24, y * 24 - camera.y + 24, 255, 255, 255, 255);
           R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[SPRITE_T1]^);
 
           c := $aa;
           if ((x + y) mod 2) = 0 then c := $7f;
-
+{
           for i := 0 to 23 do begin
             R_DrawLine(
             x * 24 + i - camera.x,
@@ -216,7 +255,8 @@ begin
             x * 24 + i - camera.x,
             (y * 24 + 24 - heights[tile^.description][i]) - camera.y, 0, c, 0, 255);
           end;
-          //R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[SPRITE_T2SLOPE]^);
+}
+          R_DrawSubImageTransparent(renderedTiles^, x * 24 - camera.x, y * 24 - camera.y, tx * 24, ty * 24, 24, 24);
         end;
 
       end;
@@ -293,8 +333,9 @@ begin
 
   FillChar(entities, sizeof(TEntity) * MAX_ENTITIES, 0);
   
-  LoadLevel('levels/1_1.l2');
-
+  //LoadLevel('levels/1_1.l2');
+  LoadLevel2('dev/out_test.l3');
+{
   map[14 * 168 + 5].tile := 4;
   map[14 * 168 + 5].description := 2;
   map[14 * 168 + 6].tile := 4;
@@ -325,6 +366,8 @@ begin
   map[15 * 168 + 14].description := 35;
   map[15 * 168 + 15].tile := 4;
   map[15 * 168 + 15].description := 36;
+
+}
   //map[14 * 168 + 6].tile := 1;
 
 
@@ -339,7 +382,7 @@ begin
     //e := SpawnEntity(24 * (6 + i), 14 * 24, 38);
     //Entity_SetState(e, STATE_BOX_RING1);
   end;
-
+{
   mp := PEntityMovingPlatform(SpawnEntity(7 * 24, 12 * 24, 13));
 
   mp^.p[0].x := mp^.x;
@@ -349,7 +392,7 @@ begin
   mp^.dest := 1;
 
   Entity_SetState(mp, STATE_MPLAT);
-
+}
   Event_SetKeyDownProc(OnKeyDown);
   Event_SetKeyUpProc(OnKeyUp);
 
@@ -464,6 +507,7 @@ begin
     if isPaused then R_DrawText(0, 27, 'Paused');
     if gPlayer.debugMode then R_DrawText(0, 36, 'Debug mode');
 
+    //R_DrawSprite(0, 0, renderedTiles^);
     R_SwapBuffers;
 end;
 

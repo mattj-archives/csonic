@@ -172,7 +172,6 @@ class TiledLayer:
             for v in line.split(","):
                 if len(v) > 0:
                     self.tiles.append(int(v))
-        print(len(self.tiles), self.tiles)
 
     def load_from_element(self, elem: ET.Element):
         # Load "data"
