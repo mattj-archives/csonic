@@ -2,6 +2,7 @@ import os
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 
+
 class Property:
     def __init__(self, *, name, value):
         self.name = name
@@ -31,6 +32,7 @@ def write_properties(props) -> ET.Element:
         elem_props.append(elem_prop)
     return elem_props
 
+
 class TilesetImage:
     def __init__(self, source, trans, width, height):
         self.source = source
@@ -56,8 +58,8 @@ class Tileset:
                  name="", tilewidth=16, tileheight=16, tilecount=256, columns=16,
                  backgroundcolor='#000000') -> None:
         super().__init__()
-        self.version=version
-        self.tiledversion=tiledversion
+        self.version = version
+        self.tiledversion = tiledversion
         self.name = name
         self.tilewidth = tilewidth
         self.tileheight = tileheight
@@ -138,6 +140,75 @@ class Tileset:
             xmlstr = minidom.parseString(_bytes).toprettyxml(indent="   ")
 
             f.write(xmlstr)
+
+
+#   <object id="4" gid="1170" x="264" y="240" width="24" height="24"/>
+class TiledObject:
+    def __init__(self, id: int, gid: int, x: float, y: float, width: float, height: float):
+        super().__init__()
+        self.id = id
+        self.gid = gid
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
+    @staticmethod
+    def from_element(elem: ET.Element):
+        return TiledObject(
+            int(elem.get("id")),
+            int(elem.get("gid")),
+            float(elem.get("x")),
+            float(elem.get("y")),
+            float(elem.get("width")),
+            float(elem.get("height"))
+        )
+
+    def to_xml(self):
+        elem = ET.Element("object")
+        elem.set("id", str(self.id))
+        elem.set("gid", str(self.gid))
+        elem.set("x", str(self.x))
+        elem.set("y", str(self.y))
+        elem.set("width", str(self.width))
+        elem.set("height", str(self.height))
+        return elem
+
+    def __repr__(self):
+        return f'<TiledObject id={self.id} gid={self.gid} x={self.x}, y={self.y}>'
+
+
+class TiledObjectGroup:
+    def __init__(self, id: int, name: str):
+        super().__init__()
+        self.id = id
+        self.name = name
+        self.objects = []
+
+    def load_from_element(self, elem: ET.Element):
+        for c in elem:
+            if c.tag == 'object':
+                self.objects.append(TiledObject.from_element(c))
+                continue
+
+            print(f'objectgroup: unknown tag {c.tag}')
+
+    @staticmethod
+    def from_element(elem: ET.Element):
+        object_group = TiledObjectGroup(
+            int(elem.get("id")),
+            elem.get("name"),
+        )
+        object_group.load_from_element(elem)
+        return object_group
+
+    def to_xml(self):
+        elem = ET.Element("objectgroup")
+        elem.set("id", str(self.id))
+        elem.set("name", str(self.name))
+        for i in self.objects:
+            elem.append(i.to_xml())
+        return elem
 
 
 class TiledLayer:
@@ -280,8 +351,8 @@ class TiledMap:
 
         self.tilesets: [TilesetDef] = []
         self.layers: [TiledLayer] = []
-
         self.properties = []
+        self.object_groups: [TiledObjectGroup] = []
 
     @staticmethod
     def from_element(elem: ET.Element, directory="."):
@@ -324,6 +395,12 @@ class TiledMap:
 
             if c.tag == 'properties':
                 self.properties = read_properties(c)
+                continue
+
+            if c.tag == 'objectgroup':
+                object_group = TiledObjectGroup.from_element(c)
+                self.object_groups.append(object_group)
+                continue
 
             print("TiledMap: unknown tag: ", c)
 
@@ -345,6 +422,9 @@ class TiledMap:
             elem.append(c.to_xml())
 
         for c in self.layers:
+            elem.append(c.to_xml())
+
+        for c in self.object_groups:
             elem.append(c.to_xml())
 
         if self.properties:
@@ -384,7 +464,7 @@ class TiledMap:
             new_ts.append(ts)
 
         print(new_ts)
-        print("Updating tile indices...")
+        print("Updating tile indices in layers...")
 
         layer: TiledLayer
         for layer in self.layers:
@@ -395,13 +475,23 @@ class TiledMap:
                     pass
                 else:
                     ts = self.tileset_for_gid(t)
+                    if not ts:
+                        raise Exception(f"Tileset not found for gid {t}")
 
                     offs = t - ts.firstgid
 
                     new_value = ts.newfirstgid + offs
-                    if t != new_value:
-                        print(t, '->', new_value)
+                    # if t != new_value:
+                    #     print(t, '->', new_value)
                     layer.tiles[i] = new_value
+
+        print("Updating tile indices in objectgroups...")
+        og: TiledObjectGroup
+        ob: TiledObject
+        for og in self.object_groups:
+            for ob in og.objects:
+                ts = self.tileset_for_gid(ob.gid)
+                ob.gid = ts.newfirstgid + (ob.gid - ts.firstgid)
 
         for ts in self.tilesets:
             ts.firstgid = ts.newfirstgid
@@ -441,5 +531,3 @@ class TiledMap:
             xmlstr = minidom.parseString(_bytes).toprettyxml(indent="   ")
 
             f.write(xmlstr)
-
-

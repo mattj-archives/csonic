@@ -91,6 +91,14 @@ begin
     Entity_SetState(e, STATE_SPRING1_USE);
   end;
 
+  if e^.t = 18 then
+  begin
+    // writeln('touch spring');
+    gPlayer.velY := -20;
+    self^.y := e^.y - 16;
+    Entity_SetState(e, STATE_SPRING2_USE);
+  end;
+
   if e^.t = 38 then
   begin
     if mode = SonicModes.Spinning then

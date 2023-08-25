@@ -8,7 +8,6 @@ interface
 uses
   Engine, Sys, Event, Text, Image, Timer,
   common, entity, player,
-  TerrainMove,
    res, res_enum,
   Classes, SysUtils
   {$ifdef SDL2}
@@ -74,7 +73,7 @@ begin
   Assign(f, 'height.dat');
   Reset(f, 1);
   writeln('loading heights');
-  BlockRead(f, heights, 256 * 24);
+  BlockRead(f, heights, 1152 * 24);
 
   System.Close(f);
 
@@ -103,10 +102,11 @@ end;
 
 procedure LoadLevel2(fileName: string);
 var f: file;
-  width, height, tile_type: byte;
-  x, y: integer;
+  width, height, num_objects, tile_type, object_type: byte;
+  i, x, y: integer;
   tile_desc, tile_vis: integer;
   tile: ^TTile;
+  e: PEntity;
   begin
       writeln('LoadLevel2 ', fileName);
       Assign(f, fileName);
@@ -130,6 +130,37 @@ var f: file;
             end;
         end;
       end;
+
+      BlockRead(f, num_objects, sizeof(integer));
+
+      for i := 0 to num_objects - 1 do begin
+        BlockRead(f, object_type, sizeof(integer));
+        BlockRead(f, x, sizeof(integer));
+        BlockRead(f, y, sizeof(integer));
+        Dec(y, 24);
+
+        case object_type of
+        17: begin
+          e := SpawnEntity(x, y, object_type);
+          Entity_SetState(e, STATE_SPRING1_IDLE);
+        end;
+        18: begin
+          e := SpawnEntity(x, y, object_type);
+          Entity_SetState(e, STATE_SPRING2_IDLE);
+        end;
+              43:
+      begin
+        e := SpawnEntity(x, y, object_type);
+        Entity_SetState(e, entityStates.STATE_RING1);
+      end;
+      44: begin
+        e := SpawnEntity(x, y, object_type);
+        Entity_SetState(e, entityStates.STATE_CHILI1);
+      end;
+      end;
+
+      end;
+
 
       System.close(f);
   end;
@@ -334,7 +365,8 @@ begin
   FillChar(entities, sizeof(TEntity) * MAX_ENTITIES, 0);
   
   //LoadLevel('levels/1_1.l2');
-  LoadLevel2('dev/out_test.l3');
+  //LoadLevel2('dev/out_test.l3');
+    LoadLevel2('dev/out_testmap1.l3');
 {
   map[14 * 168 + 5].tile := 4;
   map[14 * 168 + 5].description := 2;
@@ -373,7 +405,7 @@ begin
 
   //map[13 * 168 + 6].tile := 1;
   //e := SpawnEntity(3 * 24, 4 * 24, -1);
-  e := SpawnEntity(3 * 24, 12 * 24, -1);
+  e := SpawnEntity(5 * 24, 10 * 24, -1);
   gPlayer.ent := e;
   Entity_SetState(e, STATE_PLAYER_STAND1);
 
@@ -502,6 +534,9 @@ begin
     R_DrawText(0, 0, 'Player: ');
     R_DrawText(42, 0, IntToStr(gPlayer.ent^.x));
     R_DrawText(42, 9, IntToStr(gPlayer.ent^.y));
+
+    R_DrawText(80, 0, IntToStr(gPlayer.velX));
+    R_DrawText(80, 9, IntTOStr(gPlayer.velY));
 
     if playerInAir then R_DrawText(0, 18, 'In air');
     if isPaused then R_DrawText(0, 27, 'Paused');

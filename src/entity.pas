@@ -12,14 +12,11 @@ procedure Entity_GetMoveBy(self: PEntity; deltaX, deltaY: integer;
   var resultVector: TVector2; var Result: THitResult);
 procedure Entity_MoveBy(self: PEntity; deltaX, deltaY: integer; var Result: THitResult);
 procedure Entity_SetState(Data: Pointer; state: entityStates);
-procedure Entity_GetMoveBy2(self: PEntity; origin: TVector2;
-  deltaX, deltaY: integer; var resultVector: TVector2; var Result: THitResult);
+
 procedure GetBoxAdjustment(this, other: TBoundingBox; delta: TVector2;
   var adjVector: TVector2);
 
 implementation
-
-uses TerrainMove;
 
 function SpawnEntity(x, y, entityType: integer): PEntity;
 var
@@ -108,12 +105,6 @@ begin
 
 end;
 
-procedure Entity_GetMoveBy2(self: PEntity; origin: TVector2;
-  deltaX, deltaY: integer; var resultVector: TVector2; var Result: THitResult);
-
-begin
-  DoTerrainMove(origin, deltaX, deltaY, resultVector, Result);
-end;
 
 procedure Entity_GetMoveBy(self: PEntity; deltaX, deltaY: integer;
   var resultVector: TVector2; var Result: THitResult);

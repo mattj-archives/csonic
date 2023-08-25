@@ -68,7 +68,8 @@ var
   map: array[0..9071] of TTile; { 168 * 54 }
   entities: array[1..MAX_ENTITIES] of TEntity;
   camera: TVector2;
-
+var
+  heights: array[0..1151, 0..23] of byte;
 implementation
 
 begin

@@ -8,6 +8,7 @@ from xml.dom import minidom
 import PIL.Image
 from PIL import ImageDraw
 
+from level_export import LevelExportTool
 from tiledlib import Tileset, TiledLayer, TiledMap, TilesetImage, TilesetDef, Property
 
 
@@ -51,6 +52,7 @@ class LevelPaintTool:
         self.map_height = tilemap.height
 
         print("Generating mask image")
+
         maskImage = PIL.Image.new(mode='1', size=(self.map_width * 24, self.map_height * 24))
 
         for ty in range(0, self.map_height):
@@ -76,10 +78,11 @@ class LevelPaintTool:
 
         # Draw the background mask first
 
+        print("BG fill")
         canvas_data = list(canvas.getdata())
 
         for py in range(0, self.map_height * 24):
-            print(py)
+            # print(py)
             ty = py // 12
             for px in range(0, self.map_width * 24):
                 if mask_data[py * map_width_pixels + px] == 1:
@@ -93,6 +96,7 @@ class LevelPaintTool:
 
         canvas.putdata(canvas_data)
 
+        print("BG overlay")
         draw = ImageDraw.Draw(canvas)
         for ty in range(0, self.map_height):
             for tx in range(0, self.map_width):
@@ -100,6 +104,7 @@ class LevelPaintTool:
                 if tile_num == 0:
                     continue
 
+                tile_top = ty * 24
                 tile_left = tx * 24
                 tile_bottom = ty * 24 + 24
 
@@ -109,26 +114,35 @@ class LevelPaintTool:
                     if tile_heights[px] == 0:
                         continue
 
-                    # Only draw the pixel if there is no pixel above it
                     pt_x = tile_left + px
-                    pt_y = tile_bottom - tile_heights[px]
 
-                    if mask_data[(pt_y - 1) * map_width_pixels + pt_x] == 0:
-                        draw.point((pt_x, pt_y), (255, 255, 255, 255))
+                    if tile_num < 576:
+                        # Only draw the pixel if there is no pixel above it
+                        pt_y = tile_bottom - tile_heights[px]
 
-                        # Shadow
-                        draw.line([(pt_x, pt_y), (pt_x, pt_y + self.shadow_lower[pt_x % terrain_pattern_width])],
-                                  fill=(102, 57, 49))
+                        if mask_data[(pt_y - 1) * map_width_pixels + pt_x] == 0:
+                            draw.point((pt_x, pt_y), (255, 255, 255, 255))
 
-                        pt0 = (pt_x, pt_y + self.grass_upper[pt_x % terrain_pattern_width])
-                        pt1 = (pt_x, pt_y + self.grass_lower[pt_x % terrain_pattern_width])
-                        # Green (grass)
-                        if pt_x % 8 < 4:
-                            draw.line([pt0, pt1], fill=(106, 190, 48))
-                        else:
-                            draw.line([pt0, pt1], fill=(86, 170, 28))
+                            # Shadow
+                            draw.line([(pt_x, pt_y), (pt_x, pt_y + self.shadow_lower[pt_x % terrain_pattern_width])],
+                                      fill=(102, 57, 49))
 
-                        # canvas_data[pt_y * map_width_pixels + pt_x] = (255, 255, 255, 255)
+                            pt0 = (pt_x, pt_y + self.grass_upper[pt_x % terrain_pattern_width])
+                            pt1 = (pt_x, pt_y + self.grass_lower[pt_x % terrain_pattern_width])
+                            # Green (grass)
+                            if pt_x % 8 < 4:
+                                draw.line([pt0, pt1], fill=(106, 190, 48))
+                            else:
+                                draw.line([pt0, pt1], fill=(86, 170, 28))
+                    else:
+                        pt_y = tile_top + tile_heights[px] - 1
+
+                        for y2 in range(pt_y, pt_y - 3, -1):
+                            c = canvas.getpixel((pt_x, y2))
+                            c = (c[0] - 30, c[1] - 30, c[2] - 30, 255)
+                            draw.point((pt_x, y2), c)
+
+                            # canvas_data[pt_y * map_width_pixels + pt_x] = (255, 255, 255, 255)
 
         canvas_data = list(canvas.getdata())
 
@@ -226,7 +240,11 @@ class LevelPaintTool:
         if tile_heights[x % 24] == 0:
             return False
 
-        return tile_bottom - tile_heights[x % 24] <= tile_top + (y % 24)
+        if tile_num < 576:
+            return tile_bottom - tile_heights[x % 24] <= tile_top + (y % 24)
+        else:
+            return tile_top + tile_heights[x % 24] > tile_top + (y % 24)
+
 
 
 def get_map_tilesetdef_with_property(map: TiledMap, name, value):
@@ -306,5 +324,7 @@ def testAddLayer():
 if __name__ == "__main__":
     # testAddLayer()
 
-    # LevelPaintTool("dev/testmap.tmx", "dev/test1.tmx")
-    LevelPaintTool("dev/test1.tmx", "dev/test1.tmx")
+    LevelPaintTool("dev/testmap.tmx", "dev/testmap1.tmx")
+    LevelExportTool("dev/testmap1.tmx", "dev/out_testmap1.l3").run()
+
+    # LevelPaintTool("dev/test1.tmx", "dev/test1.tmx")

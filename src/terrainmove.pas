@@ -10,8 +10,7 @@ uses
 procedure DoTerrainMove(origin: TVector2; deltaX, deltaY: integer;
   var resultVector: TVector2; var Result: THitResult);
 
-var
-  heights: array[0..255, 0..23] of byte;
+
 implementation
 
 uses Math, entity;

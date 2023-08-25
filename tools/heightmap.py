@@ -8,18 +8,29 @@ class HeightMapTool:
     def __init__(self) -> None:
         super().__init__()
 
-    def get_heights(self, img, tx, ty) -> []:
-        print("tile", tx, ty)
-        heights = [0 for i in range(0, 24)]
+    def get_floor_heights(self, img, tx, ty) -> []:
+        heights = [0 for _ in range(0, 24)]
         for x in range(0, 24):
             for y in range(ty * 24, ty * 24 + 24):
-                if img[y * img.size[1] + (tx * 24 + x)] == (255, 255, 255, 255):
+                if img[y * img.size[0] + (tx * 24 + x)][3] == 255:
                     h = 24 - (y - ty * 24)
-                    # print(f'height found at x={x}', h)
                     heights[x] = h
                     break
 
-        print(heights)
+        return heights
+
+    def get_ceiling_heights(self, img, tx, ty) -> []:
+        heights = [0 for _ in range(0, 24)]
+        for x in range(0, 24):
+            tile_top = ty * 24
+            tile_bottom = ty * 24 + 23
+            for y in range(tile_bottom, ty * 24 - 1, -1):
+                if img[y * img.size[0] + (tx * 24 + x)][3] == 255:
+                    h = (y - tile_top) + 1
+                    print(f'tile {tx}, {ty}: ceiling height at x: {tx * 24 + x} y:{y}, tile bottom: {tile_bottom}', h)
+                    heights[x] = h
+                    break
+
         return heights
 
     def run(self):
@@ -28,9 +39,13 @@ class HeightMapTool:
         print(data.size)
         heights = []
 
-        for ty in range(0, 16):
+        for ty in range(0, 24):
             for tx in range(0, 24):
-                heights.append(self.get_heights(data, tx, ty))
+                heights.append(self.get_floor_heights(data, tx, ty))
+
+        for ty in range(24, 24 * 2):
+            for tx in range(0, 24):
+                heights.append(self.get_ceiling_heights(data, tx, ty))
 
         print("heights:", heights)
 

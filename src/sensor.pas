@@ -5,7 +5,7 @@ unit Sensor;
 interface
 
 uses
-  engine, common, terrainmove;
+  engine, common;
 
 procedure SensorX(y, startX, endX: integer; var Result: THitResult);
 procedure SensorY(x, startY, endY: integer; var Result: THitResult);
@@ -24,6 +24,7 @@ procedure SensorX(y, startX, endX: integer; var Result: THitResult);
 var
   hitType, delta, h, x, tx, ty, ty0, ty1, idx, traceXValue: integer;
   other: TBoundingBox;
+  tile: ^TTile;
 begin
   Result.hitType := 0;
   traceXValue := endX;
@@ -43,15 +44,18 @@ begin
     other.top := ty * 24;
     other.bottom := ty * 24 + 24;
 
-    if map[ty * 168 + tx].tile = 4 then
+    tile := @map[ty * 168 + tx];
+
+    if tile^.tile = 4 then
     begin
       idx := (x - other.left);
       if idx < 0 then idx := 0;
       if idx > 23 then idx := 23;
 
       // TODO: Is this -1 correct?
-      h := other.bottom - heights[map[ty * 168 + tx].description][idx] - 1;
-
+      if tile^.description < 576 then begin
+         h := other.bottom - heights[map[ty * 168 + tx].description][idx] - 1;
+      end;
       //writeln('sensorX hit at x: ', x, ' h: ', h, ' y is: ', y);
       if h <= y then break;
     end;
@@ -96,6 +100,7 @@ function SensorYUp(x, startY, endY: integer; var Result: THitResult): integer;
 var
   hitType, lower, upper, tx, ty, ty0, ty1, idx, traceYValue: integer;
   other: TBoundingBox;
+  tile: ^TTile;
 begin
   traceYValue := endY;
   SensorYUp := endY;
@@ -123,17 +128,26 @@ begin
     //  if (h > traceYValue) then traceYValue := h;
     //  hitType := 1;
     //end;
-
-    if map[ty * 168 + tx].tile = 4 then
+    tile := @map[ty * 168 + tx];
+    if tile^.tile = 4 then
     begin
       idx := (x - other.left);
       if idx < 0 then idx := 0;
       if idx > 23 then idx := 23;
 
+      if heights[tile^.description][idx] = 0 then continue;
+
       { TODO: if heights = 0, this column won't clip }
 
-      lower := other.bottom;
-      upper := lower - heights[map[ty * 168 + tx].description][idx] - 1;
+      if tile^.description < 576 then begin
+        continue;
+         //lower := other.bottom;
+         //upper := lower - heights[map[ty * 168 + tx].description][idx] - 1;
+      end else begin
+
+          upper := other.top;
+          lower := other.top + heights[tile^.description][idx];
+      end;
 
       if (lower > traceYValue) and (startY > upper) then
       begin
@@ -172,6 +186,7 @@ procedure SensorY(x, startY, endY: integer; var Result: THitResult);
 var
   h, tx, ty, ty0, ty1, idx, traceYValue: integer;
   other: TBoundingBox;
+  tile: ^TTile;
 begin
   Result.hitType := 0;
   if startY > endY then
@@ -195,7 +210,8 @@ begin
 
     h := startY;
 
-    if map[ty * 168 + tx].tile = 1 then
+    tile := @map[ty * 168 + tx];
+    if tile^.tile = 1 then
     begin
       //h := other.top;
       //h := other.bottom - 23;
@@ -205,6 +221,11 @@ begin
 
     if map[ty * 168 + tx].tile = 4 then
     begin
+
+         { Downward traces don't bother with ceilings }
+      if (tile^.description >= 576) then
+         continue;
+
       idx := (x - other.left);
       if idx < 0 then idx := 0;
       if idx > 23 then idx := 23;
@@ -264,7 +285,7 @@ begin
     other.top := e^.y;
     other.bottom := e^.y + 24;
 
-    if e^.t = 17 then begin
+    if (e^.t = 17) or (e^.t = 18) then begin
       other.left := e^.x;
       other.right := e^.x + 24;
       other.bottom := e^.y + 24;
