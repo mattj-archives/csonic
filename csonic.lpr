@@ -24,7 +24,7 @@ uses
 
   {$ifdef WINDOWS}
   Windows,
-  Classes
+  Classes,
   {$endif}
   app
   ;
