@@ -6,7 +6,7 @@ interface
 
 
 uses
-  Engine, Sys, Event, Text, Image, Timer,
+  Engine, Sys, Event, Image,
   common, entity, player,
    res, res_enum,
   Classes, SysUtils

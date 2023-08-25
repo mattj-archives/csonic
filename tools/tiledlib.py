@@ -432,7 +432,7 @@ class TiledMap:
 
         return elem
 
-    def tileset_for_gid(self, gid: int) -> TilesetDef | None:
+    def tileset_for_gid(self, gid: int) -> TilesetDef:
         ts: TilesetDef
         for ts in self.tilesets:
             if gid >= ts.firstgid and gid < ts.firstgid + ts.tileset.tilecount:

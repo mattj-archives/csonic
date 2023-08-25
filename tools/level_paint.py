@@ -8,6 +8,7 @@ from xml.dom import minidom
 import PIL.Image
 from PIL import ImageDraw
 
+from heightmap import HeightMapTool
 from level_export import LevelExportTool
 from tiledlib import Tileset, TiledLayer, TiledMap, TilesetImage, TilesetDef, Property
 
@@ -36,16 +37,9 @@ class LevelPaintTool:
 
         tilemap = TiledMap.from_file(map_file_name)
         layer = tilemap.layer_for_name("Tile Layer 1")
-        # tree = ET.parse(map_file_name)
-        # root = tree.getroot()
 
-        # layer = root.find('.//layer[@name="Tile Layer 1"]')
+        img_grass = PIL.Image.open("dev/grass2.png")
 
-        # Get the data element containing the tile data
-        # data = layer.find('data')
-
-        # Split the tile data into a list of integers
-        # self.tiles = [int(x) for x in data.text.strip().split(',')]
         self.tiles = layer.tiles
 
         self.map_width = tilemap.width
@@ -83,11 +77,11 @@ class LevelPaintTool:
 
         for py in range(0, self.map_height * 24):
             # print(py)
-            ty = py // 12
+            ty = py // 24
             for px in range(0, self.map_width * 24):
                 if mask_data[py * map_width_pixels + px] == 1:
                     # draw.point((px, py), (0, 127, 0, 255))
-                    tx = px // 12
+                    tx = px // 24
 
                     if (tx + ty) % 2 == 0:
                         canvas_data[py * map_width_pixels + px] = (0, 0x7f, 0, 255)
@@ -121,19 +115,31 @@ class LevelPaintTool:
                         pt_y = tile_bottom - tile_heights[px]
 
                         if mask_data[(pt_y - 1) * map_width_pixels + pt_x] == 0:
-                            draw.point((pt_x, pt_y), (255, 255, 255, 255))
 
-                            # Shadow
-                            draw.line([(pt_x, pt_y), (pt_x, pt_y + self.shadow_lower[pt_x % terrain_pattern_width])],
-                                      fill=(102, 57, 49))
+                            if False:
+                                draw.point((pt_x, pt_y), (255, 255, 255, 255))
 
-                            pt0 = (pt_x, pt_y + self.grass_upper[pt_x % terrain_pattern_width])
-                            pt1 = (pt_x, pt_y + self.grass_lower[pt_x % terrain_pattern_width])
-                            # Green (grass)
-                            if pt_x % 8 < 4:
-                                draw.line([pt0, pt1], fill=(106, 190, 48))
+                                # Shadow
+                                draw.line([(pt_x, pt_y), (pt_x, pt_y + self.shadow_lower[pt_x % terrain_pattern_width])],
+                                          fill=(102, 57, 49))
+
+                                pt0 = (pt_x, pt_y + self.grass_upper[pt_x % terrain_pattern_width])
+                                pt1 = (pt_x, pt_y + self.grass_lower[pt_x % terrain_pattern_width])
+                                # Green (grass)
+                                if pt_x % 8 < 4:
+                                    draw.line([pt0, pt1], fill=(106, 190, 48))
+                                else:
+                                    draw.line([pt0, pt1], fill=(86, 170, 28))
                             else:
-                                draw.line([pt0, pt1], fill=(86, 170, 28))
+
+                                for py in range(0, img_grass.size[1]):
+
+                                    pix = img_grass.getpixel((pt_x % img_grass.size[0], py))
+                                    if pix[3] != 0:
+                                        draw.point((pt_x, pt_y + py), pix )
+
+
+
                     else:
                         pt_y = tile_top + tile_heights[px] - 1
 
@@ -323,6 +329,8 @@ def testAddLayer():
 
 if __name__ == "__main__":
     # testAddLayer()
+
+    HeightMapTool().run()
 
     LevelPaintTool("dev/testmap.tmx", "dev/testmap1.tmx")
     LevelExportTool("dev/testmap1.tmx", "dev/out_testmap1.l3").run()

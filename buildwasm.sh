@@ -16,6 +16,7 @@ cp gfx3/* vfs/GFX3
 
 mkdir vfs/dev
 cp dev/out_test.l3 vfs/dev
+cp dev/out_testmap1.l3 vfs/dev
 cp dev/TEST_rendered.png vfs/dev
 
 
@@ -45,7 +46,6 @@ $FPC $FPC_FLAGS engine/src/ext/gfx_ext.pas
 $FPC $FPC_FLAGS engine/src/ext/image.pas
 $FPC $FPC_FLAGS engine/src/ext/sys.pas
 $FPC $FPC_FLAGS engine/src/ext/text.pas
-$FPC $FPC_FLAGS engine/src/ext/timer.pas
 # 	engine/src/datafile.o 
 
 emcc -o game.html \
@@ -69,7 +69,6 @@ emcc -o game.html \
 	engine/src/ext/image.o \
 	engine/src/ext/sys.o \
 	engine/src/ext/text.o \
-	engine/src/ext/timer.o \
 	~/fpcwasm/lib/fpc/3.3.1/units/wasm32-embedded/rtl/consoleio.o \
 	~/fpcwasm/lib/fpc/3.3.1/units/wasm32-embedded/rtl/system.o \
 	-Wall ~/Downloads/raylib-4.5.0_webassembly/lib/libraylib.a -I. -I/Users/mattj/Downloads/raylib-4.5.0_webassembly/include \

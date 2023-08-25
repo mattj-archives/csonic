@@ -8,25 +8,25 @@ program csonic;
   {$IFDEF DARWIN}
     {$linkFramework SDL2}
     {$linkFramework SDL2_image}
+    {$linkFramework SDL2_ttf}
   {$endif}
 {$endif}
 
-
 uses
-  app
     {$ifdef UNIX}
-    ,cthreads
+    cthreads,
       {$ifdef fpc}
         {$ifndef WASM}
-        ,classes
+        classes,
         {$endif}
       {$endif}
     {$endif}
 
   {$ifdef WINDOWS}
-  ,Windows
-  ,Classes
+  Windows,
+  Classes
   {$endif}
+  app
   ;
 
 {$ifdef WINDOWS}

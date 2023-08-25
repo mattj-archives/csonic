@@ -5,7 +5,7 @@ unit Player;
 interface
 
 uses
-  res, res_enum, common, engine, entity, timer, Sensor;
+  res, res_enum, common, engine, entity, Sensor;
 
 type
   TPlayer = record
@@ -25,6 +25,7 @@ var
 
 implementation
 
+uses sys;
 type
   SonicModes = (
     None,
@@ -241,13 +242,13 @@ begin
   if I_IsKeyDown(kLf) then
   begin
     Inc(gPlayer.velX, -2);
-    if gPlayer.velX < -8 then gPlayer.velX := -8;
+    if gPlayer.velX < -9 then gPlayer.velX := -9;
   end;
 
   if I_IsKeyDown(kRt) then
   begin
     Inc(gPlayer.velX, 2);
-    if gPlayer.velX > 8 then gPlayer.velX := 8;
+    if gPlayer.velX > 9 then gPlayer.velX := 9;
   end;
 
   if I_IsKeyDown(kSpace) then

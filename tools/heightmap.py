@@ -27,16 +27,16 @@ class HeightMapTool:
             for y in range(tile_bottom, ty * 24 - 1, -1):
                 if img[y * img.size[0] + (tx * 24 + x)][3] == 255:
                     h = (y - tile_top) + 1
-                    print(f'tile {tx}, {ty}: ceiling height at x: {tx * 24 + x} y:{y}, tile bottom: {tile_bottom}', h)
+                    # print(f'tile {tx}, {ty}: ceiling height at x: {tx * 24 + x} y:{y}, tile bottom: {tile_bottom}', h)
                     heights[x] = h
                     break
 
         return heights
 
     def run(self):
+        print("--- HeightMapTool ---")
         img = PIL.Image.open("dev/height.png")
         data = img.getdata()
-        print(data.size)
         heights = []
 
         for ty in range(0, 24):
@@ -46,8 +46,6 @@ class HeightMapTool:
         for ty in range(24, 24 * 2):
             for tx in range(0, 24):
                 heights.append(self.get_ceiling_heights(data, tx, ty))
-
-        print("heights:", heights)
 
         with open("dev/height.json", "wt") as heightsjson:
             heightsjson.write(json.dumps(heights))

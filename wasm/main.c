@@ -42,8 +42,6 @@ void DrawSubImageTransparent(image_t img, short dstX, short dstY, short srcX, sh
         dstY = 0;
     }
 
-    //if (srcWidth <= 0) return;
-
 
     Rectangle srcRect = {srcX, srcY, srcWidth, srcHeight};
     Rectangle dstRect = {dstX, dstY, srcWidth, srcHeight};
@@ -72,7 +70,7 @@ int main(void)
 
     G_Init();
 
-    InitWindow(320 * 2, 240 * 2, "raylib [core] example - basic window");
+    InitWindow(320 * 3, 240 * 3, "raylib [core] example - basic window");
 
     mainImage = GenImageColor(320, 240, BLANK);
     Texture t = LoadTextureFromImage(mainImage);
@@ -98,7 +96,7 @@ int main(void)
 
             UpdateTexture(t, mainImage.data);
 
-            DrawTextureEx(t, (Vector2){0, 0}, 0, 2, WHITE);
+            DrawTextureEx(t, (Vector2){0, 0}, 0, 3, WHITE);
         EndDrawing();
     }
 
