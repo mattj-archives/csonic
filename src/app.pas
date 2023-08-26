@@ -157,6 +157,11 @@ var f: file;
         e := SpawnEntity(x, y, object_type);
         Entity_SetState(e, entityStates.STATE_CHILI1);
       end;
+            72: {Enemy "Bouncing potato" }
+      begin
+           e := SpawnEntity(x, y, object_type);
+         Entity_SetState(e, STATE_BPOT_IDLE);
+      end;
       end;
 
       end;
@@ -227,7 +232,7 @@ begin
       end;
       70: {Enemy "Rabid Mushroom" }
       begin
-           e := SpawnEntity(x * 24, y * 24, tn);
+      e := SpawnEntity(x * 24, y * 24, tn);
          Entity_SetState(e, STATE_RM_IDLE);
       end;
       71: { Enemy "mosquito" }

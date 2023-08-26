@@ -100,7 +100,7 @@ begin
     Entity_SetState(e, STATE_SPRING2_USE);
   end;
 
-  if e^.t = 38 then
+  if (e^.t = 38) then
   begin
     if mode = SonicModes.Spinning then
     begin
@@ -115,7 +115,7 @@ begin
     end;
   end;
 
-  if (e^.t = 70) or (e^.t = 71) then
+  if (e^.t = 70) or (e^.t = 71) or (e^.t = 72) then
   begin
     if mode = SonicModes.Spinning then
     begin
@@ -465,11 +465,16 @@ begin
 
       // writeln('Terrain move sensorY results: ', sensorYResult, ' ', sensorYResult2, ' adj: ', adj, ' ', adj2);
 
-      if sensorYResult2.y < sensorYResult.y then sensorYResult := sensorYResult2;
+      //if (sensorYResult.y <> endY) or (sensorYResult2.y <> endY) then
+      //begin
+        if sensorYResult2.y < sensorYResult.y then sensorYResult := sensorYResult2;
+        self^.y := sensorYResult.y - 23;
+      //end;
 
-      self^.y := sensorYResult.y - 23;
+
 
     end;
+
     if gPlayer.velX > 0 then self^.direction := 4;
     if gPlayer.velX < 0 then self^.direction := 3;
   end;

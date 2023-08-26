@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="right-down" width="64" height="24" tilewidth="24" tileheight="24" infinite="0" nextlayerid="9" nextobjectid="54">
+<map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="right-down" width="64" height="24" tilewidth="24" tileheight="24" infinite="0" nextlayerid="9" nextobjectid="59">
    <tileset firstgid="1" source="Height.tsx"/>
    <tileset firstgid="1208" source="object.tsx"/>
    <tileset firstgid="1530" version="1.8" tiledversion="1.8.2" name="TEST_rendered" tilewidth="24" tileheight="24" tilecount="256" columns="16" backgroundcolor="#00000000">
@@ -58,5 +58,6 @@
       <object id="47" gid="1251" x="864.0" y="456.0" width="24.0" height="24.0"/>
       <object id="50" gid="1226" x="1128.0" y="408.0" width="24.0" height="24.0"/>
       <object id="53" gid="1225" x="1111.0" y="480.0" width="24.0" height="24.0"/>
+      <object id="58" gid="1280" x="432.0" y="216.0" width="24.0" height="24.0"/>
    </objectgroup>
 </map>
