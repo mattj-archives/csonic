@@ -9,19 +9,18 @@
         <Filename Value="csonic.lpr"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="8"/>
-        <CursorPos X="13" Y="24"/>
+        <CursorPos X="35" Y="9"/>
         <UsageCount Value="269"/>
         <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
         <Filename Value="src\app.pas"/>
         <IsPartOfProject Value="True"/>
-        <TopLine Value="503"/>
-        <CursorPos X="23" Y="583"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="42"/>
+        <CursorPos X="58" Y="73"/>
         <UsageCount Value="269"/>
         <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
         <Filename Value="engine\src\sdl\text.pas"/>
@@ -32,7 +31,6 @@
         <CursorPos X="5" Y="55"/>
         <UsageCount Value="269"/>
         <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
         <Filename Value="engine\src\sdl\image.pas"/>
@@ -47,13 +45,11 @@
         <Filename Value="engine\src\sdl\gfx_sdl.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="GFX_SDL"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="9"/>
         <TopLine Value="174"/>
         <CursorPos X="5" Y="191"/>
         <UsageCount Value="269"/>
         <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
         <Filename Value="engine\src\sdl\gfx_sdl_core.pas"/>
@@ -90,7 +86,6 @@
         <CursorPos X="53" Y="24"/>
         <UsageCount Value="269"/>
         <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
         <Filename Value="engine\src\sdl\timer.pas"/>
@@ -135,7 +130,6 @@
         <CursorPos X="24" Y="251"/>
         <UsageCount Value="263"/>
         <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
         <Filename Value="src\entity.inc"/>
@@ -171,7 +165,6 @@
         <CursorPos X="3" Y="106"/>
         <UsageCount Value="108"/>
         <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
         <Filename Value="engine\external\sdl2\sdlerror.inc"/>
@@ -201,9 +194,8 @@
         <EditorIndex Value="1"/>
         <TopLine Value="79"/>
         <CursorPos X="7" Y="106"/>
-        <UsageCount Value="15"/>
+        <UsageCount Value="16"/>
         <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
     </Units>
     <Debugger>
@@ -212,7 +204,7 @@
     <OtherDefines Count="1">
       <Define0 Value="SDL2"/>
     </OtherDefines>
-    <JumpHistory HistoryIndex="29">
+    <JumpHistory HistoryIndex="28">
       <Position>
         <Filename Value="src\sensor.pas"/>
         <Caret Line="152" TopLine="117"/>
@@ -307,18 +299,6 @@
       </Position>
       <Position>
         <Filename Value="engine\src\sdl\gfx_sdl.pas"/>
-        <Caret Line="5" Column="5" TopLine="261"/>
-      </Position>
-      <Position>
-        <Filename Value="engine\src\sdl\gfx_sdl.pas"/>
-        <Caret Line="116" Column="11" TopLine="261"/>
-      </Position>
-      <Position>
-        <Filename Value="engine\src\sdl\gfx_sdl.pas"/>
-        <Caret Line="117" Column="55" TopLine="261"/>
-      </Position>
-      <Position>
-        <Filename Value="engine\src\sdl\gfx_sdl.pas"/>
         <Caret Line="116" Column="11" TopLine="89"/>
       </Position>
       <Position>
@@ -332,6 +312,14 @@
       <Position>
         <Filename Value="src\player.pas"/>
         <Caret Line="251" Column="24" TopLine="228"/>
+      </Position>
+      <Position>
+        <Filename Value="engine\src\sdl\gfx_sdl.pas"/>
+        <Caret Line="191" Column="5" TopLine="174"/>
+      </Position>
+      <Position>
+        <Filename Value="csonic.lpr"/>
+        <Caret Line="9" Column="35"/>
       </Position>
     </JumpHistory>
     <RunParams>
