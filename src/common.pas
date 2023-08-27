@@ -30,6 +30,12 @@ type
     dest: integer;
   end;
 
+  PEntityBPot = ^TEntityBPot;
+  TEntityBPot = record
+    {$include entity.inc}
+    vy: integer;
+  end;
+
 
   TTile = record
     entity: PEntity;
@@ -41,6 +47,8 @@ type
   TSpriteState = record
     sprites: array[0..1] of integer;
   end;
+
+  EntityStateProc = procedure(data: Pointer);
 
   TEntityState = record
     duration: integer;

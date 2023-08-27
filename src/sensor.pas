@@ -20,6 +20,8 @@ var
 
 implementation
 
+uses Entity;
+
 procedure SensorX(y, startX, endX: integer; var Result: THitResult);
 var
   hitType, delta, h, x, tx, ty, ty0, ty1, idx, traceXValue: integer;
@@ -280,17 +282,7 @@ begin
     if e^.t = 44 then continue;
     if e^.t = 100 then continue;
 
-    other.left := e^.x;
-    other.right := e^.x + 24;
-    other.top := e^.y;
-    other.bottom := e^.y + 24;
-
-    if (e^.t = 17) or (e^.t = 18) then begin
-      other.left := e^.x;
-      other.right := e^.x + 24;
-      other.bottom := e^.y + 24;
-      other.top := other.bottom - 5;
-    end;
+    Entity_Hitbox(e, other);
 
     //GetBoxAdjustment(this, other, delta, adjVector);
 

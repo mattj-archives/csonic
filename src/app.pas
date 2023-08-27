@@ -410,7 +410,7 @@ begin
 
   //map[13 * 168 + 6].tile := 1;
   //e := SpawnEntity(3 * 24, 4 * 24, -1);
-  e := SpawnEntity(5 * 24, 10 * 24, -1);
+  e := SpawnEntity(7 * 24, 10 * 24, -1);
   gPlayer.ent := e;
   Entity_SetState(e, STATE_PLAYER_STAND1);
 
@@ -487,8 +487,7 @@ begin
 
         if e^.stateFrames <= 0 then
         begin
-          e^.state := entity_states[Ord(e^.state)].nextState;
-          e^.stateFrames := entity_states[Ord(e^.state)].duration;
+          Entity_SetState(e, entity_states[Ord(e^.state)].nextState);
 
           if entity_states[Ord(e^.state)].func = 999 then
           begin
@@ -499,6 +498,11 @@ begin
         if e^.t = 13 then
         begin
           MovingPlatform_Update(e);
+        end;
+
+        if e^.t = 72 then
+        begin
+          Entity_BPot_Update(e);
         end;
       end;
 

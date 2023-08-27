@@ -26,6 +26,7 @@ var
 implementation
 
 uses sys;
+
 type
   SonicModes = (
     None,
@@ -119,7 +120,7 @@ begin
   begin
     if mode = SonicModes.Spinning then
     begin
-      if result.velY > 0 then gPlayer.velY := -12;
+      if Result.velY > 0 then gPlayer.velY := -12;
 
       explode := SpawnEntity(e^.x, e^.y, 100);
       // writeln('explode at ', e^.x, ' ', e^.y);
@@ -134,13 +135,21 @@ procedure Player_Touch(self: PEntity);
 var
   this, other: TBoundingBox;
   i: integer;
-  e: PEntity;
+  e, explode: PEntity;
+  adjustBox: boolean;
+  adjVector, playerVel: TVector2;
+
 begin
 
   this.left := self^.x;
   this.right := this.left + 24;
   this.top := self^.y;
   this.bottom := this.top + 24;
+
+  { TODO... velX, velY should be a vector... }
+
+  playerVel.x := gPlayer.velX;
+  playerVel.y := gPlayer.velY;
 
   for i := 1 to MAX_ENTITIES do
   begin
@@ -149,25 +158,45 @@ begin
     if (e^.flags and 1) = 0 then continue;
     if e = self then continue;
 
-    other.left := e^.x;
-    other.right := other.left + 24;
-    other.top := e^.y;
-    other.bottom := other.top + 24;
+    adjustBox := false;
+
+    Entity_Hitbox(e, other);
 
     if this.left >= other.right then continue;
     if this.right <= other.left then continue;
     if this.top >= other.bottom then continue;
     if this.bottom <= other.top then continue;
 
-
     if e^.t = 43 then
     begin
       // writeln('touch ring');
       e^.flags := 0;
     end;
+
     if e^.t = 44 then
     begin
       e^.flags := 0;
+    end;
+
+    if e^.t = 72 then
+    begin
+      if mode = SonicModes.Spinning then
+      begin
+        if gPlayer.velY > 0 then gPlayer.velY := -12;
+
+        explode := SpawnEntity(e^.x, e^.y, 100);
+        // writeln('explode at ', e^.x, ' ', e^.y);
+        Entity_SetState(explode, entityStates.STATE_EXPLODE1);
+
+        e^.flags := 0;
+        adjustBox := true;
+      end;
+    end;
+
+    if adjustBox then begin
+       GetBoxAdjustment(this, other, playerVel, adjVector);
+       Inc(self^.x, adjVector.x);
+       Inc(self^.y, adjVector.y);
     end;
   end;
 end;
@@ -343,7 +372,8 @@ begin
         playerInAir := False;
         //writeln('hit while in air, no longer in air');
       end;
-      finalSensor.velY := gPlayer.velY;;
+      finalSensor.velY := gPlayer.velY;
+      ;
 
       // Hit something
       gPlayer.velY := 0;
@@ -467,11 +497,9 @@ begin
 
       //if (sensorYResult.y <> endY) or (sensorYResult2.y <> endY) then
       //begin
-        if sensorYResult2.y < sensorYResult.y then sensorYResult := sensorYResult2;
-        self^.y := sensorYResult.y - 23;
+      if sensorYResult2.y < sensorYResult.y then sensorYResult := sensorYResult2;
+      self^.y := sensorYResult.y - 23;
       //end;
-
-
 
     end;
 
