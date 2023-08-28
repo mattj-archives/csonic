@@ -21,7 +21,10 @@ uses
   ;
 
 procedure Main;
-
+procedure G_Init;
+procedure G_RunFrame;
+procedure G_Draw;
+ 
 var
   textures: array[0 .. 200] of pimage_t;
   renderedTiles: pimage_t;
