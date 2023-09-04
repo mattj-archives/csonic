@@ -7,5 +7,11 @@
  <tile id="17" type="spring_yellow"/>
  <tile id="43" type="ring"/>
  <tile id="44" type="chili"/>
- <tile id="72" type="bpot"/>
+ <tile id="70" type="rm"/>
+ <tile id="71" type="enemy_mosqu"/>
+ <tile id="72" type="bpot">
+  <objectgroup draworder="index" id="4">
+   <object id="6" x="8" y="16" width="7" height="8"/>
+  </objectgroup>
+ </tile>
 </tileset>

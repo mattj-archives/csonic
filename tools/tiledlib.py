@@ -109,7 +109,7 @@ class Tileset:
                 self.properties = read_properties(c)
                 continue
 
-            print("Tileset: unknown tag", c.tag)
+            print(f"Tileset '{self.name}': unknown tag {c.tag}")
 
     @staticmethod
     def from_file(path):

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="right-down" width="64" height="24" tilewidth="24" tileheight="24" infinite="0" nextlayerid="9" nextobjectid="63">
+<map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="right-down" width="64" height="24" tilewidth="24" tileheight="24" infinite="0" nextlayerid="9" nextobjectid="66">
  <tileset firstgid="1" source="Height.tsx"/>
  <tileset firstgid="1197" source="object.tsx"/>
  <layer id="1" name="Tile Layer 1" width="64" height="24">
@@ -74,9 +74,6 @@
   <object id="47" gid="1240" x="864" y="456" width="24" height="24"/>
   <object id="50" gid="1215" x="1128" y="408" width="24" height="24"/>
   <object id="53" gid="1214" x="1111" y="480" width="24" height="24"/>
-  <object id="58" gid="1269" x="432" y="216" width="24" height="24"/>
-  <object id="60" gid="1269" x="816" y="72" width="24" height="24"/>
-  <object id="61" gid="1269" x="144" y="240" width="24" height="24"/>
-  <object id="62" gid="1269" x="216" y="240" width="24" height="24"/>
+  <object id="65" gid="1268" x="216" y="168" width="24" height="24"/>
  </objectgroup>
 </map>

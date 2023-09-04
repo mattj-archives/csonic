@@ -1,6 +1,6 @@
 
-    x: integer;
-    y: integer;
+    x: longint;
+    y: longint;
 
     entityNum: integer;
     direction: integer;

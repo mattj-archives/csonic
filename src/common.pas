@@ -10,6 +10,9 @@ uses
 const
   MAX_ENTITIES = 256;
 
+  ENTITY_FLAG_ACTIVE = 1 shl 0;
+  ENTITY_FLAG_MISC = 1 shl 1;
+
 type
 
   TVector2 = record
@@ -36,6 +39,17 @@ type
     vy: integer;
   end;
 
+  PEntityRM = ^TEntityRM;
+  TEntityRM = record
+    {$include entity.inc}
+  end;
+
+
+  PEntityMosquito = ^TEntityMosquito;
+  TEntityMosquito = record
+    {$include entity.inc}
+    patrolFrames: integer;
+  end;
 
   TTile = record
     entity: PEntity;
@@ -49,6 +63,12 @@ type
   end;
 
   EntityStateProc = procedure(data: Pointer);
+  EntityUpdateProc = procedure(data: Pointer);
+  TEntityInfo = record
+    stateProc: EntityStateProc;
+    updateProc: EntityUpdateProc;
+
+  end;
 
   TEntityState = record
     duration: integer;
@@ -75,6 +95,7 @@ type
 var
   map: array[0..9071] of TTile; { 168 * 54 }
   entities: array[1..MAX_ENTITIES] of TEntity;
+  entityInfo: array[0..256] of TEntityInfo;
   camera: TVector2;
 var
   heights: array[0..1151, 0..23] of byte;

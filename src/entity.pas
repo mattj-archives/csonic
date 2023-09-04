@@ -16,13 +16,20 @@ procedure Entity_SetState(Data: Pointer; state: entityStates);
 procedure GetBoxAdjustment(this, other: TBoundingBox; delta: TVector2;
   var adjVector: TVector2);
 
-procedure Entity_BPot_Update(Data: Pointer);
-procedure Entity_BPot_State(Data: Pointer);
 procedure Entity_Hitbox(Data: Pointer; var bb: TBoundingBox);
+
+procedure Entity__Init;
 
 implementation
 
-uses Sensor;
+uses Sensor, app, player, enemy;
+
+procedure Entity__Init;
+begin
+  EntityType_RM_Init(entityInfo[70]);
+  EntityType_Mosquito_Init(entityInfo[71]);
+  EntityType_BPot_Init(entityInfo[72]);
+end;
 
 function SpawnEntity(x, y, entityType: integer): PEntity;
 var
@@ -39,7 +46,7 @@ begin
       FillChar(e^, sizeof(TEntity), 0);
       e^.x := x;
       e^.y := y;
-      e^.flags := 1;
+      e^.flags := ENTITY_FLAG_ACTIVE;
       e^.entityNum := i;
       e^.state := STATE_NONE;
       e^.stateFrames := 60;
@@ -266,70 +273,36 @@ begin
   self^.state := state;
   self^.stateFrames := entity_states[Ord(state)].duration;
 
-
-  if self^.t = 72 then
-  begin
-    Entity_BPot_State(self);
-  end;
+  if Assigned(entityInfo[self^.t].stateProc) then
+    entityInfo[self^.t].stateProc(self);
 
 end;
 
-procedure Entity_BPot_State(Data: Pointer);
-var
-  self: PEntityBPot absolute Data;
-begin
-  case self^.state of
-    STATE_BPOT_IDLE:
-    begin
-      self^.vy := -12;
-    end;
-  end;
-end;
-
-procedure Entity_BPot_Update(Data: Pointer);
-var
-  self: PEntityBPot absolute Data;
-  Result: THitResult;
-begin
-
-    Inc(self^.vy);
-
-  if (self^.vy > 0) then
-  begin
-    SensorY(self^.x + 12, self^.y + 24, self^.y + 24 + self^.vy, Result);
-
-    self^.y := Result.y - 24;
-    if Result.hitType <> 0 then
-    begin
-         self^.vy := -12;
-    end;
-  end else begin
-    Inc(self^.y, self^.vy);
-  end;
-
-  //writeln(self^.y, ' ', self^.vy);
-end;
 
 procedure Entity_Hitbox(Data: Pointer; var bb: TBoundingBox);
-var e: PEntity absolute Data;
+var
+  e: PEntity absolute Data;
 begin
-         bb.left := e^.x;
+  bb.left := e^.x;
+  bb.right := e^.x + 24;
+  bb.top := e^.y;
+  bb.bottom := e^.y + 24;
+
+  if (e^.t = 17) or (e^.t = 18) then
+  begin
+    bb.left := e^.x;
     bb.right := e^.x + 24;
-    bb.top := e^.y;
     bb.bottom := e^.y + 24;
+    bb.top := bb.bottom - 9;
+  end;
 
-    if (e^.t = 17) or (e^.t = 18) then begin
-      bb.left := e^.x;
-      bb.right := e^.x + 24;
-      bb.bottom := e^.y + 24;
-      bb.top := bb.bottom - 9;
-    end;
-
-    if (e^.t = 72) then begin
-      bb.left := e^.x + 8;
-      bb.right := e^.x + 16;
-      bb.bottom := e^.y + 24;
-      bb.top := bb.bottom - 5;
-    end;
+  if (e^.t = 72) then
+  begin
+    bb.left := e^.x + 8;
+    bb.right := e^.x + 16;
+    bb.bottom := e^.y + 24;
+    bb.top := bb.bottom - 5;
+  end;
 end;
+
 end.

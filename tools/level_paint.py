@@ -83,10 +83,11 @@ class LevelPaintTool:
                     # draw.point((px, py), (0, 127, 0, 255))
                     tx = px // 24
 
-                    if (tx + ty) % 2 == 0:
-                        canvas_data[py * map_width_pixels + px] = (0, 0x7f, 0, 255)
-                    else:
-                        canvas_data[py * map_width_pixels + px] = (0, 0xaa, 0, 255)
+                    canvas_data[py * map_width_pixels + px] = (0, 0xaa, 0, 255)
+                    # if (tx + ty) % 2 == 0:
+                    #     canvas_data[py * map_width_pixels + px] = (0, 0x7f, 0, 255)
+                    # else:
+                    #     canvas_data[py * map_width_pixels + px] = (0, 0xaa, 0, 255)
 
         canvas.putdata(canvas_data)
 

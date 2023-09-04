@@ -103,6 +103,10 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Sensor"/>
       </Unit>
+      <Unit>
+        <Filename Value="src\enemy.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -26,8 +26,7 @@ uses
   Windows,
   Classes,
   {$endif}
-  app
-  ;
+  app;
 
 {$ifdef WINDOWS}
 procedure MoveConsoleWindow;

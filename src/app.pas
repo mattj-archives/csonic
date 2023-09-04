@@ -8,12 +8,9 @@ interface
 uses
   Engine, Sys, Event, Image,
   common, entity, player,
-   res, res_enum,
-  Classes, SysUtils
+   res, res_enum, SysUtils
   {$ifdef SDL2}
-    ,SDL2
-  , sdl2_ttf
-    ,GFX_SDL
+    ,SDL2 ,sdl2_ttf, GFX_SDL
   {$endif}
   {$ifdef WASM}
     ,GFX_EXT
@@ -24,7 +21,7 @@ procedure Main;
 procedure G_Init;
 procedure G_RunFrame;
 procedure G_Draw;
- 
+
 var
   textures: array[0 .. 200] of pimage_t;
   renderedTiles: pimage_t;
@@ -33,6 +30,7 @@ var
 
 implementation
 
+uses enemy;
 procedure OnKeyDown(sc: ScanCode);
 begin
 
@@ -160,7 +158,17 @@ var f: file;
         e := SpawnEntity(x, y, object_type);
         Entity_SetState(e, entityStates.STATE_CHILI1);
       end;
-            72: {Enemy "Bouncing potato" }
+          70: {Enemy "Rabid Mushroom" }
+      begin
+           e := SpawnEntity(x, y, object_type);
+         Entity_SetState(e, STATE_RM_IDLE);
+      end;
+          71: { Enemy "Mosquito" }
+          begin
+            e := SpawnEntity(x, y, object_type);
+            Entity_SetState(e, STATE_MOSQU_IDLE);
+          end;
+          72: {Enemy "Bouncing potato" }
       begin
            e := SpawnEntity(x, y, object_type);
          Entity_SetState(e, STATE_BPOT_IDLE);
@@ -194,6 +202,7 @@ begin
     BlockRead(f, tn, sizeof(integer));
     BlockRead(f, tc, sizeof(integer));
 
+    //writeln('Map entity spawn: ', x, ' ', y, ' ', ' type: ', tn);
     if (x < 0) or (x >= 168) or (y < 0) or (y >= 54) then continue;
 
     //writeln(x, y, tn, tc);
@@ -235,7 +244,7 @@ begin
       end;
       70: {Enemy "Rabid Mushroom" }
       begin
-      e := SpawnEntity(x * 24, y * 24, tn);
+           e := SpawnEntity(x * 24, y * 24, tn);
          Entity_SetState(e, STATE_RM_IDLE);
       end;
       71: { Enemy "mosquito" }
@@ -368,6 +377,8 @@ var
 begin
   writeln('G_Init');
 
+  Entity__Init;
+
   LoadGFX;
 
   FillChar(entities, sizeof(TEntity) * MAX_ENTITIES, 0);
@@ -413,7 +424,7 @@ begin
 
   //map[13 * 168 + 6].tile := 1;
   //e := SpawnEntity(3 * 24, 4 * 24, -1);
-  e := SpawnEntity(7 * 24, 10 * 24, -1);
+  e := SpawnEntity(7 * 24, 10 * 24, 1);
   gPlayer.ent := e;
   Entity_SetState(e, STATE_PLAYER_STAND1);
 
@@ -503,10 +514,17 @@ begin
           MovingPlatform_Update(e);
         end;
 
-        if e^.t = 72 then
-        begin
-          Entity_BPot_Update(e);
-        end;
+        if Assigned(entityInfo[e^.t].updateProc) then entityInfo[e^.t].updateProc(e);
+
+        //if e^.t = 70 then
+        //begin
+        //  Entity_RM_Update(e);
+        //end;
+        //
+        //if e^.t = 72 then
+        //begin
+        //  Entity_BPot_Update(e);
+        //end;
       end;
 
       camera.x := gPlayer.ent^.x - 6 * 24;
