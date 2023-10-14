@@ -9,7 +9,7 @@ uses
 
 type
   TPlayer = record
-    velX, velY: integer;
+    velX, velY: longint;
     groundEntity: PEntity;
     ent: PEntity;
     debugMode: boolean;
@@ -66,8 +66,8 @@ begin
   begin
     // writeln('cant jump, vel is ', gPlayer.velY);
     Exit;
-
   end;
+
   if playerInAir then
   begin
     // writeln('cant jump, player is in air');

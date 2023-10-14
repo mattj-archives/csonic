@@ -104,7 +104,7 @@ end;
 procedure LoadLevel2(fileName: string);
 var f: file;
   width, height, num_objects, tile_type, object_type: byte;
-  i, x, y: integer;
+  i, x, y: longint;
   tile_desc, tile_vis: integer;
   tile: ^TTile;
   e: PEntity;
@@ -138,10 +138,14 @@ var f: file;
         BlockRead(f, object_type, sizeof(integer));
         BlockRead(f, x, sizeof(integer));
         BlockRead(f, y, sizeof(integer));
+
+        x:= x shl 3;
         Dec(y, 24);
+        y:= y shl 3;
 
         case object_type of
         17: begin
+          writeln('spawn Spring1 at ', x, ' ', y);
           e := SpawnEntity(x, y, object_type);
           Entity_SetState(e, STATE_SPRING1_IDLE);
         end;
@@ -184,7 +188,7 @@ var f: file;
 procedure LoadLevel(fileName: string);
 var
   f: file;
-  x, y, tn, tc: integer;
+  x, y, tn, tc: longint;
   p0, p1, p2, p3: integer;
   tile: ^TTile;
   e: PEntity;
@@ -201,6 +205,9 @@ begin
     BlockRead(f, y, sizeof(integer));
     BlockRead(f, tn, sizeof(integer));
     BlockRead(f, tc, sizeof(integer));
+
+    x := (x * 24) shl 3;
+    y := (y * 24) shl 3;
 
     //writeln('Map entity spawn: ', x, ' ', y, ' ', ' type: ', tn);
     if (x < 0) or (x >= 168) or (y < 0) or (y >= 54) then continue;
@@ -226,20 +233,20 @@ begin
         BlockRead(f, p3, sizeof(integer));
       end;
       17: begin
-        e := SpawnEntity(x * 24, y * 24, tn);
+        e := SpawnEntity(x, y, tn);
         Entity_SetState(e, STATE_SPRING1_IDLE);
       end;
       18: begin
-        e := SpawnEntity(x * 24, y * 24, tn);
+        e := SpawnEntity(x, y, tn);
         Entity_SetState(e, STATE_SPRING2_IDLE);
       end;
       43:
       begin
-        e := SpawnEntity(x * 24, y * 24, tn);
+        e := SpawnEntity(x, y, tn);
         Entity_SetState(e, entityStates.STATE_RING1);
       end;
       44: begin
-        e := SpawnEntity(x * 24, y * 24, tn);
+        e := SpawnEntity(x, y, tn);
         Entity_SetState(e, entityStates.STATE_CHILI1);
       end;
       70: {Enemy "Rabid Mushroom" }
@@ -263,16 +270,20 @@ begin
   end;
   System.Close(f);
 end;
-
+var   camx, camy: longint;
 procedure DrawMap;
 var
   tileStartX, tileStartY: integer;
   x, y, i, c, tx, ty: integer;
+  x0, y0: longint;
+
   idx: integer;
   tile: ^TTile;
 begin
-  tileStartX := camera.X div 24;
-  tileStartY := camera.Y div 24;
+
+
+  tileStartX := camx div 24;
+  tileStartY := camy div 24;
 
   for y := tileStartY to tileStartY + 10 do
   begin
@@ -280,18 +291,25 @@ begin
     begin
       tile := @map[y * 168 + x];
       {R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[tile^.tile]^);            }
+
+      x0 := (x * 24 * 8 - camera.X) shr 3;
+      y0 := (y * 24 * 8 - camera.Y) shr 3;
+
       case tile^.tile of
         0:
-          R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[SPRITE_T1]^);
-
+          //R_DrawSprite(x * 24 - camx, y * 24 - camy, textures[SPRITE_T1]^);
+begin
+  end;
         1:
-          R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[SPRITE_T2]^);
+        begin
+          end;
+          //R_DrawSprite(x * 24 - camx, y * 24 - camy, textures[SPRITE_T2]^);
         4: begin
           tx := tile^.color mod 16;
           ty := tile^.color div 16;
 
           //R_DrawLine(x * 24 - camera.x, y * 24 - camera.y, x * 24 - camera.x + 24, y * 24 - camera.y + 24, 255, 255, 255, 255);
-          R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[SPRITE_T1]^);
+          //R_DrawSprite(x * 24 - camx, y * 24 - camy, textures[SPRITE_T1]^);
 {
           c := $aa;
           if ((x + y) mod 2) = 0 then c := $7f;
@@ -304,7 +322,7 @@ begin
             (y * 24 + 24 - heights[tile^.description][i]) - camera.y, 0, c, 0, 255);
           end;
 }
-          R_DrawSubImageTransparent(renderedTiles^, x * 24 - camera.x, y * 24 - camera.y, tx * 24, ty * 24, 24, 24);
+          R_DrawSubImageTransparent(renderedTiles^, x0, y0, tx * 24, ty * 24, 24, 24);
         end;
 
       end;
@@ -527,8 +545,8 @@ begin
         //end;
       end;
 
-      camera.x := gPlayer.ent^.x - 6 * 24;
-      camera.y := gPlayer.ent^.y - 4 * 24;
+      camera.x := gPlayer.ent^.x - (6 * 24) shl 3;
+      camera.y := gPlayer.ent^.y - (4 * 24) shl 3;
       if camera.x < 0 then camera.x := 0;
       if camera.y < 0 then camera.y := 0;
 
@@ -545,6 +563,10 @@ procedure G_Draw; alias:'G_Draw';
   mp: PEntityMovingPlatform;
 
 begin
+
+  camx := camera.X shr 3;
+  camy := camera.Y shr 3;
+
     DrawMap;
 
     for i := 1 to MAX_ENTITIES do
@@ -552,13 +574,13 @@ begin
       if (entities[i].flags and 1) = 0 then continue;
       e := @entities[i];
 
-      if e^.x < camera.x - 24 then continue;
-      if e^.x > camera.x + 320 then continue;
-      if e^.y < camera.y - 24 then continue;
-      if e^.y > camera.y + 240 then continue;
+      //if e^.x < camera.x - 24 then continue;
+      //if e^.x > camera.x + 320 then continue;
+      //if e^.y < camera.y - 24 then continue;
+      //if e^.y > camera.y + 240 then continue;
 
       //writeln('draw entity ', i, ' type ', e^.t);
-      DrawState(e^.x - camera.x, e^.y - camera.y, e^.state, e^.direction);
+      DrawState((e^.x - camera.x) shr 3, (e^.y - camera.y) shr 3, e^.state, e^.direction);
     end;
 
     R_DrawText(0, 0, 'Player: ');

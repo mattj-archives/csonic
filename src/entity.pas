@@ -7,7 +7,7 @@ interface
 uses
   common, res, res_enum;
 
-function SpawnEntity(x, y, entityType: integer): PEntity;
+function SpawnEntity(x, y: longint; entityType: integer): PEntity;
 procedure Entity_GetMoveBy(self: PEntity; deltaX, deltaY: integer;
   var resultVector: TVector2; var Result: THitResult);
 procedure Entity_MoveBy(self: PEntity; deltaX, deltaY: integer; var Result: THitResult);
@@ -31,7 +31,7 @@ begin
   EntityType_BPot_Init(entityInfo[72]);
 end;
 
-function SpawnEntity(x, y, entityType: integer): PEntity;
+function SpawnEntity(x, y: longint; entityType: integer): PEntity;
 var
   i: integer;
   e: PEntity;

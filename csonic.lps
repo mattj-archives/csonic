@@ -8,6 +8,7 @@
       <Unit>
         <Filename Value="csonic.lpr"/>
         <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="11"/>
         <CursorPos Y="45"/>
         <UsageCount Value="269"/>
@@ -16,8 +17,8 @@
       <Unit>
         <Filename Value="src\app.pas"/>
         <IsPartOfProject Value="True"/>
-        <TopLine Value="26"/>
-        <CursorPos X="12" Y="162"/>
+        <TopLine Value="494"/>
+        <CursorPos X="38" Y="496"/>
         <UsageCount Value="269"/>
         <Loaded Value="True"/>
       </Unit>
@@ -108,8 +109,8 @@
         <Filename Value="src\entity.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="5"/>
-        <TopLine Value="167"/>
-        <CursorPos X="44" Y="30"/>
+        <TopLine Value="19"/>
+        <CursorPos X="33" Y="25"/>
         <UsageCount Value="269"/>
         <Loaded Value="True"/>
       </Unit>
@@ -126,8 +127,7 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Player"/>
         <EditorIndex Value="4"/>
-        <TopLine Value="51"/>
-        <CursorPos X="20" Y="93"/>
+        <CursorPos X="20" Y="21"/>
         <UsageCount Value="263"/>
         <Loaded Value="True"/>
       </Unit>
@@ -152,10 +152,9 @@
         <Filename Value="src\sensor.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Sensor"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="10"/>
         <TopLine Value="261"/>
-        <CursorPos Y="286"/>
+        <CursorPos Y="271"/>
         <UsageCount Value="310"/>
         <Loaded Value="True"/>
       </Unit>
@@ -165,7 +164,7 @@
         <EditorIndex Value="6"/>
         <TopLine Value="164"/>
         <CursorPos X="9" Y="173"/>
-        <UsageCount Value="67"/>
+        <UsageCount Value="253"/>
         <Loaded Value="True"/>
       </Unit>
       <Unit>
@@ -180,14 +179,14 @@
         <Filename Value="engine\external\sdl2\sdlerror.inc"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="10" Y="10"/>
-        <UsageCount Value="99"/>
+        <UsageCount Value="67"/>
       </Unit>
       <Unit>
         <Filename Value="C:\lazarus\fpc\3.2.2\source\rtl\objpas\sysutils\sysutils.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="763"/>
         <CursorPos X="3" Y="821"/>
-        <UsageCount Value="48"/>
+        <UsageCount Value="16"/>
       </Unit>
       <Unit>
         <Filename Value="engine\src\event.pas"/>
@@ -203,14 +202,14 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="79"/>
         <CursorPos X="7" Y="106"/>
-        <UsageCount Value="57"/>
+        <UsageCount Value="25"/>
       </Unit>
       <Unit>
         <Filename Value="src\res\res_enum.pas"/>
         <EditorIndex Value="8"/>
         <TopLine Value="49"/>
         <CursorPos X="17" Y="70"/>
-        <UsageCount Value="21"/>
+        <UsageCount Value="114"/>
         <Loaded Value="True"/>
       </Unit>
     </Units>
@@ -220,79 +219,7 @@
     <OtherDefines Count="1">
       <Define0 Value="SDL2"/>
     </OtherDefines>
-    <JumpHistory HistoryIndex="27">
-      <Position>
-        <Filename Value="src\enemy.pas"/>
-        <Caret Line="18" Column="6"/>
-      </Position>
-      <Position>
-        <Filename Value="src\app.pas"/>
-        <Caret Line="57" Column="10" TopLine="44"/>
-      </Position>
-      <Position>
-        <Filename Value="src\app.pas"/>
-        <Caret Line="381" Column="3" TopLine="357"/>
-      </Position>
-      <Position>
-        <Filename Value="src\entity.pas"/>
-        <Caret Line="30" Column="3" TopLine="28"/>
-      </Position>
-      <Position>
-        <Filename Value="src\app.pas"/>
-        <Caret Line="381" Column="3" TopLine="357"/>
-      </Position>
-      <Position>
-        <Filename Value="src\app.pas"/>
-        <Caret Line="517" Column="72" TopLine="492"/>
-      </Position>
-      <Position>
-        <Filename Value="src\app.pas"/>
-        <Caret Line="502" Column="36" TopLine="490"/>
-      </Position>
-      <Position>
-        <Filename Value="src\entity.pas"/>
-        <Caret Line="276" TopLine="242"/>
-      </Position>
-      <Position>
-        <Filename Value="src\entity.pas"/>
-        <Caret Line="283" TopLine="261"/>
-      </Position>
-      <Position>
-        <Filename Value="src\common.pas"/>
-        <Caret Line="93" Column="27" TopLine="48"/>
-      </Position>
-      <Position>
-        <Filename Value="src\entity.pas"/>
-        <Caret Line="264" Column="11" TopLine="261"/>
-      </Position>
-      <Position>
-        <Filename Value="src\entity.pas"/>
-        <Caret Line="283" TopLine="261"/>
-      </Position>
-      <Position>
-        <Filename Value="src\entity.pas"/>
-        <Caret Line="282" Column="15" TopLine="261"/>
-      </Position>
-      <Position>
-        <Filename Value="src\app.pas"/>
-        <Caret Line="403" Column="20" TopLine="291"/>
-      </Position>
-      <Position>
-        <Filename Value="src\enemy.pas"/>
-        <Caret Line="155" Column="18" TopLine="148"/>
-      </Position>
-      <Position>
-        <Filename Value="src\enemy.pas"/>
-        <Caret Line="157" Column="78" TopLine="144"/>
-      </Position>
-      <Position>
-        <Filename Value="src\common.pas"/>
-        <Caret Line="48" Column="23" TopLine="24"/>
-      </Position>
-      <Position>
-        <Filename Value="src\enemy.pas"/>
-        <Caret Line="157" Column="52" TopLine="140"/>
-      </Position>
+    <JumpHistory HistoryIndex="29">
       <Position>
         <Filename Value="src\enemy.pas"/>
         <Caret Line="159" Column="25" TopLine="142"/>
@@ -332,6 +259,86 @@
       <Position>
         <Filename Value="src\enemy.pas"/>
         <Caret Line="173" Column="9" TopLine="164"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="10" Column="26"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="347" Column="18" TopLine="327"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="513" Column="27" TopLine="477"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="407" TopLine="387"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="347" TopLine="319"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="224" Column="30" TopLine="216"/>
+      </Position>
+      <Position>
+        <Filename Value="src\entity.pas"/>
+        <Caret Line="34" Column="35" TopLine="34"/>
+      </Position>
+      <Position>
+        <Filename Value="src\entity.pas"/>
+        <Caret Line="10" Column="35" TopLine="4"/>
+      </Position>
+      <Position>
+        <Filename Value="src\entity.pas"/>
+        <Caret Line="5" Column="10"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="236" Column="36" TopLine="216"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="468" Column="6" TopLine="450"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="546" TopLine="536"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="565" TopLine="536"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="148" Column="49" TopLine="133"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="575" Column="40" TopLine="335"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="295" Column="43" TopLine="203"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="130" Column="22" TopLine="116"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="567" Column="8" TopLine="557"/>
+      </Position>
+      <Position>
+        <Filename Value="src\app.pas"/>
+        <Caret Line="300" TopLine="286"/>
+      </Position>
+      <Position>
+        <Filename Value="src\player.pas"/>
+        <Caret Line="255" Column="10" TopLine="252"/>
       </Position>
     </JumpHistory>
     <RunParams>
