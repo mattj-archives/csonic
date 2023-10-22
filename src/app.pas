@@ -442,7 +442,7 @@ begin
 
   //map[13 * 168 + 6].tile := 1;
   //e := SpawnEntity(3 * 24, 4 * 24, -1);
-  e := SpawnEntity(7 * 24, 10 * 24, 1);
+  e := SpawnEntity((7 * 24) shl 3, (10 * 24) shl 3, 1);
   gPlayer.ent := e;
   Entity_SetState(e, STATE_PLAYER_STAND1);
 

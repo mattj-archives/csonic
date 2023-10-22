@@ -205,33 +205,33 @@ procedure DebugMove(self: PEntity);
 begin
   if I_IsKeyDown(kUp) then
   begin
-    Inc(gPlayer.velY, -2);
-    if gPlayer.velY < -8 then gPlayer.velY := -8;
+    Inc(gPlayer.velY, -2 shl 3);
+    if gPlayer.velY < (-8 shl 3) then gPlayer.velY := -8 shl 3;
   end;
 
   if I_IsKeyDown(kDn) then
   begin
-    Inc(gPlayer.velY, 2);
-    if gPlayer.velY > 8 then gPlayer.velY := 8;
+    Inc(gPlayer.velY, 2 shl 3);
+    if gPlayer.velY > (8 shl 3) then gPlayer.velY := 8 shl 3;
   end;
 
   if I_IsKeyDown(kLf) then
   begin
-    Inc(gPlayer.velX, -2);
-    if gPlayer.velX < -8 then gPlayer.velX := -8;
+    Inc(gPlayer.velX, -2 shl 3);
+    if gPlayer.velX < (-8 shl 3) then gPlayer.velX := -8 shl 3;
   end;
 
   if I_IsKeyDown(kRt) then
   begin
-    Inc(gPlayer.velX, 2);
-    if gPlayer.velX > 8 then gPlayer.velX := 8;
+    Inc(gPlayer.velX, 2 shl 3);
+    if gPlayer.velX > (8 shl 3) then gPlayer.velX := 8 shl 3;
   end;
 
-  if gPlayer.velX < 0 then Inc(gPlayer.velX);
-  if gPlayer.velX > 0 then Dec(gPlayer.velX);
+  if gPlayer.velX < 0 then Inc(gPlayer.velX, 1 shl 3);
+  if gPlayer.velX > 0 then Dec(gPlayer.velX, 1 shl 3);
 
-  if gPlayer.velY < 0 then Inc(gPlayer.velY);
-  if gPlayer.velY > 0 then Dec(gPlayer.velY);
+  if gPlayer.velY < 0 then Inc(gPlayer.velY, 1 shl 3);
+  if gPlayer.velY > 0 then Dec(gPlayer.velY, 1 shl 3);
 
   Inc(self^.x, gPlayer.velX);
   Inc(self^.y, gPlayer.velY);
@@ -247,6 +247,11 @@ var
   adj, adj2: integer;
   endX, endY: integer;
 
+  const
+    MAX_X_VEL = 9 shl 3;
+    X_ACCEL = 2 shl 3;
+    MAX_Y_VEL = 12 shl 3;
+    GRAVITY = 1 shl 3;
 begin
 
   if gPlayer.debugMode then
@@ -270,14 +275,14 @@ begin
 
   if I_IsKeyDown(kLf) then
   begin
-    Inc(gPlayer.velX, -2);
-    if gPlayer.velX < -9 then gPlayer.velX := -9;
+    Inc(gPlayer.velX, -X_ACCEL);
+    if gPlayer.velX < -MAX_X_VEL then gPlayer.velX := -MAX_X_VEL;
   end;
 
   if I_IsKeyDown(kRt) then
   begin
-    Inc(gPlayer.velX, 2);
-    if gPlayer.velX > 9 then gPlayer.velX := 9;
+    Inc(gPlayer.velX, X_ACCEL);
+    if gPlayer.velX > MAX_X_VEL then gPlayer.velX := MAX_X_VEL;
   end;
 
   if I_IsKeyDown(kSpace) then
@@ -287,8 +292,8 @@ begin
 
   { Decelerate X }
 
-  if gPlayer.velX < 0 then Inc(gPlayer.velX);
-  if gPlayer.velX > 0 then Dec(gPlayer.velX);
+  if gPlayer.velX < 0 then Inc(gPlayer.velX, 1 shl 3);
+  if gPlayer.velX > 0 then Dec(gPlayer.velX, 1 shl 3);
 
   if gPlayer.velY <> 0 then playerInAir := True;
 
@@ -303,8 +308,9 @@ begin
 
   if playerInAir then
   begin
-    Inc(gPlayer.velY);
-    if gPlayer.velY > 12 then gPlayer.velY := 12;
+    Inc(gPlayer.velY, GRAVITY);
+
+    if gPlayer.velY > MAX_Y_VEL then gPlayer.velY := MAX_Y_VEL;
     //if gPlayer.velY > 1 then gPlayer.velY := 1;
 
     if gPlayer.velY > 0 then

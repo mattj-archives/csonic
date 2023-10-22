@@ -197,7 +197,7 @@ procedure Mosquito_State(Data: Pointer);
 var
   self: PEntityMosquito absolute Data;
 begin
-  writeln('Mosquito state ', self^.state);
+  //writeln('Mosquito state ', self^.state);
   case self^.state of
     STATE_MOSQU_IDLE: self^.patrolFrames := 60;
   end;
