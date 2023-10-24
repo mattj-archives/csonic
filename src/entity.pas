@@ -26,9 +26,9 @@ uses Sensor, app, player, enemy, util;
 
 procedure Entity__Init;
 begin
-  EntityType_RM_Init(entityInfo[70]);
-  EntityType_Mosquito_Init(entityInfo[71]);
-  EntityType_BPot_Init(entityInfo[72]);
+  EntityType_RM_Init(G.entityInfo[70]);
+  EntityType_Mosquito_Init(G.entityInfo[71]);
+  EntityType_BPot_Init(G.entityInfo[72]);
 end;
 
 function SpawnEntity(x, y: longint; entityType: integer): PEntity;
@@ -39,7 +39,7 @@ begin
   SpawnEntity := nil;
   for i := 1 to MAX_ENTITIES do
   begin
-    e := @entities[i];
+    e := @G.entities[i];
 
     if (e^.flags and 1) = 0 then
     begin
@@ -155,7 +155,7 @@ begin
       other.top := y * 24;
       other.bottom := y * 24 + 24;
 
-      if map[y * 168 + x].tile = 1 then
+      if G.map[y * 168 + x].tile = 1 then
       begin
         GetBoxAdjustment(this, other, delta, adjVector);
         if abs(adjVector.x) > abs(adj.x) then
@@ -170,7 +170,7 @@ begin
         end;
       end;
 
-      if map[y * 168 + x].tile = 4 then
+      if G.map[y * 168 + x].tile = 4 then
       begin
         for i := 0 to 23 do
         begin
@@ -194,7 +194,7 @@ begin
 
   for i := 1 to MAX_ENTITIES do
   begin
-    e := @entities[i];
+    e := @G.entities[i];
     if (e^.flags and 1) = 0 then continue;
     if e = self then continue;
 
@@ -273,8 +273,8 @@ begin
   self^.state := state;
   self^.stateFrames := entity_states[Ord(state)].duration;
 
-  if Assigned(entityInfo[self^.t].stateProc) then
-    entityInfo[self^.t].stateProc(self);
+  if Assigned(G.entityInfo[self^.t].stateProc) then
+    G.entityInfo[self^.t].stateProc(self);
 
 end;
 
@@ -290,10 +290,16 @@ begin
 
   if (e^.t = 17) or (e^.t = 18) then
   begin
+    //bb.left := e^.x + intToFix32(8);
+    //bb.right := e^.x + intToFix32(16);
+    //bb.bottom := e^.y + intToFix32(24);
+    //bb.top := bb.bottom - intToFix32(8);
+
     bb.left := e^.x;
     bb.right := e^.x + intToFix32(24);
     bb.bottom := e^.y + intToFix32(24);
-    bb.top := bb.bottom - intToFix32(9);
+    bb.top := bb.bottom - intToFix32(7);
+
   end;
 
   if (e^.t = 72) then

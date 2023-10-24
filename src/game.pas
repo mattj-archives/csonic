@@ -54,11 +54,11 @@ Begin
     Begin
       For x := tileStartX To tileStartX + 14 Do
         Begin
-          tile := @map[y * 168 + x];
+          tile := @G.map[y * 168 + x];
       {R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[tile^.tile]^);            }
 
-          x0 := (x * 24 * 8 - camera.X) shr 3;
-          y0 := (y * 24 * 8 - camera.Y) shr 3;
+          x0 := (x * 24 * 8 - G.camera.X) shr 3;
+          y0 := (y * 24 * 8 - G.camera.Y) shr 3;
 
           Case tile^.tile Of 
             0:
@@ -133,8 +133,8 @@ Begin
 
   { camera.X := intToFix32(4 * 24); }
 
-  camx := camera.X shr 3;
-  camy := camera.Y shr 3;
+  camx := G.camera.X shr 3;
+  camy := G.camera.Y shr 3;
 
   R_FillColor($aa0000);
   DrawMap;
@@ -142,8 +142,8 @@ Begin
   //R_FillRect(0, 0, 200, 200, 2);
   For i := 1 To MAX_ENTITIES Do
     Begin
-      If (entities[i].flags And 1) = 0 Then continue;
-      e := @entities[i];
+      If (G.entities[i].flags And 1) = 0 Then continue;
+      e := @G.entities[i];
 
       //if e^.x < camera.x - 24 then continue;
       //if e^.x > camera.x + 320 then continue;
@@ -151,7 +151,7 @@ Begin
       //if e^.y > camera.y + 240 then continue;
 
       //writeln('draw entity ', i, ' type ', e^.t);
-      DrawState((e^.x - camera.x) shr 3, (e^.y - camera.y) shr 3, e^.state, e^.direction);
+      DrawState((e^.x - G.camera.x) shr 3, (e^.y - G.camera.y) shr 3, e^.state, e^.direction);
     End;
 
   R_DrawText(0, 0, 'Player: ');
@@ -255,8 +255,8 @@ Begin
 
       For i := 1 To MAX_ENTITIES Do
         Begin
-          If (entities[i].flags And 1) = 0 Then continue;
-          e := @entities[i];
+          If (G.entities[i].flags And 1) = 0 Then continue;
+          e := @G.entities[i];
 
           Dec(e^.stateFrames);
 
@@ -275,7 +275,7 @@ Begin
               MovingPlatform_Update(e);
             End;
 
-          If Assigned(entityInfo[e^.t].updateProc) Then entityInfo[e^.t].updateProc(e);
+          If Assigned(G.entityInfo[e^.t].updateProc) Then G.entityInfo[e^.t].updateProc(e);
 
           //if e^.t = 70 then
           //begin
@@ -288,10 +288,10 @@ Begin
           //end;
         End;
 
-      camera.x := gPlayer.ent^.x - (6 * 24) shl 3;
-      camera.y := gPlayer.ent^.y - (4 * 24) shl 3;
-      If camera.x < 0 Then camera.x := 0;
-      If camera.y < 0 Then camera.y := 0;
+      G.camera.x := gPlayer.ent^.x - (6 * 24) shl 3;
+      G.camera.y := gPlayer.ent^.y - (4 * 24) shl 3;
+      If G.camera.x < 0 Then G.camera.x := 0;
+      If G.camera.y < 0 Then G.camera.y := 0;
 
     End;
 

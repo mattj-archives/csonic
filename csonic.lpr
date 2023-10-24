@@ -41,7 +41,12 @@ begin
   {$ifdef WINDOWS}
   MoveConsoleWindow;
   {$endif}
+
+  {$ifdef DARWIN}
+  // MacOS Lazarus workaround, for now.
   ChDir('/Users/mattj/games/csonic');
+  {$endif}
+
   app.Main;
 end.
 

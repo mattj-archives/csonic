@@ -8,7 +8,7 @@ uses
   engine, common;
 
 procedure SensorX(y, startX, endX: integer; var Result: THitResult);
-procedure SensorY(x, startY, endY: LongInt; var Result: THitResult);
+procedure SensorY(x, startY, endY: longint; var Result: THitResult);
 
 function EntityTrace(startX, startY, endX, endY: integer): integer;
 
@@ -20,7 +20,7 @@ var
 
 implementation
 
-uses Entity, util;
+uses Entity, util, map;
 
 procedure SensorX(y, startX, endX: integer; var Result: THitResult);
 var
@@ -52,17 +52,19 @@ begin
     other.top := ty * 24;
     other.bottom := ty * 24 + 24;
 
-    tile := @map[ty * 168 + tx];
+    tile := Map_TileAt(tx, ty);
 
-    if tile^.tile = 4 then
+    if Assigned(tile) and (tile^.tile = 4) then
     begin
       idx := x - other.left;
       if idx < 0 then idx := 0;
       if idx > 23 then idx := 23;
 
       // TODO: Is this -1 correct?
-      if tile^.description < 576 then begin
-         h := other.bottom - heights[map[ty * 168 + tx].description][idx] - 1;  { TODO: should -1 be in brackets?, check other traces... }
+      if tile^.description < 576 then
+      begin
+        h := other.bottom - heights[tile^.description][idx] - 1;
+        { TODO: should -1 be in brackets?, check other traces... }
       end;
       //writeln('sensorX hit at x: ', x, ' h: ', h, ' y is: ', y);
       if h <= y then break;
@@ -100,7 +102,6 @@ begin
   end;
 
   Result.x := intToFix32(traceXValue);
-
 
 end;
 
@@ -142,8 +143,10 @@ begin
     //  if (h > traceYValue) then traceYValue := h;
     //  hitType := 1;
     //end;
-    tile := @map[ty * 168 + tx];
-    if tile^.tile = 4 then
+
+    tile := Map_TileAt(tx, ty);
+
+    if Assigned(tile) and (tile^.tile = 4) then
     begin
       idx := fix32ToInt(x - other.left);
       if idx < 0 then idx := 0;
@@ -153,14 +156,17 @@ begin
 
       { TODO: if heights = 0, this column won't clip }
 
-      if tile^.description < 576 then begin
+      if tile^.description < 576 then
+      begin
         continue;
-         //lower := other.bottom;
-         //upper := lower - heights[map[ty * 168 + tx].description][idx] - 1;
-      end else begin
+        //lower := other.bottom;
+        //upper := lower - heights[map[ty * 168 + tx].description][idx] - 1;
+      end
+      else
+      begin
 
-          upper := other.top;
-          lower := other.top + intToFix32(heights[tile^.description][idx]);
+        upper := other.top;
+        lower := other.top + intToFix32(heights[tile^.description][idx]);
       end;
 
       if (lower > traceYValue) and (startY > upper) then
@@ -198,12 +204,14 @@ end;
 
 {$inline on}
 
-procedure SensorY(x, startY, endY: LongInt; var Result: THitResult);
+procedure SensorY(x, startY, endY: longint; var Result: THitResult);
 var
+  originalX, originalStartY, originalEndY: longint;
   h, tx, ty, ty0, ty1, idx, traceYValue: integer;
   other: TBoundingBox;
   tile: ^TTile;
 begin
+
   Result.hitType := 0;
   Result.x := x;
 
@@ -213,12 +221,15 @@ begin
     exit;
   end;
 
-
+  originalX := x;
+  originalStartY := startY;
+  originalEndY := endY;
 
   x := fix32ToInt(x);
+
   startY := fix32ToInt(startY);
   endY := fix32ToInt(endY);
-    traceYValue := endY;
+  traceYValue := endY;
 
   tx := x div 24;
   ty0 := startY div 24;
@@ -233,45 +244,52 @@ begin
 
     h := startY;
 
-    tile := @map[ty * 168 + tx];
-    if tile^.tile = 1 then
+    tile := Map_TileAt(tx, ty);
+
+    if Assigned(tile) then
     begin
-      //h := other.top;
-      //h := other.bottom - 23;
-      h := other.bottom - 24;
-      if (h < traceYValue) then traceYValue := h;
-    end;
+      if tile^.tile = 1 then
+      begin
+        //h := other.top;
+        //h := other.bottom - 23;
+        h := other.bottom - 24;
+        if (h < traceYValue) then traceYValue := h;
+      end;
 
-    if map[ty * 168 + tx].tile = 4 then
-    begin
+      if tile^.tile = 4 then
+      begin
 
-         { Downward traces don't bother with ceilings }
-      if (tile^.description >= 576) then
-         continue;
+        { Downward traces don't bother with ceilings }
+        if (tile^.description >= 576) then
+          continue;
 
-      idx := x - other.left;
-      if idx < 0 then idx := 0;
-      if idx > 23 then idx := 23;
+        idx := x - other.left;
+        if idx < 0 then idx := 0;
+        if idx > 23 then idx := 23;
 
-      h := other.bottom - heights[map[ty * 168 + tx].description][idx] - 1;
+        h := other.bottom - heights[tile^.description][idx] - 1;
 
-      if (h < traceYValue) then traceYValue := h;
-      //writeln('hit at type type 4 at h ', h);
+        if (h < traceYValue) then traceYValue := h;
+        //writeln('hit at type type 4 at h ', h);
+      end;
     end;
   end;
 
   if traceYValue <> endY then Result.hitType := 1;
 
-  EntityTrace(x, startY, x, endY);
+  EntityTrace(originalX, originalStartY, originalX, originalEndY);
 
   if entityTraceResult <> nil then
   begin
-    if entityTraceResultY < traceYValue then
+    if entityTraceResultY < intToFix32(traceYValue) then
     begin
       traceYValue := entityTraceResultY;
       Result.entity := entityTraceResult;
 
       Result.hitType := 2;
+
+      Result.y := entityTraceResultY;
+      Exit;
     end;
   end;
 
@@ -295,7 +313,7 @@ begin
 
   for i := 1 to MAX_ENTITIES do
   begin
-    e := @entities[i];
+    e := @G.entities[i];
     if (e^.flags and 1) = 0 then continue;
     if e = traceEntitySkip then continue;
 
@@ -320,7 +338,7 @@ begin
 
           if (other.right >= endX) and (other.left < startX) then
           begin
-            endX := other.right + 1;
+            endX := other.right + intToFix32(1);
             entityTraceResult := e;
           end;
 
@@ -331,7 +349,7 @@ begin
 
           if (other.left <= endX) and (other.left > startX) then
           begin
-            endX := other.left - 1;
+            endX := other.left - intToFix32(1);
             entityTraceResult := e;
             //writeln('EntityTrace +Y hit at ', endY);
           end;
@@ -351,7 +369,7 @@ begin
           { Trace -Y (up) }
           if (other.bottom >= endY) and (other.top < startY) then
           begin
-            endY := other.bottom + 1;
+            endY := other.bottom + intToFix32(1);
             entityTraceResult := e;
           end;
         end
@@ -360,7 +378,7 @@ begin
           { Trace +Y (down) }
           if (other.top <= endY) and (other.top > startY) then
           begin
-            endY := other.top - 1;
+            endY := other.top - intToFix32(1);
             entityTraceResult := e;
             //writeln('EntityTrace +Y hit at ', endY);
           end;

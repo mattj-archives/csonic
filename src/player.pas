@@ -81,15 +81,17 @@ end;
 procedure Player_HitEntity(self, e: PEntity; Result: THitResult);
 var
   explode: PEntity;
+  bbOther: TBoundingBox;
 begin
   if Result.hitType <> 2 then Exit;
+
+  Entity_Hitbox(e, bbOther);
 
 
   if e^.t = 17 then
   begin
-    // writeln('touch spring');
     gPlayer.velY := intToFix32(-16);
-    self^.y := e^.y - intToFix32(16);
+    self^.y := bbOther.top - intToFix32(24 + 6);
     Entity_SetState(e, STATE_SPRING1_USE);
   end;
 
@@ -97,7 +99,7 @@ begin
   begin
     // writeln('touch spring');
     gPlayer.velY := intToFix32(-20);
-    self^.y := e^.y - intToFix32(16);
+    self^.y := bbOther.top - intToFix32(24 + 6);
     Entity_SetState(e, STATE_SPRING2_USE);
   end;
 
@@ -153,7 +155,7 @@ begin
 
   for i := 1 to MAX_ENTITIES do
   begin
-    e := @entities[i];
+    e := @G.entities[i];
 
     if (e^.flags and 1) = 0 then continue;
     if e = self then continue;
@@ -357,7 +359,7 @@ begin
     //Inc(self^.y, gPlayer.velY + adj);
     if gPlayer.velY > 0 then
     begin
-      self^.y := finalSensor.y - intToFix32(24);   // was 23
+      self^.y := finalSensor.y - intToFix32(23);   // was 23
     end
     else
     begin
@@ -390,10 +392,10 @@ begin
       end;
 
       // If the player has been bounced back upwards again, then stay in the air
-      if gPlayer.velY < 0 then
-      begin
-        playerInAir := True;
-      end;
+      //if gPlayer.velY < 0 then
+      //begin
+        //playerInAir := True;
+      //end;
     end;
   end
   else
@@ -438,6 +440,9 @@ begin
       end;
     end;
 
+    //if gPlayer.velY < 0 then begin
+       //playerInAir:=true;
+    //end;
     //sensorYResult := SensorY(self^.x, self^.y + 23, self^.y + 24);
     //writeln('sensorYResult: ', sensorYResult, ', original start was ', self^.y + 23);
 
@@ -472,15 +477,22 @@ begin
     //end;
   end;
 
+      // If the player has been bounced back upwards again, then stay in the air
+    if gPlayer.velY < 0 then
+    begin
+      playerInAir := True;
+    end;
+
+
   if gPlayer.velX <> 0 then
   begin
 
     if gPlayer.velX > 0 then
     begin
       SensorX(self^.y + intToFix32(11), self^.x + intToFix32(23), self^.x + intToFix32(23) + gPlayer.velX, sensorXResult);
-      writeln('sensorX result: ', sensorXResult.x);
+      //writeln('sensorX result: ', sensorXResult.x);
       self^.x := sensorXResult.x - intToFix32(23);
-      writeln('player X: ', fix32ToInt(self^.x), ' subpixel: ', self^.x and $7);
+      //writeln('player X: ', fix32ToInt(self^.x), ' subpixel: ', self^.x and $7);
     end
     else
     begin

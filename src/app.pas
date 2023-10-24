@@ -115,7 +115,7 @@ var f: file;
             BlockRead(f, tile_desc, sizeof(integer));
             BlockRead(f, tile_vis, sizeof(integer));
 
-            tile := @map[y * 168 + x];
+            tile := @G.map[y * 168 + x];
             tile^.tile := 0;
             if tile_type = 1 then begin
               tile^.tile := 4;
@@ -207,7 +207,7 @@ begin
     if (x < 0) or (x >= 168) or (y < 0) or (y >= 54) then continue;
 
     //writeln(x, y, tn, tc);
-    tile := @map[y * 168 + x];
+    tile := @G.map[y * 168 + x];
 
     case tn of
       // -1:
@@ -279,7 +279,7 @@ begin
 
   LoadGFX;
 
-  FillChar(entities, sizeof(TEntity) * MAX_ENTITIES, 0);
+  FillChar(G.entities, sizeof(TEntity) * MAX_ENTITIES, 0);
   
   //LoadLevel('levels/1_1.l2');
   //LoadLevel2('dev/out_test.l3');

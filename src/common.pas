@@ -51,6 +51,7 @@ type
     patrolFrames: integer;
   end;
 
+  PTile = ^TTile;
   TTile = record
     entity: PEntity;
     description: integer;      { For now, index into the height table }
@@ -92,16 +93,21 @@ type
     left, right, top, bottom: integer;
   end;
 
+  TGlobals = record
+    map: array[0..9071] of TTile; { 168 * 54 }
+    entities: array[1..MAX_ENTITIES] of TEntity;
+    entityInfo: array[0..256] of TEntityInfo;
+    camera: TVector2;
+  end;
+
+
 var
-  map: array[0..9071] of TTile; { 168 * 54 }
-  entities: array[1..MAX_ENTITIES] of TEntity;
-  entityInfo: array[0..256] of TEntityInfo;
-  camera: TVector2;
-var
+  G: TGlobals;
   heights: array[0..1151, 0..23] of byte;
+
 implementation
 
 begin
-  camera.x := 0;
-  camera.y := 0;
+  G.camera.x := 0;
+  G.camera.y := 0;
 end.
