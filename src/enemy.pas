@@ -12,7 +12,7 @@ procedure EntityType_BPot_Init(var info: TEntityInfo);
 
 implementation
 
-uses res, res_enum, sensor, app, player, entity, sys;
+uses res, res_enum, sensor, app, player, entity, sys, game, util;
 
 procedure Entity_BPot_State(Data: Pointer);
 var
@@ -161,8 +161,8 @@ begin
     self.patrolFrames := 60;
   end;
   case self.direction of
-    3: Dec(self.x);
-    4: Inc(self.x);
+    3: Dec(self.x, 8);
+    4: Inc(self.x, 8);
   end;
 
   if Assigned(gPlayer.ent) then
@@ -178,8 +178,8 @@ procedure Mosquito_Attack(var self: TEntityMosquito);
 var
   Result: THitResult;
 begin
-  SensorY(self.x + 12, self.y + 23, self.y + 23 + 4, Result);
-  self.y := result.y - 23;
+  SensorY(self.x + intToFix32(12), self.y + intToFix32(23), self.y + intToFix32(23 + 4), Result);
+  self.y := result.y - intToFix32(23);
   if result.hitType = 1 then Entity_SetState(@self, STATE_MOSQU_ATTACK4);
 end;
 

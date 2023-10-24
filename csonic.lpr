@@ -41,6 +41,7 @@ begin
   {$ifdef WINDOWS}
   MoveConsoleWindow;
   {$endif}
+  ChDir('/Users/mattj/games/csonic');
   app.Main;
 end.
 

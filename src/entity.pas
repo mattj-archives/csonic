@@ -22,7 +22,7 @@ procedure Entity__Init;
 
 implementation
 
-uses Sensor, app, player, enemy;
+uses Sensor, app, player, enemy, util;
 
 procedure Entity__Init;
 begin
@@ -284,24 +284,24 @@ var
   e: PEntity absolute Data;
 begin
   bb.left := e^.x;
-  bb.right := e^.x + 24;
+  bb.right := e^.x + intToFix32(24);
   bb.top := e^.y;
-  bb.bottom := e^.y + 24;
+  bb.bottom := e^.y + intToFix32(24);
 
   if (e^.t = 17) or (e^.t = 18) then
   begin
     bb.left := e^.x;
-    bb.right := e^.x + 24;
-    bb.bottom := e^.y + 24;
-    bb.top := bb.bottom - 9;
+    bb.right := e^.x + intToFix32(24);
+    bb.bottom := e^.y + intToFix32(24);
+    bb.top := bb.bottom - intToFix32(9);
   end;
 
   if (e^.t = 72) then
   begin
-    bb.left := e^.x + 8;
-    bb.right := e^.x + 16;
-    bb.bottom := e^.y + 24;
-    bb.top := bb.bottom - 5;
+    bb.left := e^.x + intToFix32(8);
+    bb.right := e^.x + intToFix32(16);
+    bb.bottom := e^.y + intToFix32(24);
+    bb.top := bb.bottom - intToFix32(5);
   end;
 end;
 

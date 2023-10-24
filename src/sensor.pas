@@ -8,7 +8,7 @@ uses
   engine, common;
 
 procedure SensorX(y, startX, endX: integer; var Result: THitResult);
-procedure SensorY(x, startY, endY: integer; var Result: THitResult);
+procedure SensorY(x, startY, endY: LongInt; var Result: THitResult);
 
 function EntityTrace(startX, startY, endX, endY: integer): integer;
 
@@ -20,7 +20,7 @@ var
 
 implementation
 
-uses Entity;
+uses Entity, util;
 
 procedure SensorX(y, startX, endX: integer; var Result: THitResult);
 var
@@ -29,6 +29,12 @@ var
   tile: ^TTile;
 begin
   Result.hitType := 0;
+
+  Result.y := y;
+
+  y := fix32ToInt(y);
+  startX := fix32ToInt(startX);
+  endX := fix32ToInt(endX);
   traceXValue := endX;
 
   if startX > endX then delta := -1
@@ -50,13 +56,13 @@ begin
 
     if tile^.tile = 4 then
     begin
-      idx := (x - other.left);
+      idx := x - other.left;
       if idx < 0 then idx := 0;
       if idx > 23 then idx := 23;
 
       // TODO: Is this -1 correct?
       if tile^.description < 576 then begin
-         h := other.bottom - heights[map[ty * 168 + tx].description][idx] - 1;
+         h := other.bottom - heights[map[ty * 168 + tx].description][idx] - 1;  { TODO: should -1 be in brackets?, check other traces... }
       end;
       //writeln('sensorX hit at x: ', x, ' h: ', h, ' y is: ', y);
       if h <= y then break;
@@ -93,8 +99,8 @@ begin
     end;
   end;
 
-  Result.x := traceXValue;
-  Result.y := y;
+  Result.x := intToFix32(traceXValue);
+
 
 end;
 
@@ -104,21 +110,27 @@ var
   other: TBoundingBox;
   tile: ^TTile;
 begin
+
+  // No clipping?
+  //Result.x := x;
+  //Result.y := endY;
+  //Exit;
+
   traceYValue := endY;
   SensorYUp := endY;
 
   //writeln('SensorYUp x: ', x, ' y: ', startY, ' -> ', endY);
 
-  tx := x div 24;
-  ty0 := startY div 24;
-  ty1 := endY div 24;
+  tx := fix32ToInt(x) div 24;
+  ty0 := fix32ToInt(startY) div 24;
+  ty1 := fix32ToInt(endY) div 24;
 
   for ty := ty0 downto ty1 do
   begin
-    other.left := tx * 24;
-    other.right := tx * 24 + 24;
-    other.top := ty * 24;
-    other.bottom := ty * 24 + 24;
+    other.left := intToFix32(tx * 24);
+    other.right := intToFix32(tx * 24 + 24);
+    other.top := intToFix32(ty * 24);
+    other.bottom := intToFix32(ty * 24 + 24);
 
     //h := startY;
 
@@ -133,7 +145,7 @@ begin
     tile := @map[ty * 168 + tx];
     if tile^.tile = 4 then
     begin
-      idx := (x - other.left);
+      idx := fix32ToInt(x - other.left);
       if idx < 0 then idx := 0;
       if idx > 23 then idx := 23;
 
@@ -148,7 +160,7 @@ begin
       end else begin
 
           upper := other.top;
-          lower := other.top + heights[tile^.description][idx];
+          lower := other.top + intToFix32(heights[tile^.description][idx]);
       end;
 
       if (lower > traceYValue) and (startY > upper) then
@@ -184,20 +196,29 @@ begin
 
 end;
 
-procedure SensorY(x, startY, endY: integer; var Result: THitResult);
+{$inline on}
+
+procedure SensorY(x, startY, endY: LongInt; var Result: THitResult);
 var
   h, tx, ty, ty0, ty1, idx, traceYValue: integer;
   other: TBoundingBox;
   tile: ^TTile;
 begin
   Result.hitType := 0;
+  Result.x := x;
+
   if startY > endY then
   begin
     SensorYUp(x, startY, endY, Result);
     exit;
   end;
 
-  traceYValue := endY;
+
+
+  x := fix32ToInt(x);
+  startY := fix32ToInt(startY);
+  endY := fix32ToInt(endY);
+    traceYValue := endY;
 
   tx := x div 24;
   ty0 := startY div 24;
@@ -228,7 +249,7 @@ begin
       if (tile^.description >= 576) then
          continue;
 
-      idx := (x - other.left);
+      idx := x - other.left;
       if idx < 0 then idx := 0;
       if idx > 23 then idx := 23;
 
@@ -254,8 +275,8 @@ begin
     end;
   end;
 
-  Result.x := x;
-  Result.y := traceYValue;
+
+  Result.y := intToFix32(traceYValue);
 
 end;
 

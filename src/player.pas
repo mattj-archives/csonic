@@ -25,7 +25,7 @@ var
 
 implementation
 
-uses sys;
+uses sys, util;
 
 type
   SonicModes = (
@@ -74,7 +74,7 @@ begin
     Exit;
   end;
 
-  gPlayer.velY := -13;
+  gPlayer.velY := intToFix32(-13);
   Player_SetMode(Spinning);
 end;
 
@@ -88,16 +88,16 @@ begin
   if e^.t = 17 then
   begin
     // writeln('touch spring');
-    gPlayer.velY := -16;
-    self^.y := e^.y - 16;
+    gPlayer.velY := intToFix32(-16);
+    self^.y := e^.y - intToFix32(16);
     Entity_SetState(e, STATE_SPRING1_USE);
   end;
 
   if e^.t = 18 then
   begin
     // writeln('touch spring');
-    gPlayer.velY := -20;
-    self^.y := e^.y - 16;
+    gPlayer.velY := intToFix32(-20);
+    self^.y := e^.y - intToFix32(16);
     Entity_SetState(e, STATE_SPRING2_USE);
   end;
 
@@ -106,7 +106,7 @@ begin
     if mode = SonicModes.Spinning then
     begin
 
-      if gPlayer.velY > 0 then gPlayer.velY := -12;
+      if gPlayer.velY > 0 then gPlayer.velY := intToFix32(-12);
 
       explode := SpawnEntity(e^.x, e^.y, 100);
       // writeln('explode at ', e^.x, ' ', e^.y);
@@ -120,7 +120,7 @@ begin
   begin
     if mode = SonicModes.Spinning then
     begin
-      if Result.velY > 0 then gPlayer.velY := -12;
+      if Result.velY > 0 then gPlayer.velY := intToFix32(-12);
 
       explode := SpawnEntity(e^.x, e^.y, 100);
       // writeln('explode at ', e^.x, ' ', e^.y);
@@ -142,9 +142,9 @@ var
 begin
 
   this.left := self^.x;
-  this.right := this.left + 24;
+  this.right := this.left + intToFix32(24);
   this.top := self^.y;
-  this.bottom := this.top + 24;
+  this.bottom := this.top + intToFix32(24);
 
   { TODO... velX, velY should be a vector... }
 
@@ -206,13 +206,13 @@ begin
   if I_IsKeyDown(kUp) then
   begin
     Inc(gPlayer.velY, -2 shl 3);
-    if gPlayer.velY < (-8 shl 3) then gPlayer.velY := -8 shl 3;
+    if gPlayer.velY < (-8 shl 3) then gPlayer.velY := intToFix32(-8);
   end;
 
   if I_IsKeyDown(kDn) then
   begin
     Inc(gPlayer.velY, 2 shl 3);
-    if gPlayer.velY > (8 shl 3) then gPlayer.velY := 8 shl 3;
+    if gPlayer.velY > (8 shl 3) then gPlayer.velY := intToFix32(8);
   end;
 
   if I_IsKeyDown(kLf) then
@@ -315,18 +315,18 @@ begin
 
     if gPlayer.velY > 0 then
     begin
-      endY := self^.y + 23 + gPlayer.velY;
+      endY := self^.y + intToFix32(24) + gPlayer.velY;   // was 23
     end
     else
     begin
       endY := self^.y + gPlayer.velY;
     end;
 
-    SensorY(self^.x, self^.y + 11, endY, sensorYResult);
+    SensorY(self^.x, self^.y + intToFix32(11), endY, sensorYResult);
     finalSensor := sensorYResult;
     adj := (sensorYResult.y - endY);
 
-    SensorY(self^.x + 23, self^.y + 11, endY, sensorYResult2);
+    SensorY(self^.x + intToFix32(23), self^.y + intToFix32(11), endY, sensorYResult2);
     adj2 := (sensorYResult2.y - endY);
 
     // Does the 2nd trace push back more?
@@ -357,7 +357,7 @@ begin
     //Inc(self^.y, gPlayer.velY + adj);
     if gPlayer.velY > 0 then
     begin
-      self^.y := finalSensor.y - 23;
+      self^.y := finalSensor.y - intToFix32(24);   // was 23
     end
     else
     begin
@@ -379,7 +379,6 @@ begin
         //writeln('hit while in air, no longer in air');
       end;
       finalSensor.velY := gPlayer.velY;
-      ;
 
       // Hit something
       gPlayer.velY := 0;
@@ -405,19 +404,19 @@ begin
     //begin
     // Run the Y sensors, check if feet on ground
 
-    endY := self^.y + 26;
+    endY := self^.y + intToFix32(26);
 
-    SensorY(self^.x, self^.y + 11, endY, sensorYResult);
+    SensorY(self^.x, self^.y + intToFix32(11), endY, sensorYResult);
     adj := (sensorYResult.y - endY);
 
-    SensorY(self^.x + 23, self^.y + 11, endY, sensorYResult2);
+    SensorY(self^.x + intToFix32(23), self^.y + intToFix32(11), endY, sensorYResult2);
     adj2 := (sensorYResult2.y - endY);
 
     { TODO: Touch entities hit by gravity }
 
     //writeln('Ground check: ', sensorYResult, ' ', sensorYResult2, ' adj ', adj, adj2);
 
-    if (sensorYResult.y <> self^.y + 23) and (sensorYResult2.y <> self^.y + 23) then
+    if (sensorYResult.y <> self^.y + intToFix32(23)) and (sensorYResult2.y <> self^.y + intToFix32(23)) then     // was 23
     begin
       gPlayer.groundEntity := nil;
       if not playerInAir then
@@ -478,12 +477,14 @@ begin
 
     if gPlayer.velX > 0 then
     begin
-      SensorX(self^.y + 11, self^.x + 23, self^.x + 23 + gPlayer.velX, sensorXResult);
-      self^.x := sensorXResult.x - 23;
+      SensorX(self^.y + intToFix32(11), self^.x + intToFix32(23), self^.x + intToFix32(23) + gPlayer.velX, sensorXResult);
+      writeln('sensorX result: ', sensorXResult.x);
+      self^.x := sensorXResult.x - intToFix32(23);
+      writeln('player X: ', fix32ToInt(self^.x), ' subpixel: ', self^.x and $7);
     end
     else
     begin
-      SensorX(self^.y + 11, self^.x, self^.x + gPlayer.velX, sensorXResult);
+      SensorX(self^.y + intToFix32(11), self^.x, self^.x + gPlayer.velX, sensorXResult);
       self^.x := sensorXResult.x;
     end;
 
@@ -491,12 +492,12 @@ begin
     begin
 
       { Keep player stuck to the ground, if possible... }
-      endY := self^.y + 28;
+      endY := self^.y + intToFix32(28);
 
-      SensorY(self^.x, self^.y + 11, endY, sensorYResult);
+      SensorY(self^.x, self^.y + intToFix32(11), endY, sensorYResult);
       adj := (sensorYResult.y - endY);
 
-      SensorY(self^.x + 23, self^.y + 11, endY, sensorYResult2);
+      SensorY(self^.x + intToFix32(23), self^.y + intToFix32(11), endY, sensorYResult2);
       adj2 := (sensorYResult2.y - endY);
 
       // writeln('Terrain move sensorY results: ', sensorYResult, ' ', sensorYResult2, ' adj: ', adj, ' ', adj2);
@@ -504,9 +505,8 @@ begin
       //if (sensorYResult.y <> endY) or (sensorYResult2.y <> endY) then
       //begin
       if sensorYResult2.y < sensorYResult.y then sensorYResult := sensorYResult2;
-      self^.y := sensorYResult.y - 23;
+      self^.y := sensorYResult.y - intToFix32(23);
       //end;
-
     end;
 
     if gPlayer.velX > 0 then self^.direction := 4;

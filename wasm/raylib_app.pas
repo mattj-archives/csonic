@@ -3,7 +3,7 @@ interface
 uses app, raylib, gfx_ext, engine;
 
 implementation
-uses wasm_embedded_backend;
+uses wasm_embedded_backend, game;
 
 procedure Raylib_App_Main; alias: 'main';
 begin
@@ -27,7 +27,7 @@ begin
             // ClearBackground(RAYWHITE);
             // DrawText('Congrats! You created your first window!', 190, 200, 20, LIGHTGRAY);
 
-            // ImageClearBackground(@mainImage, RED);
+            ImageClearBackground(@mainImage, RED);
             G_Draw;
 
         R_SwapBuffers;

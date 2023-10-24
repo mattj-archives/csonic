@@ -58,6 +58,7 @@ emcc -o game.html \
 	-s ASYNCIFY \
 	-s ERROR_ON_UNDEFINED_SYMBOLS=0 \
 	--preload-file vfs@/ -lidbfs.js \
+	-g -s SAFE_HEAP=0 \
 	-s EXPORTED_FUNCTIONS='["_main"]'
 
-# 	-g -s SAFE_HEAP=0 \
+# 	

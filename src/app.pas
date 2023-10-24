@@ -19,18 +19,12 @@ uses
 
 procedure Main;
 procedure G_Init;
-procedure G_RunFrame;
-procedure G_Draw;
 
-var
-  textures: array[0 .. 200] of pimage_t;
-  renderedTiles: pimage_t;
-  isPaused: boolean;
-  frameCount: longint;
+
 
 implementation
 
-uses enemy;
+uses enemy, game, util;
 procedure OnKeyDown(sc: ScanCode);
 begin
 
@@ -270,121 +264,7 @@ begin
   end;
   System.Close(f);
 end;
-var   camx, camy: longint;
-procedure DrawMap;
-var
-  tileStartX, tileStartY: integer;
-  x, y, i, c, tx, ty: integer;
-  x0, y0: longint;
 
-  idx: integer;
-  tile: ^TTile;
-begin
-
-
-  tileStartX := camx div 24;
-  tileStartY := camy div 24;
-
-  for y := tileStartY to tileStartY + 10 do
-  begin
-    for x := tileStartX to tileStartX + 14 do
-    begin
-      tile := @map[y * 168 + x];
-      {R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[tile^.tile]^);            }
-
-      x0 := (x * 24 * 8 - camera.X) shr 3;
-      y0 := (y * 24 * 8 - camera.Y) shr 3;
-
-      case tile^.tile of
-        0:
-          //R_DrawSprite(x * 24 - camx, y * 24 - camy, textures[SPRITE_T1]^);
-begin
-  end;
-        1:
-        begin
-          end;
-          //R_DrawSprite(x * 24 - camx, y * 24 - camy, textures[SPRITE_T2]^);
-        4: begin
-          tx := tile^.color mod 16;
-          ty := tile^.color div 16;
-
-          //R_DrawLine(x * 24 - camera.x, y * 24 - camera.y, x * 24 - camera.x + 24, y * 24 - camera.y + 24, 255, 255, 255, 255);
-          //R_DrawSprite(x * 24 - camx, y * 24 - camy, textures[SPRITE_T1]^);
-{
-          c := $aa;
-          if ((x + y) mod 2) = 0 then c := $7f;
-
-          for i := 0 to 23 do begin
-            R_DrawLine(
-            x * 24 + i - camera.x,
-            y * 24 + 24 - camera.y,
-            x * 24 + i - camera.x,
-            (y * 24 + 24 - heights[tile^.description][i]) - camera.y, 0, c, 0, 255);
-          end;
-}
-          R_DrawSubImageTransparent(renderedTiles^, x0, y0, tx * 24, ty * 24, 24, 24);
-        end;
-
-      end;
-    end;
-  end;
-end;
-
-procedure DrawState(x, y: integer; state: entityStates; direction: integer);
-var
-  ss: ^TSpriteState;
-  img: pimage_t;
-begin
-  if direction >= 3 then Dec(direction, 3);
-  //writeln('direction ', direction);
-  ss := @sprite_states[Ord(entity_states[Ord(state)].spriteState)];
-  img := textures[ss^.sprites[direction]];
-  { writeln('draw state ', ord(state), ' at ', x, ' ', y); }
-  if not Assigned(img) then
-  begin
-    // writeln('error...', Ord(state), ' ', direction, ' sprite index ',
-    //   ss^.sprites[direction], ' at ', x, ' ', y);
-  end;
-  if Assigned(img) then R_DrawSprite(x, y, img^);
-end;
-
-procedure MovingPlatform_Update(Data: Pointer);
-var
-  self: PEntityMovingPlatform absolute Data;
-  destPoint: TVector2;
-  deltaX: integer;
-begin
-
-  deltaX := 0;
-
-  destPoint := self^.p[self^.dest];
-
-  if destPoint.x > self^.x then
-  begin
-    deltaX := 1;
-    Inc(self^.x);
-    if self^.x >= destPoint.x then
-    begin
-      self^.dest := self^.dest xor 1;
-    end;
-  end;
-
-  if destPoint.x < self^.x then
-  begin
-    Dec(self^.x);
-    deltaX := -1;
-    if self^.x <= destPoint.x then
-    begin
-      self^.dest := self^.dest xor 1;
-    end;
-  end;
-
-  if gPlayer.groundEntity = PEntity(self) then
-  begin
-    // TODO: Actually push player in this direction, check for getting crushed
-    Inc(gPlayer.ent^.x, deltaX);
-  end;
-end;
 
 procedure G_Init; alias: 'G_Init';
 var
@@ -451,17 +331,17 @@ begin
     //e := SpawnEntity(24 * (6 + i), 14 * 24, 38);
     //Entity_SetState(e, STATE_BOX_RING1);
   end;
-{
-  mp := PEntityMovingPlatform(SpawnEntity(7 * 24, 12 * 24, 13));
+
+  mp := PEntityMovingPlatform(SpawnEntity(intToFix32(7 * 24), intToFix32(7 * 24), 13));
 
   mp^.p[0].x := mp^.x;
   mp^.p[0].y := mp^.y;
-  mp^.p[1].x := mp^.x + 24 * 3;
+  mp^.p[1].x := mp^.x + intToFix32(24 * 3);
   mp^.p[1].y := mp^.y;
   mp^.dest := 1;
 
   Entity_SetState(mp, STATE_MPLAT);
-}
+
   Event_SetKeyDownProc(OnKeyDown);
   Event_SetKeyUpProc(OnKeyUp);
 
@@ -471,131 +351,6 @@ begin
 
   //map[0 * 168 + 0].tile := 1;
   //map[1 * 168 + 1].tile := 1;
-end;
-
-procedure G_RunFrame; alias: 'G_RunFrame';
-  var i: integer;
-  e: PEntity;
-  doRunFrame: boolean;
-begin
-
-    doRunFrame := true;
-
-    Sys_PollEvents;
-    Event_ProcessEvents;
-
-    if I_WasKeyPressed(kEsc) or I_IsKeyDown(k0) then
-    begin
-      shouldQuit := True;
-    end;
-
-    if I_WasKeyPressed(kP) then begin
-      isPaused := not isPaused;
-    end;
-
-    if I_WasKeyPressed(kD) then begin
-      gPlayer.debugMode := not gPlayer.debugMode;
-      gPlayer.velX:=0;
-      gPlayer.velY:= 0;
-    end;
-
-    if isPaused then begin
-      doRunFrame := false;
-       if I_WasKeyPressed(kA) then doRunFrame := true;
-    end;
-
-    if doRunFrame then begin
-      Inc(frameCount);
-      if isPaused then writeln('Frame ', frameCount, ' ===================');
-
-      Player_Update(gPlayer.ent);
-
-      for i := 1 to MAX_ENTITIES do
-      begin
-        if (entities[i].flags and 1) = 0 then continue;
-        e := @entities[i];
-
-        Dec(e^.stateFrames);
-
-        if e^.stateFrames <= 0 then
-        begin
-          Entity_SetState(e, entity_states[Ord(e^.state)].nextState);
-
-          if entity_states[Ord(e^.state)].func = 999 then
-          begin
-            e^.flags := 0;
-          end;
-        end;
-
-        if e^.t = 13 then
-        begin
-          MovingPlatform_Update(e);
-        end;
-
-        if Assigned(entityInfo[e^.t].updateProc) then entityInfo[e^.t].updateProc(e);
-
-        //if e^.t = 70 then
-        //begin
-        //  Entity_RM_Update(e);
-        //end;
-        //
-        //if e^.t = 72 then
-        //begin
-        //  Entity_BPot_Update(e);
-        //end;
-      end;
-
-      camera.x := gPlayer.ent^.x - (6 * 24) shl 3;
-      camera.y := gPlayer.ent^.y - (4 * 24) shl 3;
-      if camera.x < 0 then camera.x := 0;
-      if camera.y < 0 then camera.y := 0;
-
-    end;
-    
-    engine.prevKeys := engine.keys;
-end;
-
-procedure G_Draw; alias:'G_Draw';
-  var
-  img, img2: pimage_t;
-  x, i: integer;
-  e: PEntity;
-  mp: PEntityMovingPlatform;
-
-begin
-
-  camx := camera.X shr 3;
-  camy := camera.Y shr 3;
-
-    DrawMap;
-
-    for i := 1 to MAX_ENTITIES do
-    begin
-      if (entities[i].flags and 1) = 0 then continue;
-      e := @entities[i];
-
-      //if e^.x < camera.x - 24 then continue;
-      //if e^.x > camera.x + 320 then continue;
-      //if e^.y < camera.y - 24 then continue;
-      //if e^.y > camera.y + 240 then continue;
-
-      //writeln('draw entity ', i, ' type ', e^.t);
-      DrawState((e^.x - camera.x) shr 3, (e^.y - camera.y) shr 3, e^.state, e^.direction);
-    end;
-
-    R_DrawText(0, 0, 'Player: ');
-    R_DrawText(42, 0, IntToStr(gPlayer.ent^.x));
-    R_DrawText(42, 9, IntToStr(gPlayer.ent^.y));
-
-    R_DrawText(80, 0, IntToStr(gPlayer.velX));
-    R_DrawText(80, 9, IntTOStr(gPlayer.velY));
-
-    if playerInAir then R_DrawText(0, 18, 'In air');
-    if isPaused then R_DrawText(0, 27, 'Paused');
-    if gPlayer.debugMode then R_DrawText(0, 36, 'Debug mode');
-
-    //R_DrawSprite(0, 0, renderedTiles^);
-    R_SwapBuffers;
 end;
 
 procedure Main;
