@@ -12,7 +12,7 @@ procedure EntityType_BPot_Init(var info: TEntityInfo);
 
 implementation
 
-uses res, res_enum, sensor, app, player, entity, sys, game, util;
+uses res, res_enum, sensor, app, player, entity, sys, game, util, engine;
 
 procedure Entity_BPot_State(Data: Pointer);
 var
@@ -36,7 +36,7 @@ begin
 
   initialY := self^.y;
 
-  Inc(self^.vy);
+  Inc(self^.vy, intToFix32(1));
 
   //  distanceRemaining := Abs(self^.vy);
   //  repeat
@@ -45,12 +45,13 @@ begin
 
   if (self^.vy > 0) then
   begin
-    SensorY(self^.x + 12, self^.y + 23, self^.y + 23 + self^.vy, Result);
+    SensorY(self^.x + intToFix32(12), self^.y + intToFix32(23), self^.y +
+      intToFix32(23) + self^.vy, Result);
 
-    self^.y := Result.y - 23;
+    self^.y := Result.y - intToFix32(23);
     if Result.hitType <> 0 then
     begin
-      self^.vy := -12;
+      self^.vy := intToFix32(-12);
       if isPaused then
       begin
         writeln('bpot hit ground, set vy = -12');
@@ -76,36 +77,63 @@ begin
   //Entity_SetState(@self, STATE_RM_WALK);
 end;
 
+
+procedure RM_DebugDraw(Data: Pointer);
+var
+  self: PEntityRM absolute Data;
+begin
+     DrawWorldRay(self^.x + intToFix32(23), self^.y + intToFix32(15), intToFix32(1), 0);
+
+     DrawWorldRay(self^.x + intToFix32(0), self^.y + intToFix32(11), 0, intToFix32(18));
+     DrawWorldRay(self^.x + intToFix32(23), self^.y + intToFix32(11), 0, intToFix32(18));
+end;
+
 procedure RM_Walk(var self: TEntityRM);
 var
-  Result: THitResult;
+  Result, Result2: THitResult;
+  originalX, originalY: longint;
 begin
+  originalX := self.x;
+  originalY := self.y;
   traceEntitySkip := @self;
 
   if (gPlayer.ent^.x > self.x) then
   begin
-    SensorX(self.y + 20, self.x + 23, self.x + 24, Result);
+    SensorRay(self.x + intToFix32(23), self.y + intToFix32(15), intToFix32(1), 0, Result);
     self.direction := 4;
-    if Result.hitType = 0 then
-    begin
-      self.x := Result.x - 23;
-    end;
+    writeln('RM +X hitType ', Result.hitType);
+    //if Result.hitType <> 0 then Exit;
+    self.x := Result.x - intToFix32(23);
   end;
 
   if (gPlayer.ent^.x < self.x) then
   begin
-    SensorX(self.y + 20, self.x, self.x - 1, Result);
+    SensorRay(self.x, self.y + intToFix32(15), intToFix32(-1), 0, Result);
     self.direction := 3;
-    if Result.hitType = 0 then
-    begin
-      self.x := Result.x;
-    end;
+    //if Result.hitType <> 0 then Exit;
+    self.x := Result.x;
   end;
 
-  SensorY(self.x + 12, self.y + 20, self.y + 26, Result);
-  if Result.hitType = 1 then
+  // Allow them to stick to the ground if they only move max 2 pixels up or down
+
+  SensorRay(self.x + intToFix32(0),  self.y + intToFix32(11), 0, intToFix32(18), Result);
+  SensorRay(self.x + intToFix32(23), self.y + intToFix32(11), 0, intToFix32(18), Result2);
+  if Result2.y < Result.y then Result := Result2;
+
+  {if Result.hitType = 1 then
+  begin}
+    self.y := Result.y - intToFix32(23);
+    //writeln('RM ground trace found ', Result.y);
+  //end;
+
+  // TODO: If their Y position changed by more than 2, don't allow the move
+
+  if Abs(self.y - originalY) > intToFix32(2) then
   begin
-    self.y := Result.y - 23;
+    self.x := originalX;
+    self.y := originalY;
+    // writeln('can''t move, Y change is ', self.y, ' -> ', newY, ' abs: ', abs(self.y - newY));
+    Exit;
   end;
 end;
 
@@ -178,9 +206,10 @@ procedure Mosquito_Attack(var self: TEntityMosquito);
 var
   Result: THitResult;
 begin
-  SensorY(self.x + intToFix32(12), self.y + intToFix32(23), self.y + intToFix32(23 + 4), Result);
-  self.y := result.y - intToFix32(23);
-  if result.hitType = 1 then Entity_SetState(@self, STATE_MOSQU_ATTACK4);
+  SensorY(self.x + intToFix32(12), self.y + intToFix32(23), self.y +
+    intToFix32(23 + 4), Result);
+  self.y := Result.y - intToFix32(23);
+  if Result.hitType = 1 then Entity_SetState(@self, STATE_MOSQU_ATTACK4);
 end;
 
 procedure Mosquito_Update(Data: Pointer);
@@ -207,6 +236,7 @@ procedure EntityType_RM_Init(var info: TEntityInfo);
 begin
   info.stateProc := Entity_RM_State;
   info.updateProc := Entity_RM_Update;
+  info.debugDrawProc := RM_DebugDraw;
 end;
 
 procedure EntityType_Mosquito_Init(var info: TEntityInfo);

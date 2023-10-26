@@ -123,8 +123,8 @@
         <UnitName Value="Player"/>
         <IsVisibleTab Value="True"/>
         <EditorIndex Value="9"/>
-        <TopLine Value="311"/>
-        <CursorPos X="40" Y="621"/>
+        <TopLine Value="580"/>
+        <CursorPos Y="245"/>
         <UsageCount Value="263"/>
         <Loaded Value="True"/>
       </Unit>
@@ -149,7 +149,7 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Sensor"/>
         <EditorIndex Value="5"/>
-        <TopLine Value="414"/>
+        <TopLine Value="248"/>
         <CursorPos X="16" Y="423"/>
         <UsageCount Value="310"/>
         <Loaded Value="True"/>
@@ -169,7 +169,7 @@
         <UnitName Value="Game"/>
         <EditorIndex Value="2"/>
         <CursorPos Y="14"/>
-        <UsageCount Value="175"/>
+        <UsageCount Value="196"/>
         <Loaded Value="True"/>
       </Unit>
       <Unit>
@@ -178,14 +178,14 @@
         <UnitName Value="Util"/>
         <EditorIndex Value="-1"/>
         <CursorPos Y="23"/>
-        <UsageCount Value="175"/>
+        <UsageCount Value="196"/>
       </Unit>
       <Unit>
         <Filename Value="util.pas"/>
         <UnitName Value="Util"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="6" Y="13"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="8"/>
       </Unit>
       <Unit>
         <Filename Value="engine\src\engine.pas"/>
@@ -199,7 +199,7 @@
         <Filename Value="engine\external\sdl2\sdlerror.inc"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="10" Y="10"/>
-        <UsageCount Value="51"/>
+        <UsageCount Value="49"/>
       </Unit>
       <Unit>
         <Filename Value="engine\src\event.pas"/>
@@ -207,28 +207,28 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="32"/>
         <CursorPos X="3" Y="96"/>
-        <UsageCount Value="90"/>
+        <UsageCount Value="88"/>
       </Unit>
       <Unit>
         <Filename Value="engine\external\sdl2\sdl2.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="79"/>
         <CursorPos X="7" Y="106"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="7"/>
       </Unit>
       <Unit>
         <Filename Value="src\res\res_enum.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="49"/>
         <CursorPos X="17" Y="70"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="102"/>
       </Unit>
       <Unit>
         <Filename Value="game.pas"/>
         <UnitName Value="Game"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="156" Y="46"/>
-        <UsageCount Value="5"/>
+        <UsageCount Value="3"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
@@ -237,7 +237,7 @@
         <UnitName Value="Map"/>
         <EditorIndex Value="8"/>
         <CursorPos X="55" Y="17"/>
-        <UsageCount Value="115"/>
+        <UsageCount Value="135"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
@@ -246,15 +246,15 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="380"/>
         <CursorPos X="3" Y="393"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="7"/>
       </Unit>
       <Unit>
         <Filename Value="engine\src\buffer.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="3"/>
         <TopLine Value="55"/>
-        <CursorPos X="11" Y="58"/>
-        <UsageCount Value="30"/>
+        <CursorPos X="50" Y="73"/>
+        <UsageCount Value="51"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
@@ -266,14 +266,6 @@
       <Define0 Value="SDL2"/>
     </OtherDefines>
     <JumpHistory HistoryIndex="29">
-      <Position>
-        <Filename Value="engine\src\buffer.pas"/>
-        <Caret Line="53" Column="27" TopLine="28"/>
-      </Position>
-      <Position>
-        <Filename Value="engine\src\buffer.pas"/>
-        <Caret Line="55" Column="18" TopLine="30"/>
-      </Position>
       <Position>
         <Filename Value="src\app.pas"/>
         <Caret Line="29" Column="6" TopLine="12"/>
@@ -385,6 +377,14 @@
       <Position>
         <Filename Value="src\player.pas"/>
         <Caret Line="28" Column="21" TopLine="16"/>
+      </Position>
+      <Position>
+        <Filename Value="src\player.pas"/>
+        <Caret Line="111" TopLine="76"/>
+      </Position>
+      <Position>
+        <Filename Value="src\player.pas"/>
+        <Caret Line="27" TopLine="216"/>
       </Position>
     </JumpHistory>
     <RunParams>

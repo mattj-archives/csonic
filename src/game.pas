@@ -9,6 +9,8 @@ uses image;
 
 Procedure G_RunFrame;
 Procedure G_Draw;
+procedure DrawWorldLine(x0, y0, x1, y1: longint);
+procedure DrawWorldRay(x0, y0, dx, dy: longint);
 
 Var 
   isPaused: boolean;
@@ -33,7 +35,19 @@ Uses Sys, Event, entity, engine, util
 
 
 
+procedure DrawWorldLine(x0, y0, x1, y1: longint);
+begin
+  R_DrawLine(
+        fix32ToInt(x0 - G.camera.x), fix32ToInt(y0 - G.camera.y),
+        fix32ToInt(x1 - G.camera.x), fix32ToInt(y1 - G.camera.y), 255, 255, 255, 255);
+end;
 
+procedure DrawWorldRay(x0, y0, dx, dy: longint);
+begin
+  R_DrawLine(
+        fix32ToInt(x0 - G.camera.x), fix32ToInt(y0 - G.camera.y),
+        fix32ToInt(x0 + dx - G.camera.x), fix32ToInt(y0 + dy - G.camera.y), 255, 255, 255, 255);
+end;
 
 Procedure DrawMap;
 
@@ -76,7 +90,9 @@ Begin
                  ty := tile^.color Div 16;
 
 
-//R_DrawLine(x * 24 - camera.x, y * 24 - camera.y, x * 24 - camera.x + 24, y * 24 - camera.y + 24, 255, 255, 255, 255);
+
+
+//R_DrawLine(x * 24 - G.camera.x, y * 24 - G.camera.y, x * 24 - G.camera.x + 24, y * 24 - G.camera.y + 24, 255, 255, 255, 255);
                  //R_DrawSprite(x * 24 - camx, y * 24 - camy, textures[SPRITE_T1]^);
 
 {
@@ -128,6 +144,7 @@ Var
   x, i: integer;
   e: PEntity;
   mp: PEntityMovingPlatform;
+  bb: TBoundingBox;
 
 Begin
 
@@ -152,6 +169,29 @@ Begin
 
       //writeln('draw entity ', i, ' type ', e^.t);
       DrawState((e^.x - G.camera.x) shr 3, (e^.y - G.camera.y) shr 3, e^.state, e^.direction);
+
+      Entity_Hitbox(e, bb);
+
+      bb.bottom := fix32ToInt(bb.bottom - G.Camera.y) - 1;
+      bb.right := fix32Toint(bb.right - G.camera.x) - 1;
+
+      R_DrawLine(
+                 fix32ToInt(bb.left - G.camera.x),  fix32ToInt(bb.top - G.camera.y),
+                 bb.right, fix32ToInt(bb.top - G.camera.y), 255, 255, 255, 255);
+
+      R_DrawLine(
+                 fix32ToInt(bb.left - G.camera.x), bb.bottom,
+                 bb.right, bb.bottom, 255, 255, 255, 255);
+
+      R_DrawLine(
+           fix32ToInt(bb.left - G.camera.x),  fix32ToInt(bb.top - G.camera.y),
+           fix32ToInt(bb.left - G.camera.x), bb.bottom, 255, 255, 255, 255);
+
+           R_DrawLine(
+           bb.right,  fix32ToInt(bb.top - G.camera.y),
+           bb.right, bb.bottom, 255, 255, 255, 255);
+
+      if Assigned(G.entityInfo[e^.t].debugDrawProc) then G.entityInfo[e^.t].debugDrawProc(e);
     End;
 
   R_DrawText(0, 0, 'Player: ');

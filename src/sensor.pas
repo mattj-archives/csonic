@@ -12,6 +12,8 @@ procedure SensorY(x, startY, endY: longint; var Result: THitResult);
 
 function EntityTrace(startX, startY, endX, endY: integer): integer;
 
+procedure SensorRay(startX, startY: longint; deltaX, deltaY: longint;
+  var Result: THitResult);
 
 var
   entityTraceResultX, entityTraceResultY: integer;
@@ -63,8 +65,9 @@ begin
       // TODO: Is this -1 correct?
       if tile^.description < 576 then
       begin
-        h := other.bottom - heights[tile^.description][idx] - 1;
-        { TODO: should -1 be in brackets?, check other traces... }
+        //h := other.bottom - heights[tile^.description][idx] - 1; {(incorrect?)}
+        // Also, if heights = 0 then continue
+        h := other.bottom - heights[tile^.description][idx];
       end;
       //writeln('sensorX hit at x: ', x, ' h: ', h, ' y is: ', y);
       if h <= y then break;
@@ -76,6 +79,7 @@ begin
   end;
 
   if traceXValue <> endX then Result.hitType := 1;
+  {
   EntityTrace(startX, y, endX, y);
 
   if entityTraceResult <> nil then
@@ -100,7 +104,7 @@ begin
       end;
     end;
   end;
-
+}
   Result.x := intToFix32(traceXValue);
 
 end;
@@ -183,19 +187,6 @@ begin
   end;
 
   if traceYValue <> endY then Result.hitType := 1;
-
-  EntityTrace(x, startY, x, endY);
-
-  if entityTraceResult <> nil then
-  begin
-    if entityTraceResultY > traceYValue then
-    begin
-      traceYValue := entityTraceResultY;
-      Result.entity := entityTraceResult;
-
-      Result.hitType := 2;
-    end;
-  end;
 
   Result.x := x;
   Result.y := traceYValue;
@@ -281,21 +272,105 @@ begin
 
   if entityTraceResult <> nil then
   begin
-    if entityTraceResultY < intToFix32(traceYValue) then
-    begin
-      traceYValue := entityTraceResultY;
-      Result.entity := entityTraceResult;
 
-      Result.hitType := 2;
-
-      Result.y := entityTraceResultY;
-      Exit;
-    end;
   end;
 
 
   Result.y := intToFix32(traceYValue);
 
+end;
+
+procedure SensorRay(startX, startY: longint; deltaX, deltaY: longint;
+  var Result: THitResult);
+var
+  originalStartX, originalStartY, originalEndX, originalEndY: longint;
+begin
+  FillChar(Result, sizeof(THitResult), 0);
+
+  if (deltaX <> 0) and (deltaY <> 0) then
+  begin
+    writeln('invalid arguments to SensorRay');
+  end;
+
+  Result.x := startX;
+  Result.y := startY;
+  originalStartX := startX;
+  originalStartY := startY;
+  originalEndX := startX + deltaX;
+  originalEndY := startY + deltaY;
+
+  if (deltaX <> 0) then
+  begin
+    SensorX(startY, startX, originalEndX, Result);
+  end
+  else if (deltaY <> 0) then
+  begin
+    if (deltaY < 0) then
+    begin
+      SensorYUp(startX, startY, originalEndY, Result);
+    end
+    else
+    begin
+      SensorY(startX, startY, originalEndY, Result);
+    end;
+  end;
+
+  EntityTrace(originalStartX, originalStartY, originalEndX, originalEndY);
+
+  if entityTraceResult <> nil then
+  begin
+    if (deltaX <> 0) then
+    begin
+      if deltaX > 0 then
+      begin
+        { Moving right }
+        if entityTraceResultX < Result.x then
+        begin
+          Result.x := entityTraceResultX;
+          Result.entity := entityTraceResult;
+
+          Result.hitType := 2;
+        end;
+      end
+      else
+      begin
+        { Moving left }
+        if entityTraceResultX > Result.x then
+        begin
+          Result.x := entityTraceResultX;
+          Result.entity := entityTraceResult;
+
+          Result.hitType := 2;
+        end;
+      end;
+    end;
+
+    if (deltaY <> 0) then
+    begin
+      if deltaY > 0 then
+      begin
+        { Moving down }
+        if entityTraceResultY < Result.y then
+        begin
+          Result.y := entityTraceResultY;
+          Result.entity := entityTraceResult;
+
+          Result.hitType := 2;
+        end;
+
+      end
+      else
+      begin
+        if entityTraceResultY > Result.y then
+        begin
+          Result.y := entityTraceResultY;
+          Result.entity := entityTraceResult;
+
+          Result.hitType := 2;
+        end;
+      end;
+    end;
+  end;
 end;
 
 { Trace a line against entity hitboxes. Set traceEntitySkip to skip a specific entity }
@@ -338,7 +413,7 @@ begin
 
           if (other.right >= endX) and (other.left < startX) then
           begin
-            endX := other.right + intToFix32(1);
+            endX := other.right; // + intToFix32(1);
             entityTraceResult := e;
           end;
 

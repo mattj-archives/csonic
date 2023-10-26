@@ -65,9 +65,11 @@ type
 
   EntityStateProc = procedure(data: Pointer);
   EntityUpdateProc = procedure(data: Pointer);
+  EntityDebugDrawProc = procedure(data: Pointer);
   TEntityInfo = record
     stateProc: EntityStateProc;
     updateProc: EntityUpdateProc;
+    debugDrawProc: EntityDebugDrawProc;
 
   end;
 

@@ -26,6 +26,7 @@ uses Sensor, app, player, enemy, util;
 
 procedure Entity__Init;
 begin
+  EntityType_Player_Init(G.entityInfo[1]);
   EntityType_RM_Init(G.entityInfo[70]);
   EntityType_Mosquito_Init(G.entityInfo[71]);
   EntityType_BPot_Init(G.entityInfo[72]);

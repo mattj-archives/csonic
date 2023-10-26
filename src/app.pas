@@ -24,7 +24,7 @@ procedure G_Init;
 
 implementation
 
-uses enemy, game, util;
+uses enemy, game, util, buffer;
 procedure OnKeyDown(sc: ScanCode);
 begin
 
@@ -102,16 +102,28 @@ var f: file;
   tile_desc, tile_vis: integer;
   tile: ^TTile;
   e: PEntity;
+  moving_platform: PEntityMovingPlatform;
+  _reader: TBufferReader;
+  reader: PBufferReader;
+
+
   begin
       writeln('LoadLevel2 ', fileName);
       Assign(f, fileName);
       Reset(f, 1);
-      BlockRead(f, width, 1);
-      BlockRead(f, height, 1);
+
+      _reader := Buf_CreateReaderForFile(f);
+      reader := @_reader;
+
+      width := Buf_ReadByte(reader);
+      height := Buf_ReadByte(reader);
+
+      //BlockRead(f, width, 1);
+      //BlockRead(f, height, 1);
 
       for y := 0 to height - 1 do begin
         for x := 0 to width - 1 do begin
-            BlockRead(f, tile_type, 1);
+            tile_type := Buf_ReadByte(reader);
             BlockRead(f, tile_desc, sizeof(integer));
             BlockRead(f, tile_vis, sizeof(integer));
 
@@ -138,6 +150,16 @@ var f: file;
         y:= y shl 3;
 
         case object_type of
+          13: begin
+            moving_platform := PEntityMovingPlatform(SpawnEntity(x, y, object_type));
+            Entity_SetState(moving_platform, STATE_MPLAT);
+
+            moving_platform^.p[0].x:= x;
+            moving_platform^.p[0].y:= y;
+            moving_platform^.dest := 1;
+            moving_platform^.p[1].x := intToFix32(Buf_ReadInt(reader));
+            moving_platform^.p[1].y := intToFix32(Buf_ReadInt(reader));
+          end;
         17: begin
           writeln('spawn Spring1 at ', x, ' ', y);
           e := SpawnEntity(x, y, object_type);
