@@ -202,7 +202,7 @@ class LevelPaintTool:
                           columns=16,
                           backgroundcolor="#00000000")
 
-        tileset.properties.append(Property(name="tileset_type", value="_rendered"))
+        tileset.properties.append(Property(name="tileset_type", _type="string", value="_rendered"))
 
         tileset.image = TilesetImage(source="TEST_rendered.png", trans="00ffff", width=16 * 24, height=16 * 24)
         next_firstgid = tilemap.get_next_firstgid()

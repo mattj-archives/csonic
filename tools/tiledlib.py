@@ -4,16 +4,19 @@ from xml.dom import minidom
 
 
 class Property:
-    def __init__(self, *, name, value):
+    def __init__(self, *, name, _type, value):
         self.name = name
         self.value = value
+        self._type = _type
 
+    def __repr__(self) -> str:
+        return f'<Property {self.name} [{self._type}] = {self.value}>'
 
 def read_properties(elem: ET.Element):
     props = []
     for c in elem:
         if c.tag == 'property':
-            prop = Property(name=c.get("name"), value=c.get("value"))
+            prop = Property(name=c.get("name"), _type=c.get("type"), value=c.get("value"))
             props.append(prop)
             continue
 
@@ -29,6 +32,7 @@ def write_properties(props) -> ET.Element:
         elem_prop = ET.Element("property")
         elem_prop.set("name", p.name)
         elem_prop.set("value", p.value)
+        elem_prop.set("type", p._type)
         elem_props.append(elem_prop)
     return elem_props
 
@@ -152,10 +156,19 @@ class TiledObject:
         self.y = y
         self.width = width
         self.height = height
+        self.properties:[Property] = []
+
+    def load_from_element(self, elem: ET.Element):
+        for c in elem:
+            if c.tag == 'properties':
+                self.properties = read_properties(c)
+                continue
+
+            print(f'TiledObject: unknown tag {c}')
 
     @staticmethod
     def from_element(elem: ET.Element):
-        return TiledObject(
+        tiled_object = TiledObject(
             int(elem.get("id")),
             int(elem.get("gid")),
             float(elem.get("x")),
@@ -163,6 +176,10 @@ class TiledObject:
             float(elem.get("width")),
             float(elem.get("height"))
         )
+
+        tiled_object.load_from_element(elem)
+
+        return tiled_object
 
     def to_xml(self):
         elem = ET.Element("object")
@@ -172,11 +189,21 @@ class TiledObject:
         elem.set("y", str(self.y))
         elem.set("width", str(self.width))
         elem.set("height", str(self.height))
+
+        if self.properties:
+            elem.append(write_properties(self.properties))
+
         return elem
 
     def __repr__(self):
         return f'<TiledObject id={self.id} gid={self.gid} x={self.x}, y={self.y}>'
 
+    def get_property_for_name(self, name: str) -> Property:
+        for p in self.properties:
+            if p.name == name:
+                return p
+
+        return None
 
 class TiledObjectGroup:
     def __init__(self, id: int, name: str):
@@ -437,6 +464,19 @@ class TiledMap:
         for ts in self.tilesets:
             if gid >= ts.firstgid and gid < ts.firstgid + ts.tileset.tilecount:
                 return ts
+
+        return None
+
+    def all_objects(self):
+        for g in self.object_groups:
+            for obj in g.objects:
+                yield obj
+
+    def object_for_id(self, _id: int) -> TiledObject:
+        obj: TiledObject
+        for obj in self.all_objects():
+            if obj.id == _id:
+                return obj
 
         return None
 

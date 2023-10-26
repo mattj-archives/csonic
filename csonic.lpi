@@ -133,6 +133,10 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Map"/>
       </Unit>
+      <Unit>
+        <Filename Value="engine\src\buffer.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

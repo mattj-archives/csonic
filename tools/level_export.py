@@ -61,11 +61,39 @@ class LevelExportTool:
                     # print(ob)
 
                     ts = tilemap.tileset_for_gid(ob.gid)
-                    buf.extend(struct.pack("<H", ob.gid - ts.firstgid))
-                    buf.extend(struct.pack("<H", int(ob.x)))
-                    buf.extend(struct.pack("<H", int(ob.y)))
+                    obj_type = ob.gid - ts.firstgid
+
+                    if obj_type == 14:
+                        # Moving platform destination
+                        continue
+
+                    print("obj_type ", obj_type)
+                    buf2 = bytearray()
+                    buf2.extend(struct.pack("<H", obj_type))
+                    buf2.extend(struct.pack("<H", int(ob.x)))
+                    buf2.extend(struct.pack("<H", int(ob.y)))
+
+                    if obj_type == 13:
+                        # Get platform destination
+                        prop_target = ob.get_property_for_name('target')
+                        if prop_target is None:
+                            print("No target for moving platform")
+                            continue
+
+                        target_obj = tilemap.object_for_id(int(prop_target.value))
+
+                        if target_obj is None:
+                            print("Invalid target object")
+                            continue
+
+                        # print('target obj:', prop_target.value, target_obj, target_obj.x, target_obj.y)
+                        buf2.extend(struct.pack("<H", int(target_obj.x)))
+                        buf2.extend(struct.pack("<H", int(target_obj.y)))
+
                     # print(ob.gid - ts.firstgid, int(ob.x), int(ob.y))
 
+                    # Add this object
+                    buf.extend(buf2)
                     num_objects += 1
 
             # print(num_objects)
