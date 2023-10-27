@@ -24,7 +24,7 @@ procedure G_Init;
 
 implementation
 
-uses enemy, game, util, buffer;
+uses enemy, game, util, buffer, map;
 procedure OnKeyDown(sc: ScanCode);
 begin
 
@@ -94,112 +94,6 @@ begin
     renderedTiles := Image_Load('dev/TEST_rendered.png');
 
 end;
-
-procedure LoadLevel2(fileName: string);
-var f: file;
-  width, height, num_objects, tile_type, object_type: byte;
-  i, x, y: longint;
-  tile_desc, tile_vis: integer;
-  tile: ^TTile;
-  e: PEntity;
-  moving_platform: PEntityMovingPlatform;
-  _reader: TBufferReader;
-  reader: PBufferReader;
-
-
-  begin
-      writeln('LoadLevel2 ', fileName);
-      Assign(f, fileName);
-      Reset(f, 1);
-
-      _reader := Buf_CreateReaderForFile(f);
-      reader := @_reader;
-
-      width := Buf_ReadByte(reader);
-      height := Buf_ReadByte(reader);
-
-      //BlockRead(f, width, 1);
-      //BlockRead(f, height, 1);
-
-      for y := 0 to height - 1 do begin
-        for x := 0 to width - 1 do begin
-            tile_type := Buf_ReadByte(reader);
-            BlockRead(f, tile_desc, sizeof(integer));
-            BlockRead(f, tile_vis, sizeof(integer));
-
-            tile := @G.map[y * 168 + x];
-            tile^.tile := 0;
-            if tile_type = 1 then begin
-              tile^.tile := 4;
-              tile^.description:=tile_desc;
-              tile^.color := tile_vis;
-              { vis }
-            end;
-        end;
-      end;
-
-      BlockRead(f, num_objects, sizeof(integer));
-
-      for i := 0 to num_objects - 1 do begin
-        BlockRead(f, object_type, sizeof(integer));
-        BlockRead(f, x, sizeof(integer));
-        BlockRead(f, y, sizeof(integer));
-
-        x:= x shl 3;
-        Dec(y, 24);
-        y:= y shl 3;
-
-        case object_type of
-          13: begin
-            moving_platform := PEntityMovingPlatform(SpawnEntity(x, y, object_type));
-            Entity_SetState(moving_platform, STATE_MPLAT);
-
-            moving_platform^.p[0].x:= x;
-            moving_platform^.p[0].y:= y;
-            moving_platform^.dest := 1;
-            moving_platform^.p[1].x := intToFix32(Buf_ReadInt(reader));
-            moving_platform^.p[1].y := intToFix32(Buf_ReadInt(reader));
-          end;
-        17: begin
-          writeln('spawn Spring1 at ', x, ' ', y);
-          e := SpawnEntity(x, y, object_type);
-          Entity_SetState(e, STATE_SPRING1_IDLE);
-        end;
-        18: begin
-          e := SpawnEntity(x, y, object_type);
-          Entity_SetState(e, STATE_SPRING2_IDLE);
-        end;
-              43:
-      begin
-        e := SpawnEntity(x, y, object_type);
-        Entity_SetState(e, entityStates.STATE_RING1);
-      end;
-      44: begin
-        e := SpawnEntity(x, y, object_type);
-        Entity_SetState(e, entityStates.STATE_CHILI1);
-      end;
-          70: {Enemy "Rabid Mushroom" }
-      begin
-           e := SpawnEntity(x, y, object_type);
-         Entity_SetState(e, STATE_RM_IDLE);
-      end;
-          71: { Enemy "Mosquito" }
-          begin
-            e := SpawnEntity(x, y, object_type);
-            Entity_SetState(e, STATE_MOSQU_IDLE);
-          end;
-          72: {Enemy "Bouncing potato" }
-      begin
-           e := SpawnEntity(x, y, object_type);
-         Entity_SetState(e, STATE_BPOT_IDLE);
-      end;
-      end;
-
-      end;
-
-
-      System.close(f);
-  end;
 
 procedure LoadLevel(fileName: string);
 var
@@ -305,7 +199,7 @@ begin
   
   //LoadLevel('levels/1_1.l2');
   //LoadLevel2('dev/out_test.l3');
-    LoadLevel2('dev/out_testmap1.l3');
+    Map_Load('dev/out_testmap1.l3');
 {
   map[14 * 168 + 5].tile := 4;
   map[14 * 168 + 5].description := 2;

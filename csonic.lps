@@ -8,19 +8,17 @@
       <Unit>
         <Filename Value="csonic.lpr"/>
         <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="2"/>
         <CursorPos X="6" Y="29"/>
         <UsageCount Value="269"/>
-        <Loaded Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="src\app.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="1"/>
-        <TopLine Value="322"/>
-        <CursorPos X="8" Y="347"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="120" Y="14"/>
         <UsageCount Value="269"/>
-        <Loaded Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="engine\src\sdl\text.pas"/>
@@ -95,20 +93,18 @@
       <Unit>
         <Filename Value="src\common.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="7"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="59"/>
         <CursorPos X="5" Y="84"/>
         <UsageCount Value="269"/>
-        <Loaded Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="src\entity.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="6"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="4"/>
         <CursorPos X="3" Y="29"/>
         <UsageCount Value="269"/>
-        <Loaded Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="src\res\res.pas"/>
@@ -121,20 +117,17 @@
         <Filename Value="src\player.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Player"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="9"/>
-        <TopLine Value="580"/>
-        <CursorPos Y="245"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="488"/>
+        <CursorPos X="39" Y="537"/>
         <UsageCount Value="263"/>
-        <Loaded Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="src\entity.inc"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="11"/>
+        <EditorIndex Value="-1"/>
         <CursorPos X="5" Y="2"/>
         <UsageCount Value="246"/>
-        <Loaded Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="src\terrainmove.pas"/>
@@ -148,29 +141,26 @@
         <Filename Value="src\sensor.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Sensor"/>
-        <EditorIndex Value="5"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="248"/>
         <CursorPos X="16" Y="423"/>
         <UsageCount Value="310"/>
-        <Loaded Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="src\enemy.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="10"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="69"/>
         <CursorPos Y="79"/>
         <UsageCount Value="253"/>
-        <Loaded Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="src\game.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Game"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="-1"/>
         <CursorPos Y="14"/>
-        <UsageCount Value="196"/>
-        <Loaded Value="True"/>
+        <UsageCount Value="198"/>
       </Unit>
       <Unit>
         <Filename Value="src\util.pas"/>
@@ -178,7 +168,25 @@
         <UnitName Value="Util"/>
         <EditorIndex Value="-1"/>
         <CursorPos Y="23"/>
-        <UsageCount Value="196"/>
+        <UsageCount Value="198"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\map.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Map"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="15"/>
+        <CursorPos Y="15"/>
+        <UsageCount Value="137"/>
+      </Unit>
+      <Unit>
+        <Filename Value="engine\src\buffer.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="55"/>
+        <CursorPos X="50" Y="73"/>
+        <UsageCount Value="53"/>
       </Unit>
       <Unit>
         <Filename Value="util.pas"/>
@@ -189,11 +197,10 @@
       </Unit>
       <Unit>
         <Filename Value="engine\src\engine.pas"/>
-        <EditorIndex Value="4"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="89"/>
         <CursorPos X="3" Y="114"/>
         <UsageCount Value="104"/>
-        <Loaded Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="engine\external\sdl2\sdlerror.inc"/>
@@ -232,31 +239,11 @@
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
-        <Filename Value="src\map.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="Map"/>
-        <EditorIndex Value="8"/>
-        <CursorPos X="55" Y="17"/>
-        <UsageCount Value="135"/>
-        <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit>
-      <Unit>
         <Filename Value="C:\lazarus\fpc\3.2.2\source\rtl\inc\file.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="380"/>
         <CursorPos X="3" Y="393"/>
         <UsageCount Value="7"/>
-      </Unit>
-      <Unit>
-        <Filename Value="engine\src\buffer.pas"/>
-        <IsPartOfProject Value="True"/>
-        <EditorIndex Value="3"/>
-        <TopLine Value="55"/>
-        <CursorPos X="50" Y="73"/>
-        <UsageCount Value="51"/>
-        <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
     </Units>
     <Debugger>
@@ -265,131 +252,13 @@
     <OtherDefines Count="1">
       <Define0 Value="SDL2"/>
     </OtherDefines>
-    <JumpHistory HistoryIndex="29">
-      <Position>
-        <Filename Value="src\app.pas"/>
-        <Caret Line="29" Column="6" TopLine="12"/>
-      </Position>
-      <Position>
-        <Filename Value="src\app.pas"/>
-        <Caret Line="118" TopLine="94"/>
-      </Position>
-      <Position>
-        <Filename Value="src\app.pas"/>
-        <Caret Line="115" Column="35" TopLine="90"/>
-      </Position>
-      <Position>
-        <Filename Value="src\app.pas"/>
-        <Caret Line="113" TopLine="90"/>
-      </Position>
-      <Position>
-        <Filename Value="src\app.pas"/>
-        <Caret Line="114" TopLine="90"/>
-      </Position>
-      <Position>
-        <Filename Value="src\app.pas"/>
-        <Caret Line="111" Column="9" TopLine="90"/>
-      </Position>
-      <Position>
-        <Filename Value="engine\src\buffer.pas"/>
-        <Caret Line="56" TopLine="46"/>
-      </Position>
-      <Position>
-        <Filename Value="src\app.pas"/>
-        <Caret Line="114" TopLine="90"/>
-      </Position>
-      <Position>
-        <Filename Value="src\app.pas"/>
-        <Caret Line="115" TopLine="90"/>
-      </Position>
-      <Position>
-        <Filename Value="engine\src\buffer.pas"/>
-        <Caret Line="57" Column="28" TopLine="46"/>
-      </Position>
-      <Position>
-        <Filename Value="engine\src\buffer.pas"/>
-        <Caret Line="58" Column="28" TopLine="46"/>
-      </Position>
-      <Position>
-        <Filename Value="engine\src\buffer.pas"/>
-        <Caret Line="56" Column="31" TopLine="33"/>
-      </Position>
-      <Position>
-        <Filename Value="engine\src\buffer.pas"/>
-        <Caret Line="54" TopLine="27"/>
-      </Position>
-      <Position>
-        <Filename Value="src\app.pas"/>
-        <Caret Line="113" TopLine="90"/>
-      </Position>
-      <Position>
-        <Filename Value="engine\src\buffer.pas"/>
-        <Caret Line="92" Column="17" TopLine="61"/>
-      </Position>
-      <Position>
-        <Filename Value="engine\src\buffer.pas"/>
-        <Caret Line="54" Column="33" TopLine="49"/>
-      </Position>
-      <Position>
-        <Filename Value="engine\src\buffer.pas"/>
-        <Caret Line="38" Column="52" TopLine="28"/>
-      </Position>
-      <Position>
-        <Filename Value="src\app.pas"/>
-        <Caret Line="116" Column="24" TopLine="91"/>
-      </Position>
-      <Position>
-        <Filename Value="src\app.pas"/>
-        <Caret Line="154" TopLine="124"/>
-      </Position>
-      <Position>
-        <Filename Value="src\app.pas"/>
-        <Caret Line="161" TopLine="124"/>
-      </Position>
-      <Position>
-        <Filename Value="src\app.pas"/>
-        <Caret Line="162" TopLine="124"/>
-      </Position>
-      <Position>
-        <Filename Value="src\app.pas"/>
-        <Caret Line="161" Column="71" TopLine="124"/>
-      </Position>
-      <Position>
-        <Filename Value="src\app.pas"/>
-        <Caret Line="139" Column="11" TopLine="109"/>
-      </Position>
-      <Position>
-        <Filename Value="src\player.pas"/>
-        <Caret Line="523" Column="21" TopLine="504"/>
-      </Position>
-      <Position>
-        <Filename Value="src\enemy.pas"/>
-        <Caret Line="261" TopLine="217"/>
-      </Position>
-      <Position>
-        <Filename Value="src\entity.pas"/>
-        <Caret Line="29" Column="40"/>
-      </Position>
-      <Position>
-        <Filename Value="src\game.pas"/>
-        <Caret Line="14"/>
-      </Position>
-      <Position>
-        <Filename Value="src\player.pas"/>
-        <Caret Line="28" Column="21" TopLine="16"/>
-      </Position>
-      <Position>
-        <Filename Value="src\player.pas"/>
-        <Caret Line="111" TopLine="76"/>
-      </Position>
-      <Position>
-        <Filename Value="src\player.pas"/>
-        <Caret Line="27" TopLine="216"/>
-      </Position>
-    </JumpHistory>
+    <General>
+      <ActiveWindowIndexAtStart Value="-1"/>
+    </General>
+    <JumpHistory HistoryIndex="-1"/>
     <RunParams>
       <FormatVersion Value="2"/>
-      <Modes ActiveMode="default">
+      <Modes ActiveMode="Mac">
         <Mode Name="default">
           <local>
             <WorkingDirectory Value="C:\Users\Matt\dos\csonic"/>
@@ -409,7 +278,7 @@
         <Item3 Value="C:\Users\Matt\dos\csonic"/>
         <Item4 Value="\Users\mattj\games\csonic"/>
       </List>
-      <List Name="LaunchingApplication" Type="File" Count="1">
+      <List Name="LaunchingApplication" Type="File" Count="2">
         <Item1 Value="C:\Windows\system32\cmd.exe /C ${TargetCmdLine}"/>
       </List>
       <List Name="CommandLineParameters" Count="1"/>
