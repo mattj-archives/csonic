@@ -209,33 +209,33 @@ procedure DebugMove(self: PEntity);
 begin
   if I_IsKeyDown(kUp) then
   begin
-    Inc(gPlayer.velY, -2 shl 3);
-    if gPlayer.velY < (-8 shl 3) then gPlayer.velY := intToFix32(-8);
+    Inc(gPlayer.velY, intToFix32(-2));
+    if gPlayer.velY < intToFix32(-8) then gPlayer.velY := intToFix32(-8);
   end;
 
   if I_IsKeyDown(kDn) then
   begin
-    Inc(gPlayer.velY, 2 shl 3);
-    if gPlayer.velY > (8 shl 3) then gPlayer.velY := intToFix32(8);
+    Inc(gPlayer.velY, intToFix32(2));
+    if gPlayer.velY > intToFix32(8) then gPlayer.velY := intToFix32(8);
   end;
 
   if I_IsKeyDown(kLf) then
   begin
-    Inc(gPlayer.velX, -2 shl 3);
-    if gPlayer.velX < (-8 shl 3) then gPlayer.velX := -8 shl 3;
+    Inc(gPlayer.velX, intToFix32(-2));
+    if gPlayer.velX < intToFix32(-8) then gPlayer.velX := intToFix32(-8);
   end;
 
   if I_IsKeyDown(kRt) then
   begin
-    Inc(gPlayer.velX, 2 shl 3);
-    if gPlayer.velX > (8 shl 3) then gPlayer.velX := 8 shl 3;
+    Inc(gPlayer.velX, intToFix32(2));
+    if gPlayer.velX > intToFix32(8) then gPlayer.velX := intToFix32(8);
   end;
 
-  if gPlayer.velX < 0 then Inc(gPlayer.velX, 1 shl 3);
-  if gPlayer.velX > 0 then Dec(gPlayer.velX, 1 shl 3);
+  if gPlayer.velX < 0 then Inc(gPlayer.velX, intToFix32(1));
+  if gPlayer.velX > 0 then Dec(gPlayer.velX, intToFix32(1));
 
-  if gPlayer.velY < 0 then Inc(gPlayer.velY, 1 shl 3);
-  if gPlayer.velY > 0 then Dec(gPlayer.velY, 1 shl 3);
+  if gPlayer.velY < 0 then Inc(gPlayer.velY, intToFix32(1));
+  if gPlayer.velY > 0 then Dec(gPlayer.velY, intToFix32(1));
 
   Inc(self^.x, gPlayer.velX);
   Inc(self^.y, gPlayer.velY);
@@ -252,10 +252,10 @@ var
   endX, endY: integer;
 
 const
-  MAX_X_VEL = 9 shl 3;
-  X_ACCEL = 2 shl 3;
-  MAX_Y_VEL = 12 shl 3;
-  GRAVITY = 1 shl 3;
+  MAX_X_VEL = 9 shl FRAC_BITS;
+  X_ACCEL = 2 shl FRAC_BITS;
+  MAX_Y_VEL = 12 shl FRAC_BITS;
+  GRAVITY = 1 shl FRAC_BITS;
 begin
 
   if gPlayer.debugMode then
@@ -296,8 +296,8 @@ begin
 
   { Decelerate X }
 
-  if gPlayer.velX < 0 then Inc(gPlayer.velX, 1 shl 3);
-  if gPlayer.velX > 0 then Dec(gPlayer.velX, 1 shl 3);
+  if gPlayer.velX < 0 then Inc(gPlayer.velX, intToFix32(1));
+  if gPlayer.velX > 0 then Dec(gPlayer.velX, intToFix32(1));
 
   if gPlayer.velY <> 0 then playerInAir := True;
 
@@ -553,8 +553,10 @@ begin
 
       //if (sensorYResult.y <> endY) or (sensorYResult2.y <> endY) then
       //begin
-      if sensorYResult2.y < sensorYResult.y then sensorYResult := sensorYResult2;
-      self^.y := sensorYResult.y - intToFix32(23);
+      if (sensorYResult.hitType <> 0) or (sensorYResult2.hitType <> 0) then begin
+         if sensorYResult2.y < sensorYResult.y then sensorYResult := sensorYResult2;
+          self^.y := sensorYResult.y - intToFix32(23);
+      end;
       //end;
     end;
 

@@ -198,9 +198,10 @@ end;
 procedure SensorY(x, startY, endY: longint; var Result: THitResult);
 var
   originalX, originalStartY, originalEndY: longint;
-  h, tx, ty, ty0, ty1, idx, traceYValue: integer;
+  h, tx, ty, ty0, ty1, idx, traceYValue: longint;
   other: TBoundingBox;
   tile: ^TTile;
+  iter: integer;
 begin
 
   Result.hitType := 0;
@@ -218,6 +219,7 @@ begin
 
   x := fix32ToInt(x);
 
+  //writeln('test ', -fix32ToInt(1024));
   startY := fix32ToInt(startY);
   endY := fix32ToInt(endY);
   traceYValue := endY;
@@ -226,8 +228,15 @@ begin
   ty0 := startY div 24;
   ty1 := endY div 24;
 
+  iter := 0;
+
   for ty := ty0 to ty1 do
   begin
+    inc(iter);
+    if iter > 10 then begin
+       writeln('error: too many iterations');
+       Break;
+    end;
     other.left := tx * 24;
     other.right := tx * 24 + 24;
     other.top := ty * 24;
@@ -236,6 +245,8 @@ begin
     h := startY;
 
     tile := Map_TileAt(tx, ty);
+        //writeln('SensorY checking tile at ', tx, ' ', ty);
+
 
     if Assigned(tile) then
     begin

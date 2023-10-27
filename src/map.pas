@@ -26,7 +26,7 @@ var
   reader: PBufferReader;
 
 begin
-  writeln('LoadLevel2 ', fileName);
+  writeln('Map_Load ', fileName);
   Assign(f, fileName);
   Reset(f, 1);
 
@@ -35,9 +35,6 @@ begin
 
   Width := Buf_ReadByte(reader);
   Height := Buf_ReadByte(reader);
-
-  //BlockRead(f, width, 1);
-  //BlockRead(f, height, 1);
 
   for y := 0 to Height - 1 do
   begin
@@ -59,17 +56,18 @@ begin
     end;
   end;
 
-  BlockRead(f, num_objects, sizeof(integer));
+  num_objects := Buf_ReadInt(reader);
+
+  //BlockRead(f, num_objects, sizeof(integer));
 
   for i := 0 to num_objects - 1 do
   begin
     BlockRead(f, object_type, sizeof(integer));
-    BlockRead(f, x, sizeof(integer));
-    BlockRead(f, y, sizeof(integer));
+    x := intToFix32(Buf_ReadInt(reader));
+    y := intToFix32(Buf_ReadInt(reader) - 24);
 
-    x := x shl 3;
-    Dec(y, 24);
-    y := y shl 3;
+    //Dec(y, 24);
+    //y := intToFix32(y);
 
     case object_type of
       13: begin

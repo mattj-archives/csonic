@@ -116,8 +116,8 @@ begin
     BlockRead(f, tn, sizeof(integer));
     BlockRead(f, tc, sizeof(integer));
 
-    x := (x * 24) shl 3;
-    y := (y * 24) shl 3;
+    x := intToFix32(x * 24);
+    y := intToFix32(y * 24);
 
     //writeln('Map entity spawn: ', x, ' ', y, ' ', ' type: ', tn);
     if (x < 0) or (x >= 168) or (y < 0) or (y >= 54) then continue;
@@ -238,7 +238,7 @@ begin
 
   //map[13 * 168 + 6].tile := 1;
   //e := SpawnEntity(3 * 24, 4 * 24, -1);
-  e := SpawnEntity((7 * 24) shl 3, (10 * 24) shl 3, 1);
+  e := SpawnEntity(intToFix32(7 * 24), intToFix32(10 * 24), 1);
   gPlayer.ent := e;
   Entity_SetState(e, STATE_PLAYER_STAND1);
 
@@ -247,7 +247,7 @@ begin
     //e := SpawnEntity(24 * (6 + i), 14 * 24, 38);
     //Entity_SetState(e, STATE_BOX_RING1);
   end;
-
+    {
   mp := PEntityMovingPlatform(SpawnEntity(intToFix32(7 * 24), intToFix32(7 * 24), 13));
 
   mp^.p[0].x := mp^.x;
@@ -257,7 +257,7 @@ begin
   mp^.dest := 1;
 
   Entity_SetState(mp, STATE_MPLAT);
-
+     }
   Event_SetKeyDownProc(OnKeyDown);
   Event_SetKeyUpProc(OnKeyUp);
 

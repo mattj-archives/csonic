@@ -71,8 +71,8 @@ Begin
           tile := @G.map[y * 168 + x];
       {R_DrawSprite(x * 24 - camera.x, y * 24 - camera.y, textures[tile^.tile]^);            }
 
-          x0 := (x * 24 * 8 - G.camera.X) shr 3;
-          y0 := (y * 24 * 8 - G.camera.Y) shr 3;
+          x0 := fix32ToInt((intToFix32(x * 24) - G.camera.X));
+          y0 := fix32ToInt((intToFix32(y * 24) - G.camera.Y));
 
           Case tile^.tile Of 
             0:
@@ -150,8 +150,8 @@ Begin
 
   { camera.X := intToFix32(4 * 24); }
 
-  camx := G.camera.X shr 3;
-  camy := G.camera.Y shr 3;
+  camx := fix32ToInt(G.camera.X);
+  camy := fix32ToInt(G.camera.Y);
 
   R_FillColor($aa0000);
   DrawMap;
@@ -168,18 +168,21 @@ Begin
       //if e^.y > camera.y + 240 then continue;
 
       //writeln('draw entity ', i, ' type ', e^.t);
-      DrawState((e^.x - G.camera.x) shr 3, (e^.y - G.camera.y) shr 3, e^.state, e^.direction);
+      DrawState(fix32ToInt(e^.x - G.camera.x), fix32ToInt(e^.y - G.camera.y), e^.state, e^.direction);
 
       Entity_Hitbox(e, bb);
 
-      bb.bottom := fix32ToInt(bb.bottom - G.Camera.y) - 1;
-      bb.right := fix32Toint(bb.right - G.camera.x) - 1;
+      Inc(bb.bottom, intToFix32(-1));
+      Inc(bb.right, intToFix32(-1));
 
-      R_DrawLine(
-                 fix32ToInt(bb.left - G.camera.x),  fix32ToInt(bb.top - G.camera.y),
-                 bb.right, fix32ToInt(bb.top - G.camera.y), 255, 255, 255, 255);
+      //bb.right := (bb.right - G.camera.x) - 1;
 
-      R_DrawLine(
+      DrawWorldLine(bb.left, bb.top, bb.right, bb.top);
+      DrawWorldLine(bb.left, bb.bottom, bb.right, bb.bottom);
+      DrawWorldLine(bb.left, bb.top, bb.left, bb.bottom);
+      DrawWorldLine(bb.right, bb.top, bb.right, bb.bottom);
+
+     { R_DrawLine(
                  fix32ToInt(bb.left - G.camera.x), bb.bottom,
                  bb.right, bb.bottom, 255, 255, 255, 255);
 
@@ -190,7 +193,7 @@ Begin
            R_DrawLine(
            bb.right,  fix32ToInt(bb.top - G.camera.y),
            bb.right, bb.bottom, 255, 255, 255, 255);
-
+                                                                }
       if Assigned(G.entityInfo[e^.t].debugDrawProc) then G.entityInfo[e^.t].debugDrawProc(e);
     End;
 
@@ -210,12 +213,25 @@ Begin
 End;
 
 
+procedure MovingPlatform_Move(var self: TEntityMovingPlatform; deltaX, deltaY: longint);
+begin
+  Inc(self.x, deltaX);
+  Inc(self.y, deltaY);
+
+    If gPlayer.groundEntity = @self Then
+    Begin
+      // TODO: Actually push player in this direction, check for getting crushed
+      Inc(gPlayer.ent^.x, deltaX);
+    End;
+
+end;
+
 Procedure MovingPlatform_Update(Data: Pointer);
 
 Var 
   self: PEntityMovingPlatform absolute Data;
   destPoint: TVector2;
-  deltaX: integer;
+  deltaX: longint;
 Begin
 
   deltaX := 0;
@@ -224,29 +240,29 @@ Begin
 
   If destPoint.x > self^.x Then
     Begin
-      deltaX := 3;
-      Inc(self^.x, deltaX);
+
+      deltaX := floatToFix32(1);
+      MovingPlatform_Move(self^, deltaX, 0);
+
       If self^.x >= destPoint.x Then
         Begin
           self^.dest := self^.dest xor 1;
         End;
-    End;
 
-  If destPoint.x < self^.x Then
+      Exit;
+   end;
+
+  if destPoint.x < self^.x Then
     Begin
-      deltaX := -3;
-      Inc(self^.x, deltaX);
-
+      deltaX := -floatToFix32(1);
+      MovingPlatform_Move(self^, deltaX, 0);
       If self^.x <= destPoint.x Then
         Begin
           self^.dest := self^.dest xor 1;
         End;
-    End;
 
-  If gPlayer.groundEntity = PEntity(self) Then
-    Begin
-      // TODO: Actually push player in this direction, check for getting crushed
-      Inc(gPlayer.ent^.x, deltaX);
+      Exit;
+
     End;
 End;
 
@@ -328,8 +344,8 @@ Begin
           //end;
         End;
 
-      G.camera.x := gPlayer.ent^.x - (6 * 24) shl 3;
-      G.camera.y := gPlayer.ent^.y - (4 * 24) shl 3;
+      G.camera.x := gPlayer.ent^.x - intToFix32(6 * 24);
+      G.camera.y := gPlayer.ent^.y - intToFix32(4 * 24);
       If G.camera.x < 0 Then G.camera.x := 0;
       If G.camera.y < 0 Then G.camera.y := 0;
 

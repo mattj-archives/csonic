@@ -13,10 +13,12 @@ const
   ENTITY_FLAG_ACTIVE = 1 shl 0;
   ENTITY_FLAG_MISC = 1 shl 1;
 
+  FRAC_BITS = 4;
+
 type
 
   TVector2 = record
-    x, y: integer;
+    x, y: longint;
   end;
 
   PEntity = ^TEntity;
@@ -92,7 +94,7 @@ type
   end;
 
   TBoundingBox = record
-    left, right, top, bottom: integer;
+    left, right, top, bottom: longint;
   end;
 
   TGlobals = record
