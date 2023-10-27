@@ -7,16 +7,16 @@ interface
 uses
   engine, common;
 
-procedure SensorX(y, startX, endX: integer; var Result: THitResult);
+procedure SensorX(y, startX, endX: longint; var Result: THitResult);
 procedure SensorY(x, startY, endY: longint; var Result: THitResult);
 
-function EntityTrace(startX, startY, endX, endY: integer): integer;
+function EntityTrace(startX, startY, endX, endY: longint): integer;
 
 procedure SensorRay(startX, startY: longint; deltaX, deltaY: longint;
   var Result: THitResult);
 
 var
-  entityTraceResultX, entityTraceResultY: integer;
+  entityTraceResultX, entityTraceResultY: longint;
   entityTraceResult: PEntity;
   traceEntitySkip: PEntity;
 
@@ -24,9 +24,9 @@ implementation
 
 uses Entity, util, map;
 
-procedure SensorX(y, startX, endX: integer; var Result: THitResult);
+procedure SensorX(y, startX, endX: longint; var Result: THitResult);
 var
-  hitType, delta, h, x, tx, ty, ty0, ty1, idx, traceXValue: integer;
+  hitType, delta, h, x, tx, ty, ty0, ty1, idx, traceXValue: longint;
   other: TBoundingBox;
   tile: ^TTile;
 begin
@@ -109,9 +109,9 @@ begin
 
 end;
 
-function SensorYUp(x, startY, endY: integer; var Result: THitResult): integer;
+function SensorYUp(x, startY, endY: longint; var Result: THitResult): integer;
 var
-  hitType, lower, upper, tx, ty, ty0, ty1, idx, traceYValue: integer;
+  hitType, lower, upper, tx, ty, ty0, ty1, idx, traceYValue: longint;
   other: TBoundingBox;
   tile: ^TTile;
 begin
@@ -386,9 +386,9 @@ end;
 
 { Trace a line against entity hitboxes. Set traceEntitySkip to skip a specific entity }
 
-function EntityTrace(startX, startY, endX, endY: integer): integer;
+function EntityTrace(startX, startY, endX, endY: longint): integer;
 var
-  deltaX, deltaY, i: integer;
+  deltaX, deltaY, i: longint;
   e: PEntity;
   other: TBoundingBox;
 begin

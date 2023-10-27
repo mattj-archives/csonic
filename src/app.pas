@@ -195,73 +195,12 @@ begin
 
   LoadGFX;
 
-  FillChar(G.entities, sizeof(TEntity) * MAX_ENTITIES, 0);
-  
-  //LoadLevel('levels/1_1.l2');
-  //LoadLevel2('dev/out_test.l3');
-    Map_Load('dev/out_testmap1.l3');
-{
-  map[14 * 168 + 5].tile := 4;
-  map[14 * 168 + 5].description := 2;
-  map[14 * 168 + 6].tile := 4;
-  map[14 * 168 + 6].description := 3;
-
-  map[11 * 168 + 3].tile := 4;
-  map[11 * 168 + 3].description := 0;
-
-  map[14 * 168 + 7].tile := 4;
-  map[14 * 168 + 7].description := 27;
-  map[14 * 168 + 8].tile := 4;
-  map[14 * 168 + 8].description := 28;
-  map[14 * 168 + 9].tile := 4;
-  map[14 * 168 + 9].description := 29;
-  map[14 * 168 + 10].tile := 4;
-  map[14 * 168 + 10].description := 30;
-  map[14 * 168 + 11].tile := 4;
-  map[14 * 168 + 11].description := 31;
-
-  map[15 * 168 + 11].tile := 4;
-  map[15 * 168 + 11].description := 0;
-
-  map[15 * 168 + 12].tile := 4;
-  map[15 * 168 + 12].description := 33;
-  map[15 * 168 + 13].tile := 4;
-  map[15 * 168 + 13].description := 34;
-  map[15 * 168 + 14].tile := 4;
-  map[15 * 168 + 14].description := 35;
-  map[15 * 168 + 15].tile := 4;
-  map[15 * 168 + 15].description := 36;
-
-}
-  //map[14 * 168 + 6].tile := 1;
-
-
-  //map[13 * 168 + 6].tile := 1;
-  //e := SpawnEntity(3 * 24, 4 * 24, -1);
-  e := SpawnEntity(intToFix32(7 * 24), intToFix32(10 * 24), 1);
-  gPlayer.ent := e;
-  Entity_SetState(e, STATE_PLAYER_STAND1);
-
-  for i := 0 to 1 do
-  begin
-    //e := SpawnEntity(24 * (6 + i), 14 * 24, 38);
-    //Entity_SetState(e, STATE_BOX_RING1);
-  end;
-    {
-  mp := PEntityMovingPlatform(SpawnEntity(intToFix32(7 * 24), intToFix32(7 * 24), 13));
-
-  mp^.p[0].x := mp^.x;
-  mp^.p[0].y := mp^.y;
-  mp^.p[1].x := mp^.x + intToFix32(24 * 3);
-  mp^.p[1].y := mp^.y;
-  mp^.dest := 1;
-
-  Entity_SetState(mp, STATE_MPLAT);
-     }
   Event_SetKeyDownProc(OnKeyDown);
   Event_SetKeyUpProc(OnKeyUp);
 
   writeln('G_Init: done');
+
+  Game_New;
 
 
 

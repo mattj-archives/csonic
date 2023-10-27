@@ -41,8 +41,8 @@ begin
     for x := 0 to Width - 1 do
     begin
       tile_type := Buf_ReadByte(reader);
-      BlockRead(f, tile_desc, sizeof(integer));
-      BlockRead(f, tile_vis, sizeof(integer));
+      tile_desc := Buf_ReadInt(reader);
+      tile_vis := Buf_ReadInt(reader);
 
       tile := @G.map[y * 168 + x];
       tile^.tile := 0;
@@ -62,7 +62,8 @@ begin
 
   for i := 0 to num_objects - 1 do
   begin
-    BlockRead(f, object_type, sizeof(integer));
+    object_type := Buf_ReadInt(reader);
+
     x := intToFix32(Buf_ReadInt(reader));
     y := intToFix32(Buf_ReadInt(reader) - 24);
 

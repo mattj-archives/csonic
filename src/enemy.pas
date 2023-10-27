@@ -189,8 +189,8 @@ begin
     self.patrolFrames := 60;
   end;
   case self.direction of
-    3: Dec(self.x, 8);
-    4: Inc(self.x, 8);
+    3: Dec(self.x, intToFix32(1));
+    4: Inc(self.x, intToFix32(1));
   end;
 
   if Assigned(gPlayer.ent) then

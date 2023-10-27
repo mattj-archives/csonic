@@ -13,7 +13,7 @@ const
   ENTITY_FLAG_ACTIVE = 1 shl 0;
   ENTITY_FLAG_MISC = 1 shl 1;
 
-  FRAC_BITS = 4;
+  FRAC_BITS = 8;
 
 type
 
@@ -85,12 +85,12 @@ type
   THitResult = record
     hitType: integer;
     entity: PEntity;
-    x: integer;
-    y: integer;
+    x: longint;
+    y: longint;
 
     { May be filled out so collision response knows the incoming velocity }
-    velX: integer;
-    velY: integer;
+    velX: longint;
+    velY: longint;
   end;
 
   TBoundingBox = record

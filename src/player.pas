@@ -75,7 +75,7 @@ begin
     Exit;
   end;
 
-  gPlayer.velY := intToFix32(-13);
+  gPlayer.velY := -intToFix32(13);
   Player_SetMode(Spinning);
 end;
 
@@ -248,8 +248,7 @@ var
   playerWasInAir: boolean;
   resultVector: TVector2;
   finalSensor, sensorXResult, sensorYResult, sensorYResult2: THitResult;
-  adj, adj2: integer;
-  endX, endY: integer;
+
 
 const
   MAX_X_VEL = 9 shl FRAC_BITS;
@@ -538,7 +537,7 @@ begin
     begin
 
       { Keep player stuck to the ground, if possible... }
-      endY := self^.y + intToFix32(28);
+      //endY := self^.y + intToFix32(28);
 
       SensorRay(self^.x,                  self^.y + intToFix32(11), 0, intToFix32(17), sensorYResult);
       SensorRay(self^.x + intToFix32(23), self^.y + intToFix32(11), 0, intToFix32(17), sensorYResult2);
