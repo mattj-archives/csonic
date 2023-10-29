@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <Version Value="12"/>
+    <BuildModes Active="Default"/>
+    <Units>
+      <Unit>
+        <Filename Value="mask_gen.pas"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="106"/>
+        <CursorPos X="3" Y="140"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit>
+    </Units>
+    <JumpHistory HistoryIndex="3">
+      <Position>
+        <Filename Value="mask_gen.pas"/>
+        <Caret Line="77" Column="35" TopLine="49"/>
+      </Position>
+      <Position>
+        <Filename Value="mask_gen.pas"/>
+        <Caret Line="56" Column="22" TopLine="49"/>
+      </Position>
+      <Position>
+        <Filename Value="mask_gen.pas"/>
+        <Caret Line="32" Column="11"/>
+      </Position>
+      <Position>
+        <Filename Value="mask_gen.pas"/>
+        <Caret Line="20" Column="34"/>
+      </Position>
+    </JumpHistory>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes ActiveMode="default">
+        <Mode Name="default">
+          <local>
+            <CommandLineParams Value="test.raw >/dev/ttys014 &lt;/dev/ttys014"/>
+          </local>
+        </Mode>
+      </Modes>
+    </RunParams>
+    <HistoryLists>
+      <List Name="LaunchingApplication" Type="File" Count="3">
+        <Item1 Value="/opt/X11/bin/xterm $(TargetCmdLine)"/>
+        <Item2 Value="/opt/X11/bin/xterm"/>
+        <Item3 Value="xterm"/>
+      </List>
+      <List Name="CommandLineParameters" Count="3">
+        <Item1 Value="test.raw >/dev/ttys014 &lt;/dev/ttys014"/>
+        <Item2 Value=">/dev/ttys014 &lt;/dev/ttys014"/>
+        <Item3 Value=">/tmp/lazoutput.txt"/>
+      </List>
+    </HistoryLists>
+  </ProjectSession>
+  <Debugging>
+    <BreakPoints>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="../../src/sensor.pas"/>
+        <Line Value="303"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="../../src/sensor.pas"/>
+        <Line Value="389"/>
+      </Item>
+    </BreakPoints>
+  </Debugging>
+</CONFIG>

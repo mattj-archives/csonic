@@ -1,8 +1,11 @@
 import copy
 import json
 import random
+import struct
+import subprocess
 
 import xml.etree.ElementTree as ET
+from tempfile import TemporaryFile, NamedTemporaryFile
 from xml.dom import minidom
 
 import PIL.Image
@@ -13,7 +16,35 @@ from level_export import LevelExportTool
 from tiledlib import Tileset, TiledLayer, TiledMap, TilesetImage, TilesetDef, Property
 
 
+def write_tiles(tiles):
+    # with NamedTemporaryFile() as f:
+    with open("tiles.tmp", "wb") as f:
+        for t in tiles:
+            f.write(struct.pack("<H", t))
+
+    print(f.name)
+    return f.name
+
+
 class LevelPaintTool:
+
+    def generate_mask_image(self):
+        maskImage = PIL.Image.new(mode='1', size=(self.map_width * 24, self.map_height * 24))
+        for ty in range(0, self.map_height):
+            for tx in range(0, self.map_width):
+                tile_num = self.tiles[ty * self.map_width + tx]
+                if tile_num == 0:
+                    continue
+
+                tile_left = tx * 24
+                tile_top = ty * 24
+
+                for py in range(0, 24):
+                    for px in range(0, 24):
+                        if self.is_masked_pixel(tile_left + px, tile_top + py):
+                            maskImage.putpixel((tile_left + px, tile_top + py), 1)
+
+        return maskImage
 
     def __init__(self, map_file_name, out_map_file_name) -> None:
         super().__init__()
@@ -42,55 +73,65 @@ class LevelPaintTool:
 
         self.tiles = layer.tiles
 
+        tiles_file_name = write_tiles(self.tiles)
+        print(f'wrote tiles to {tiles_file_name}')
+
         self.map_width = tilemap.width
         self.map_height = tilemap.height
 
-        print("Generating mask image")
-
-        maskImage = PIL.Image.new(mode='1', size=(self.map_width * 24, self.map_height * 24))
-
-        for ty in range(0, self.map_height):
-            for tx in range(0, self.map_width):
-                tile_num = self.tiles[ty * self.map_width + tx]
-                if tile_num == 0:
-                    continue
-
-                tile_left = tx * 24
-                tile_top = ty * 24
-
-                for py in range(0, 24):
-                    for px in range(0, 24):
-                        if self.is_masked_pixel(tile_left + px, tile_top + py):
-                            maskImage.putpixel((tile_left + px, tile_top + py), 1)
-
-        # maskImage.show()
-
         map_width_pixels = self.map_width * 24
 
+        print("Generating mask image")
+
+        if False:
+            maskImage = self.generate_mask_image()
+        else:
+
+            cmd = f'./tools/mask_gen/mask_gen --size {self.map_width} {self.map_height} --height-file height.dat --tiles-file {tiles_file_name} --canvas-output canvas.tmp'
+            print("Running", cmd)
+            subprocess.run(cmd, shell=True, capture_output=True)
+
+            with open("./tools/mask_gen/test.raw", "rb") as f:
+                rawData = f.read()
+                # maskImage = PIL.Image.frombuffer('1', (self.map_width * 24, self.map_height * 24), rawData, 'raw', '1', 0, 1) #1 bpp
+                maskImage = PIL.Image.frombuffer('L', (self.map_width * 24, self.map_height * 24), rawData)
+                # maskImage.show()
+
+            # return
+
         mask_data = maskImage.getdata()
-        canvas = PIL.Image.new(mode='RGBA', size=(self.map_width * 24, self.map_height * 24))
+        print("BG fill")
+        if False:
+            canvas = PIL.Image.new(mode='RGBA', size=(self.map_width * 24, self.map_height * 24))
+        else:
+            with open("canvas.tmp", "rb") as f:
+                rawData = f.read()
+                canvas = PIL.Image.frombuffer('RGBA', (self.map_width * 24, self.map_height * 24), rawData)
+                # canvas.show()
 
         # Draw the background mask first
 
-        print("BG fill")
+
         canvas_data = list(canvas.getdata())
 
-        for py in range(0, self.map_height * 24):
-            # print(py)
-            ty = py // 24
-            for px in range(0, self.map_width * 24):
-                if mask_data[py * map_width_pixels + px] == 1:
-                    # draw.point((px, py), (0, 127, 0, 255))
-                    tx = px // 24
+        if False:
+            for py in range(0, self.map_height * 24):
+                # print(py)
+                ty = py // 24
+                for px in range(0, self.map_width * 24):
+                    if mask_data[py * map_width_pixels + px] != 0:
+                        # draw.point((px, py), (0, 127, 0, 255))
+                        tx = px // 24
 
-                    canvas_data[py * map_width_pixels + px] = (0, 0xaa, 0, 255)
-                    # if (tx + ty) % 2 == 0:
-                    #     canvas_data[py * map_width_pixels + px] = (0, 0x7f, 0, 255)
-                    # else:
-                    #     canvas_data[py * map_width_pixels + px] = (0, 0xaa, 0, 255)
+                        canvas_data[py * map_width_pixels + px] = (0, 0xaa, 0, 255)
+                        # if (tx + ty) % 2 == 0:
+                        #     canvas_data[py * map_width_pixels + px] = (0, 0x7f, 0, 255)
+                        # else:
+                        #     canvas_data[py * map_width_pixels + px] = (0, 0xaa, 0, 255)
 
-        canvas.putdata(canvas_data)
+            canvas.putdata(canvas_data)
 
+        # return
         print("BG overlay")
         draw = ImageDraw.Draw(canvas)
         for ty in range(0, self.map_height):
@@ -121,8 +162,9 @@ class LevelPaintTool:
                                 draw.point((pt_x, pt_y), (255, 255, 255, 255))
 
                                 # Shadow
-                                draw.line([(pt_x, pt_y), (pt_x, pt_y + self.shadow_lower[pt_x % terrain_pattern_width])],
-                                          fill=(102, 57, 49))
+                                draw.line(
+                                    [(pt_x, pt_y), (pt_x, pt_y + self.shadow_lower[pt_x % terrain_pattern_width])],
+                                    fill=(102, 57, 49))
 
                                 pt0 = (pt_x, pt_y + self.grass_upper[pt_x % terrain_pattern_width])
                                 pt1 = (pt_x, pt_y + self.grass_lower[pt_x % terrain_pattern_width])
@@ -137,7 +179,7 @@ class LevelPaintTool:
 
                                     pix = img_grass.getpixel((pt_x % img_grass.size[0], py))
                                     if pix[3] != 0:
-                                        draw.point((pt_x, pt_y + py), pix )
+                                        draw.point((pt_x, pt_y + py), pix)
 
 
 
@@ -251,7 +293,6 @@ class LevelPaintTool:
             return tile_bottom - tile_heights[x % 24] <= tile_top + (y % 24)
         else:
             return tile_top + tile_heights[x % 24] > tile_top + (y % 24)
-
 
 
 def get_map_tilesetdef_with_property(map: TiledMap, name, value):
