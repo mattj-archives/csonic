@@ -5,6 +5,7 @@
     entityNum: integer;
     direction: integer;
     flags: integer;
+    collision: smallint;
     t: integer;
     idx: integer;
 

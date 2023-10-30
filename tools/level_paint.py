@@ -1,5 +1,6 @@
 import copy
 import json
+import os
 import random
 import struct
 import subprocess
@@ -87,11 +88,18 @@ class LevelPaintTool:
             maskImage = self.generate_mask_image()
         else:
 
-            cmd = f'./tools/mask_gen/mask_gen --size {self.map_width} {self.map_height} --height-file height.dat --tiles-file {tiles_file_name} --canvas-output canvas.tmp'
-            print("Running", cmd)
-            subprocess.run(cmd, shell=True, capture_output=True)
+            if os.name == 'nt':
+                cmd = f'.\\tools\\mask_gen\\mask_gen.exe'
+            else:
+                cmd = f'./tools/mask_gen/mask_gen'
 
-            with open("./tools/mask_gen/test.raw", "rb") as f:
+            cmd += f' --size {self.map_width} {self.map_height} --height-file height.dat --tiles-file {tiles_file_name} --canvas-output canvas.tmp'
+
+            print("Running", cmd)
+
+            subprocess.run(cmd, shell=True)
+
+            with open("./test.raw", "rb") as f:
                 rawData = f.read()
                 # maskImage = PIL.Image.frombuffer('1', (self.map_width * 24, self.map_height * 24), rawData, 'raw', '1', 0, 1) #1 bpp
                 maskImage = PIL.Image.frombuffer('L', (self.map_width * 24, self.map_height * 24), rawData)
@@ -111,10 +119,8 @@ class LevelPaintTool:
 
         # Draw the background mask first
 
-
-        canvas_data = list(canvas.getdata())
-
         if False:
+            canvas_data = list(canvas.getdata())
             for py in range(0, self.map_height * 24):
                 # print(py)
                 ty = py // 24
@@ -133,65 +139,66 @@ class LevelPaintTool:
 
         # return
         print("BG overlay")
-        draw = ImageDraw.Draw(canvas)
-        for ty in range(0, self.map_height):
-            for tx in range(0, self.map_width):
-                tile_num = self.tiles[ty * self.map_width + tx]
-                if tile_num == 0:
-                    continue
-
-                tile_top = ty * 24
-                tile_left = tx * 24
-                tile_bottom = ty * 24 + 24
-
-                tile_heights = self.heights[tile_num - 1]
-
-                for px in range(0, 24):
-                    if tile_heights[px] == 0:
+        if False:
+            draw = ImageDraw.Draw(canvas)
+            for ty in range(0, self.map_height):
+                for tx in range(0, self.map_width):
+                    tile_num = self.tiles[ty * self.map_width + tx]
+                    if tile_num == 0:
                         continue
 
-                    pt_x = tile_left + px
+                    tile_top = ty * 24
+                    tile_left = tx * 24
+                    tile_bottom = ty * 24 + 24
 
-                    if tile_num < 576:
-                        # Only draw the pixel if there is no pixel above it
-                        pt_y = tile_bottom - tile_heights[px]
+                    tile_heights = self.heights[tile_num - 1]
 
-                        if mask_data[(pt_y - 1) * map_width_pixels + pt_x] == 0:
+                    for px in range(0, 24):
+                        if tile_heights[px] == 0:
+                            continue
 
-                            if False:
-                                draw.point((pt_x, pt_y), (255, 255, 255, 255))
+                        pt_x = tile_left + px
 
-                                # Shadow
-                                draw.line(
-                                    [(pt_x, pt_y), (pt_x, pt_y + self.shadow_lower[pt_x % terrain_pattern_width])],
-                                    fill=(102, 57, 49))
+                        if tile_num < 576:
+                            # Only draw the pixel if there is no pixel above it
+                            pt_y = tile_bottom - tile_heights[px]
 
-                                pt0 = (pt_x, pt_y + self.grass_upper[pt_x % terrain_pattern_width])
-                                pt1 = (pt_x, pt_y + self.grass_lower[pt_x % terrain_pattern_width])
-                                # Green (grass)
-                                if pt_x % 8 < 4:
-                                    draw.line([pt0, pt1], fill=(106, 190, 48))
+                            if mask_data[(pt_y - 1) * map_width_pixels + pt_x] == 0:
+
+                                if False:
+                                    draw.point((pt_x, pt_y), (255, 255, 255, 255))
+
+                                    # Shadow
+                                    draw.line(
+                                        [(pt_x, pt_y), (pt_x, pt_y + self.shadow_lower[pt_x % terrain_pattern_width])],
+                                        fill=(102, 57, 49))
+
+                                    pt0 = (pt_x, pt_y + self.grass_upper[pt_x % terrain_pattern_width])
+                                    pt1 = (pt_x, pt_y + self.grass_lower[pt_x % terrain_pattern_width])
+                                    # Green (grass)
+                                    if pt_x % 8 < 4:
+                                        draw.line([pt0, pt1], fill=(106, 190, 48))
+                                    else:
+                                        draw.line([pt0, pt1], fill=(86, 170, 28))
                                 else:
-                                    draw.line([pt0, pt1], fill=(86, 170, 28))
-                            else:
 
-                                for py in range(0, img_grass.size[1]):
+                                    for py in range(0, img_grass.size[1]):
 
-                                    pix = img_grass.getpixel((pt_x % img_grass.size[0], py))
-                                    if pix[3] != 0:
-                                        draw.point((pt_x, pt_y + py), pix)
+                                        pix = img_grass.getpixel((pt_x % img_grass.size[0], py))
+                                        if pix[3] != 0:
+                                            draw.point((pt_x, pt_y + py), pix)
 
 
 
-                    else:
-                        pt_y = tile_top + tile_heights[px] - 1
+                        else:
+                            pt_y = tile_top + tile_heights[px] - 1
 
-                        for y2 in range(pt_y, pt_y - 3, -1):
-                            c = canvas.getpixel((pt_x, y2))
-                            c = (c[0] - 30, c[1] - 30, c[2] - 30, 255)
-                            draw.point((pt_x, y2), c)
+                            for y2 in range(pt_y, pt_y - 3, -1):
+                                c = canvas.getpixel((pt_x, y2))
+                                c = (c[0] - 30, c[1] - 30, c[2] - 30, 255)
+                                draw.point((pt_x, y2), c)
 
-                            # canvas_data[pt_y * map_width_pixels + pt_x] = (255, 255, 255, 255)
+                                # canvas_data[pt_y * map_width_pixels + pt_x] = (255, 255, 255, 255)
 
         canvas_data = list(canvas.getdata())
 

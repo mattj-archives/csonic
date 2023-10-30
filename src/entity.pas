@@ -57,6 +57,9 @@ begin
       //Entity_AddToTile(
       // writeln(' spawn entity ', i, ' type ', entityType);
       SpawnEntity := e;
+
+      if Assigned(G.entityInfo[entityType].initProc) then
+        G.entityInfo[entityType].initProc(e);
       exit;
     end;
   end;

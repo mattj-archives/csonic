@@ -65,10 +65,12 @@ type
     sprites: array[0..1] of integer;
   end;
 
+  EntityInitProc = procedure(data: Pointer);
   EntityStateProc = procedure(data: Pointer);
   EntityUpdateProc = procedure(data: Pointer);
   EntityDebugDrawProc = procedure(data: Pointer);
   TEntityInfo = record
+    initProc: EntityInitProc;
     stateProc: EntityStateProc;
     updateProc: EntityUpdateProc;
     debugDrawProc: EntityDebugDrawProc;

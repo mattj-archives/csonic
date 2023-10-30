@@ -198,14 +198,7 @@ begin
   Event_SetKeyDownProc(OnKeyDown);
   Event_SetKeyUpProc(OnKeyUp);
 
-  writeln('G_Init: done');
-
   Game_New;
-
-
-
-  //map[0 * 168 + 0].tile := 1;
-  //map[1 * 168 + 1].tile := 1;
 end;
 
 procedure Main;

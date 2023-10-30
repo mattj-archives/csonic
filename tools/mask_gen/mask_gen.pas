@@ -2,7 +2,12 @@ program mask_gen;
 
 {$mode objfpc}{$H+}
 
+{$ifdef WIN32}
+
+{$endif}
+{$ifdef DARWIN}
 {$L '../../external/raylib-macos/lib/libraylib.a'}
+{$endif}
 
 {$ifdef fpc}
   {$IFDEF DARWIN}
@@ -13,16 +18,18 @@ program mask_gen;
 {$endif}
 
 uses
- {$ifdef UNIX}
-    cthreads, classes,
-              {$endif}
-  iostream,
+ {$IFDEF UNIX}
+  cthreads,
+           {$ENDIF}
+  Classes,
   SysUtils,
-  CustApp;
+  CustApp,
+  iostream,
+  raylib { you can add units after this };
 
 type
-  TByteArray = array[0..64000] of byte;
-  PByteArray = ^TByteArray;
+  //TByteArray = array[0..64000] of byte;
+  //PByteArray = ^TByteArray;
 
   TMyApplication = class(TCustomApplication)
   protected
@@ -40,7 +47,7 @@ type
     heights: array[0..1151, 0..23] of byte;
     tiles: array of smallint;
     buf: ^byte;
-    canvas_buf: ^longint;
+    canvas_buf: ^uint32;
   end;
 
 
@@ -87,7 +94,9 @@ type
     buf_size_bytes, canvas_buf_size_bytes: integer;
     tx, ty, px, py: integer;
     tile_num: integer;
-    offs: integer;
+    offs, tile_top, tile_left, tile_bottom, pt_x, pt_y, y2: integer;
+    img_grass: TImage;
+    pix: TColorB;
 
   begin
     // quick check parameters
@@ -141,7 +150,7 @@ type
 
     tiles_file_name := GetOptionAtIndex(idx, False);
 
-    idx := FindOptionIndex('canvas-file', longopt);
+    idx := FindOptionIndex('canvas-output', longopt);
     if idx = -1 then
     begin
       writeln('Missing canvas file option');
@@ -179,6 +188,9 @@ type
     map_width_pixels := map_width * 24;
 
     writeln('Generate mask...');
+
+    img_grass := LoadImage('dev/grass2.png');
+
     for ty := 0 to map_height - 1 do
     begin
       for tx := 0 to map_width - 1 do
@@ -217,11 +229,73 @@ type
       for px := 0 to map_width * 24 - 1 do
       begin
         offs := py * map_width_pixels + px;
-        if buf[offs] <> 0 then begin
+        if buf[offs] <> 0 then
+        begin
           canvas_buf[offs] := $ff00aa00;
         end;
       end;
     end;
+
+    writeln('BG Overlay...');
+
+    for ty := 0 to map_height - 1 do
+    begin
+      for tx := 0 to map_width - 1 do
+      begin
+        tile_num := Self.tiles[ty * map_width + tx];
+        if tile_num = 0 then continue;
+
+        tile_top := ty * 24;
+        tile_left := tx * 24;
+        tile_bottom := tile_top + 24;
+
+        for px := 0 to 23 do
+        begin
+          if heights[tile_num - 1, px] = 0 then continue;
+
+          pt_x := tile_left + px;
+
+          if tile_num < 576 then
+          begin
+            // floor
+            pt_y := tile_bottom - heights[tile_num - 1, px];
+
+            //offs := (pt_y * map_width_pixels + pt_x);
+
+            if (pt_y > 0) and (buf[(pt_y - 1) * map_width_pixels + pt_x] = 0) then
+            begin
+              //canvas_buf[offs] := $ffffffff;
+              for py := 0 to img_grass.Height - 1 do
+              begin
+                offs := ((pt_y + py) * map_width_pixels + pt_x);
+                pix := GetImageColor(img_grass, pt_x mod img_grass.Width, py);
+                if pix.a <> 0 then Move(pix, canvas_buf[offs], 4);
+              end;
+            end;
+
+          end
+          else
+          begin
+            // Ceiling
+            pt_y := tile_top + heights[tile_num - 1, px] - 1;
+
+
+            for y2 := pt_y downto pt_y - 2 do
+            begin
+              offs := (y2 * map_width_pixels + pt_x);
+              //canvas_buf[offs] := $ff00ffff;
+
+              Move(canvas_buf[offs], pix, sizeof(TColorB));
+              if pix.r >= 30 then Inc(pix.r, -30);
+              if pix.g >= 30 then Inc(pix.g, -30);
+              if pix.b >= 30 then Inc(pix.b, -30);
+              Move(pix, canvas_buf[offs], sizeof(TColorB));
+            end;
+          end;
+        end;
+      end;
+    end;
+
 
     fileStream := TFileStream.Create('test.raw', fmCreate or fmOpenWrite);
     fileStream.Write(buf^, buf_size_bytes);
@@ -254,13 +328,13 @@ type
 
   procedure TMyApplication.WriteHelp;
   begin
-    { add your help code here }
-    writeln('Usage: ', ExeName, ' -h');
+    writeln('Usage: ', ExeName,
+      ' --size <w> <h> --height-file <height-file> --tiles-file <tiles-file> --canvas-output <canvas-file>');
   end;
 
 var
   Application: TMyApplication;
-
+  {
 type
   PImage = ^Image;
 
@@ -273,6 +347,7 @@ type
   end;
 
 type
+
   Color = record
     r: byte;
     g: byte;
@@ -283,7 +358,7 @@ type
   function GenImageColor(Width, Height: longint; color: longint): Image; cdecl; external;
   function ExportImage(image: Image; fileName: PChar): boolean; cdecl; external;
   procedure ImageDrawPixel(dst: PImage; posX, posY: longint; color: longint);
-  cdecl; external;
+  cdecl; external;}
 
 begin
 
@@ -292,5 +367,6 @@ begin
   Application.Run;
   Application.Free;
 
+  //Readln;
   Exit;
 end.

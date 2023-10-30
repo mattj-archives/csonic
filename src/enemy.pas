@@ -77,6 +77,12 @@ begin
   //Entity_SetState(@self, STATE_RM_WALK);
 end;
 
+procedure RM_Init(Data: Pointer);
+var
+  self: PEntityRM absolute Data;
+begin
+     self^.collision := $0004;
+end;
 
 procedure RM_DebugDraw(Data: Pointer);
 var
@@ -138,7 +144,7 @@ begin
 end;
 
 
-procedure Entity_RM_State(Data: Pointer);
+procedure RM_State(Data: Pointer);
 var
   self: PEntityRM absolute Data;
   playerIsFacing: boolean;
@@ -168,7 +174,7 @@ begin
   end;
 end;
 
-procedure Entity_RM_Update(Data: Pointer);
+procedure RM_Update(Data: Pointer);
 var
   self: PEntityRM absolute Data;
 begin
@@ -234,8 +240,9 @@ end;
 
 procedure EntityType_RM_Init(var info: TEntityInfo);
 begin
-  info.stateProc := Entity_RM_State;
-  info.updateProc := Entity_RM_Update;
+  info.initProc := RM_Init;
+  info.stateProc := RM_State;
+  info.updateProc := RM_Update;
   info.debugDrawProc := RM_DebugDraw;
 end;
 
