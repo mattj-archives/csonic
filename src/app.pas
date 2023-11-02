@@ -1,9 +1,6 @@
 unit app;
 
-{$mode TP}
-{$H-}
 interface
-
 
 uses
   Engine, Sys, Event, Image,
@@ -59,7 +56,7 @@ procedure LoadGFX;
 var
   i: integer;
   f: file;
-  numFiles: integer;
+  numFiles: smallint;
   strLen: integer;
   fileName: string;
 
@@ -74,7 +71,7 @@ begin
 
   Assign(f, 'gfxlist.dat');
   Reset(f, 1);
-  BlockRead(f, numFiles, sizeof(integer));
+  BlockRead(f, numFiles, sizeof(smallint));
     writeln('Num files: ', numFiles);
 
     for i := 0 to numFiles - 1 do
@@ -84,7 +81,7 @@ begin
       Seek(f, FilePos(f) - 1);
       BlockRead(f, filename, strLen + 1);
 
-      // writeln(i + 1, ' ', fileName);
+      writeln(i + 1, ' ', fileName);
 
       textures[i + 1] := Image_Load('GFX3/' + fileName + '.png');
     end;
@@ -195,8 +192,8 @@ begin
 
   LoadGFX;
 
-  Event_SetKeyDownProc(OnKeyDown);
-  Event_SetKeyUpProc(OnKeyUp);
+  Event_SetKeyDownProc(@OnKeyDown);
+  Event_SetKeyUpProc(@OnKeyUp);
 
   Game_New;
 end;

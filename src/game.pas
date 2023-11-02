@@ -314,8 +314,6 @@ Begin
     Begin
       Inc(frameCount);
       If isPaused Then writeln('Frame ', frameCount, ' ===================');
-      //if isPaused then writeln('...');
-//      writeln('Frame ', frameCount, ' ===================');
 
       Player_Update(gPlayer.ent);
 

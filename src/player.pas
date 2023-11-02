@@ -1,7 +1,5 @@
 unit Player;
 
-{$mode tp}
-
 interface
 
 uses
@@ -252,11 +250,9 @@ end;
 
 procedure Player_Update(self: PEntity);
 var
-  delta, origin: TVector2;
+  delta: TVector2;
   playerWasInAir: boolean;
-  resultVector: TVector2;
   finalSensor, sensorXResult, sensorYResult, sensorYResult2: THitResult;
-
   initialSensor: THitResult;
 
 const
@@ -271,8 +267,6 @@ begin
     DebugMove(self);
     Exit;
   end;
-
-  //FillChar(Result, sizeof(THitResult), 0);
 
   if mode = SonicModes.None then
   begin
@@ -331,7 +325,7 @@ begin
 
     if gPlayer.velY > MAX_Y_VEL then gPlayer.velY := MAX_Y_VEL;
     //if gPlayer.velY > 1 then gPlayer.velY := 1;
-    sensorYResult := initialSensor;
+    finalSensor := initialSensor;
     sensorYResult2 := initialSensor;
 
     if gPlayer.velY > 0 then
@@ -408,6 +402,7 @@ begin
 
     gPlayer.groundEntity := nil;
 
+    //writeln('falling hitType ', finalSensor.hitType);
     if (finalSensor.hitType = 2) and (gPlayer.velY > 0) then
     begin
       gPlayer.groundEntity := finalSensor.entity;
@@ -701,8 +696,8 @@ begin
   with info do
   begin
 
-    debugDrawProc := DebugDraw;
-    drawProc := Draw;
+    debugDrawProc := @DebugDraw;
+    drawProc := @Draw;
   end;
   //info.updateProc := Entity_BPot_Update;
 end;

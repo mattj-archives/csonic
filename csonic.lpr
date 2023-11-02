@@ -1,10 +1,6 @@
 program csonic;
 
 {$ifdef fpc}
-{$H-}
-{$endif}
-
-{$ifdef fpc}
   {$IFDEF DARWIN}
     {$linkFramework SDL2}
     {$linkFramework SDL2_image}
@@ -39,7 +35,7 @@ end;
 
 begin
   {$ifdef WINDOWS}
-  //MoveConsoleWindow;
+  MoveConsoleWindow;
   {$endif}
 
   {$ifdef DARWIN}

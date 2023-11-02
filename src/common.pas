@@ -1,7 +1,5 @@
 unit common;
 
-{$mode tp}
-
 interface
 
 uses

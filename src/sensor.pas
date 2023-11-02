@@ -21,7 +21,7 @@ var
 
 implementation
 
-uses Entity, util, map;
+uses Entity, util, map, sysutils;
 
 function InitTraceInfo(collisionMask: shortInt; ignoreEntity: PEntity): THitResult;
 var traceInfo: THitResult;
@@ -340,6 +340,7 @@ begin
 
   if entityTraceResult <> nil then
   begin
+    writeln('entityTrace hit something');
     if (deltaX <> 0) then
     begin
       if deltaX > 0 then
@@ -402,10 +403,13 @@ var
   e: PEntity;
   other: TBoundingBox;
 begin
+  Result := 0;
   entityTraceResult := nil;
 
   deltaX := endX - startX;
   deltaY := endY - startY;
+
+   //writeln(Format('EntityTrace %d %d -> %d %d  (%d, %d)', [startX, startY, endX, endY, endX - startX, endY - startY]));
 
   for i := 1 to MAX_ENTITIES do
   begin
@@ -418,12 +422,15 @@ begin
     // TODO: Remove
     if e = traceEntitySkip then continue;
 
-
     if e^.t = 43 then continue;
     if e^.t = 44 then continue;
     if e^.t = 100 then continue;
 
     Entity_Hitbox(e, other);
+
+    //if e^.t = 17 then begin
+    //  writeln('checking against type 17', ' ', deltaX, ' ', deltaY);
+    //end;
 
     //GetBoxAdjustment(this, other, delta, adjVector);
 
@@ -463,7 +470,6 @@ begin
     begin
 
       { Vertical checks }
-
       if (startX >= other.left) and (startX < other.right) then
       begin
         if deltaY < 0 then
