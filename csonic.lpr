@@ -39,7 +39,7 @@ end;
 
 begin
   {$ifdef WINDOWS}
-  MoveConsoleWindow;
+  //MoveConsoleWindow;
   {$endif}
 
   {$ifdef DARWIN}

@@ -1,17 +1,16 @@
 
 Unit Game;
 
-{$mode tp}
-
 Interface
 
-uses image;
+uses image, res_enum;
 
 procedure Game_New;
 Procedure G_RunFrame;
 Procedure G_Draw;
 procedure DrawWorldLine(x0, y0, x1, y1: longint);
 procedure DrawWorldRay(x0, y0, dx, dy: longint);
+Procedure DrawState(x, y: integer; state: entityStates; direction: integer);
 
 Var 
   isPaused: boolean;
@@ -27,7 +26,7 @@ Implementation
 Uses Sys, Event, entity, engine, util
 ,common
 ,player
-,res, res_enum, SysUtils, map
+,res,  SysUtils, map
 
     {$ifdef SDL2}
 ,GFX_SDL
@@ -169,8 +168,11 @@ Begin
       //if e^.y > camera.y + 240 then continue;
 
       //writeln('draw entity ', i, ' type ', e^.t);
-      DrawState(fix32ToInt(e^.x - G.camera.x), fix32ToInt(e^.y - G.camera.y), e^.state, e^.direction);
-
+      if Assigned(e^.info^.drawProc) then
+         e^.info^.drawProc(e)
+      else begin
+           DrawState(fix32ToInt(e^.x - G.camera.x), fix32ToInt(e^.y - G.camera.y), e^.state, e^.direction);
+      end;
       Entity_Hitbox(e, bb);
 
       Inc(bb.bottom, intToFix32(-1));
@@ -305,12 +307,15 @@ Begin
     Begin
       doRunFrame := false;
       If I_WasKeyPressed(kA) Then doRunFrame := true;
+      //doRunFrame := true;
     End;
 
   If doRunFrame Then
     Begin
       Inc(frameCount);
       If isPaused Then writeln('Frame ', frameCount, ' ===================');
+      //if isPaused then writeln('...');
+//      writeln('Frame ', frameCount, ' ===================');
 
       Player_Update(gPlayer.ent);
 

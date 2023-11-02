@@ -13,6 +13,7 @@
     stateFrames: integer;
 
     nextTileEntity: PEntity;
+    info: PEntityInfo;
 
 
 

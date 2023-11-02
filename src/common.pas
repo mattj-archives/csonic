@@ -15,6 +15,9 @@ const
 
   FRAC_BITS = 8;
 
+  COLLISION_LEVEL = $0001;
+  COLLISION_ENEMY = $0004;
+
 type
 
   TVector2 = record
@@ -22,6 +25,7 @@ type
   end;
 
   PEntity = ^TEntity;
+  PEntityInfo = ^TEntityInfo;
 
   TEntity = record
     {$include entity.inc}
@@ -29,6 +33,7 @@ type
   end;
 
   PEntityMovingPlatform = ^TEntityMovingPlatform;
+
   TEntityMovingPlatform = record
     {$include entity.inc}
     p: array[0..1] of TVector2;
@@ -36,6 +41,7 @@ type
   end;
 
   PEntityBPot = ^TEntityBPot;
+
   TEntityBPot = record
     {$include entity.inc}
     vy: integer;
@@ -48,12 +54,14 @@ type
 
 
   PEntityMosquito = ^TEntityMosquito;
+
   TEntityMosquito = record
     {$include entity.inc}
     patrolFrames: integer;
   end;
 
   PTile = ^TTile;
+
   TTile = record
     entity: PEntity;
     description: integer;      { For now, index into the height table }
@@ -65,15 +73,18 @@ type
     sprites: array[0..1] of integer;
   end;
 
-  EntityInitProc = procedure(data: Pointer);
-  EntityStateProc = procedure(data: Pointer);
-  EntityUpdateProc = procedure(data: Pointer);
-  EntityDebugDrawProc = procedure(data: Pointer);
+  EntityInitProc = procedure(Data: Pointer);
+  EntityStateProc = procedure(Data: Pointer);
+  EntityUpdateProc = procedure(Data: Pointer);
+  EntityDebugDrawProc = procedure(Data: Pointer);
+  EntityDrawProc = procedure(Data: Pointer);
+
   TEntityInfo = record
     initProc: EntityInitProc;
     stateProc: EntityStateProc;
     updateProc: EntityUpdateProc;
     debugDrawProc: EntityDebugDrawProc;
+    drawProc: EntityDrawProc;
 
   end;
 
@@ -85,6 +96,11 @@ type
   end;
 
   THitResult = record
+    // Parameters
+    collisionMask: shortint;
+    ignoreEntity: PEntity;
+
+    // Results
     hitType: integer;
     entity: PEntity;
     x: longint;

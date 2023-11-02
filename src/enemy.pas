@@ -81,17 +81,17 @@ procedure RM_Init(Data: Pointer);
 var
   self: PEntityRM absolute Data;
 begin
-     self^.collision := $0004;
+  self^.collision := $0004;
 end;
 
 procedure RM_DebugDraw(Data: Pointer);
 var
   self: PEntityRM absolute Data;
 begin
-     DrawWorldRay(self^.x + intToFix32(23), self^.y + intToFix32(15), intToFix32(1), 0);
+  DrawWorldRay(self^.x + intToFix32(23), self^.y + intToFix32(15), intToFix32(1), 0);
 
-     DrawWorldRay(self^.x + intToFix32(0), self^.y + intToFix32(11), 0, intToFix32(18));
-     DrawWorldRay(self^.x + intToFix32(23), self^.y + intToFix32(11), 0, intToFix32(18));
+  DrawWorldRay(self^.x + intToFix32(0), self^.y + intToFix32(11), 0, intToFix32(18));
+  DrawWorldRay(self^.x + intToFix32(23), self^.y + intToFix32(11), 0, intToFix32(18));
 end;
 
 procedure RM_Walk(var self: TEntityRM);
@@ -105,7 +105,8 @@ begin
 
   if (gPlayer.ent^.x > self.x) then
   begin
-    SensorRay(self.x + intToFix32(23), self.y + intToFix32(15), intToFix32(1), 0, Result);
+    SensorRay(self.x + intToFix32(23), self.y + intToFix32(15),
+      intToFix32(1), 0, Result);
     self.direction := 4;
     writeln('RM +X hitType ', Result.hitType);
     //if Result.hitType <> 0 then Exit;
@@ -122,14 +123,15 @@ begin
 
   // Allow them to stick to the ground if they only move max 2 pixels up or down
 
-  SensorRay(self.x + intToFix32(0),  self.y + intToFix32(11), 0, intToFix32(18), Result);
-  SensorRay(self.x + intToFix32(23), self.y + intToFix32(11), 0, intToFix32(18), Result2);
+  SensorRay(self.x + intToFix32(0), self.y + intToFix32(11), 0, intToFix32(18), Result);
+  SensorRay(self.x + intToFix32(23), self.y + intToFix32(11), 0,
+    intToFix32(18), Result2);
   if Result2.y < Result.y then Result := Result2;
 
   {if Result.hitType = 1 then
   begin}
-    self.y := Result.y - intToFix32(23);
-    //writeln('RM ground trace found ', Result.y);
+  self.y := Result.y - intToFix32(23);
+  //writeln('RM ground trace found ', Result.y);
   //end;
 
   // TODO: If their Y position changed by more than 2, don't allow the move
@@ -238,6 +240,13 @@ begin
   end;
 end;
 
+procedure Mosquito_Init(Data: Pointer);
+var
+  self: PEntityMosquito absolute Data;
+begin
+  self^.collision := $0004;
+end;
+
 procedure EntityType_RM_Init(var info: TEntityInfo);
 begin
   info.initProc := RM_Init;
@@ -248,6 +257,10 @@ end;
 
 procedure EntityType_Mosquito_Init(var info: TEntityInfo);
 begin
+  with info do
+  begin
+    initProc := Mosquito_Init;
+  end;
   info.stateProc := Mosquito_State;
   info.updateProc := Mosquito_Update;
 end;

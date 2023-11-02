@@ -1,7 +1,5 @@
 unit Sensor;
 
-{$mode tp}
-
 interface
 
 uses
@@ -10,7 +8,8 @@ uses
 procedure SensorX(y, startX, endX: longint; var Result: THitResult);
 procedure SensorY(x, startY, endY: longint; var Result: THitResult);
 
-function EntityTrace(startX, startY, endX, endY: longint): integer;
+function InitTraceInfo(collisionMask: shortInt; ignoreEntity: PEntity): THitResult;
+function EntityTrace(startX, startY, endX, endY: longint; var traceInfo: THitResult): integer;
 
 procedure SensorRay(startX, startY: longint; deltaX, deltaY: longint;
   var Result: THitResult);
@@ -23,6 +22,14 @@ var
 implementation
 
 uses Entity, util, map;
+
+function InitTraceInfo(collisionMask: shortInt; ignoreEntity: PEntity): THitResult;
+var traceInfo: THitResult;
+begin
+  traceInfo.collisionMask := collisionMask;
+  traceInfo.ignoreEntity := ignoreEntity;
+  Result := traceInfo;
+end;
 
 procedure SensorX(y, startX, endX: longint; var Result: THitResult);
 var
@@ -109,7 +116,7 @@ begin
 
 end;
 
-function SensorYUp(x, startY, endY: longint; var Result: THitResult): integer;
+function SensorYUp(x, startY, endY: longint; var traceInfo: THitResult): integer;
 var
   hitType, lower, upper, tx, ty, ty0, ty1, idx, traceYValue: longint;
   other: TBoundingBox;
@@ -186,10 +193,10 @@ begin
     traceYValue := endY;
   end;
 
-  if traceYValue <> endY then Result.hitType := 1;
+  if traceYValue <> endY then traceInfo.hitType := 1;
 
-  Result.x := x;
-  Result.y := traceYValue;
+  traceInfo.x := x;
+  traceInfo.y := traceYValue;
 
 end;
 
@@ -279,7 +286,7 @@ begin
 
   if traceYValue <> endY then Result.hitType := 1;
 
-  EntityTrace(originalX, originalStartY, originalX, originalEndY);
+  EntityTrace(originalX, originalStartY, originalX, originalEndY, Result);
 
   if entityTraceResult <> nil then
   begin
@@ -296,7 +303,10 @@ procedure SensorRay(startX, startY: longint; deltaX, deltaY: longint;
 var
   originalStartX, originalStartY, originalEndX, originalEndY: longint;
 begin
-  FillChar(Result, sizeof(THitResult), 0);
+  Result.entity:=nil;
+  Result.hitType:=0;
+
+  //FillChar(Result, sizeof(THitResult), 0);
 
   if (deltaX <> 0) and (deltaY <> 0) then
   begin
@@ -326,7 +336,7 @@ begin
     end;
   end;
 
-  EntityTrace(originalStartX, originalStartY, originalEndX, originalEndY);
+  EntityTrace(originalStartX, originalStartY, originalEndX, originalEndY, result);
 
   if entityTraceResult <> nil then
   begin
@@ -386,7 +396,7 @@ end;
 
 { Trace a line against entity hitboxes. Set traceEntitySkip to skip a specific entity }
 
-function EntityTrace(startX, startY, endX, endY: longint): integer;
+function EntityTrace(startX, startY, endX, endY: longint; var traceInfo: THitResult): integer;
 var
   deltaX, deltaY, i: longint;
   e: PEntity;
@@ -401,7 +411,13 @@ begin
   begin
     e := @G.entities[i];
     if (e^.flags and 1) = 0 then continue;
+
+    if e = traceInfo.ignoreEntity then continue;
+
+    if (e^.collision and traceInfo.collisionMask) = 0 then continue;
+    // TODO: Remove
     if e = traceEntitySkip then continue;
+
 
     if e^.t = 43 then continue;
     if e^.t = 44 then continue;

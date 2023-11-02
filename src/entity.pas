@@ -58,8 +58,13 @@ begin
       // writeln(' spawn entity ', i, ' type ', entityType);
       SpawnEntity := e;
 
-      if Assigned(G.entityInfo[entityType].initProc) then
-        G.entityInfo[entityType].initProc(e);
+      // Temporary
+      e^.collision := COLLISION_LEVEL;
+      e^.info := @G.entityInfo[entityType];
+
+      if Assigned(e^.info^.initProc) then
+         e^.info^.initProc(e);
+
       exit;
     end;
   end;
