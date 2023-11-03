@@ -8,11 +8,12 @@ uses
 procedure SensorX(y, startX, endX: longint; var Result: THitResult);
 procedure SensorY(x, startY, endY: longint; var Result: THitResult);
 
-function InitTraceInfo(collisionMask: shortInt; ignoreEntity: PEntity): THitResult;
+function InitTraceInfo(collisionMask: shortint; ignoreEntity: PEntity): THitResult;
 function EntityTrace(startX, startY, endX, endY: longint; var traceInfo: THitResult): integer;
 
-procedure SensorRay(startX, startY: longint; deltaX, deltaY: longint;
-  var Result: THitResult);
+procedure SensorRay(startX, startY: longint; deltaX, deltaY: longint; var Result: THitResult);
+
+procedure SimpleBoxMove(self: PEntity; delta: TVector2);
 
 var
   entityTraceResultX, entityTraceResultY: longint;
@@ -21,10 +22,11 @@ var
 
 implementation
 
-uses Entity, util, map, sysutils;
+uses Entity, util, map, SysUtils;
 
-function InitTraceInfo(collisionMask: shortInt; ignoreEntity: PEntity): THitResult;
-var traceInfo: THitResult;
+function InitTraceInfo(collisionMask: shortint; ignoreEntity: PEntity): THitResult;
+var
+  traceInfo: THitResult;
 begin
   traceInfo.collisionMask := collisionMask;
   traceInfo.ignoreEntity := ignoreEntity;
@@ -239,10 +241,11 @@ begin
 
   for ty := ty0 to ty1 do
   begin
-    inc(iter);
-    if iter > 10 then begin
-       writeln('error: too many iterations');
-       Break;
+    Inc(iter);
+    if iter > 10 then
+    begin
+      writeln('error: too many iterations');
+      Break;
     end;
     other.left := tx * 24;
     other.right := tx * 24 + 24;
@@ -252,7 +255,7 @@ begin
     h := startY;
 
     tile := Map_TileAt(tx, ty);
-        //writeln('SensorY checking tile at ', tx, ' ', ty);
+    //writeln('SensorY checking tile at ', tx, ' ', ty);
 
 
     if Assigned(tile) then
@@ -298,13 +301,12 @@ begin
 
 end;
 
-procedure SensorRay(startX, startY: longint; deltaX, deltaY: longint;
-  var Result: THitResult);
+procedure SensorRay(startX, startY: longint; deltaX, deltaY: longint; var Result: THitResult);
 var
   originalStartX, originalStartY, originalEndX, originalEndY: longint;
 begin
-  Result.entity:=nil;
-  Result.hitType:=0;
+  Result.entity := nil;
+  Result.hitType := 0;
 
   //FillChar(Result, sizeof(THitResult), 0);
 
@@ -336,7 +338,7 @@ begin
     end;
   end;
 
-  EntityTrace(originalStartX, originalStartY, originalEndX, originalEndY, result);
+  EntityTrace(originalStartX, originalStartY, originalEndX, originalEndY, Result);
 
   if entityTraceResult <> nil then
   begin
@@ -409,7 +411,7 @@ begin
   deltaX := endX - startX;
   deltaY := endY - startY;
 
-   //writeln(Format('EntityTrace %d %d -> %d %d  (%d, %d)', [startX, startY, endX, endY, endX - startX, endY - startY]));
+  //writeln(Format('EntityTrace %d %d -> %d %d  (%d, %d)', [startX, startY, endX, endY, endX - startX, endY - startY]));
 
   for i := 1 to MAX_ENTITIES do
   begin
@@ -426,7 +428,7 @@ begin
     if e^.t = 44 then continue;
     if e^.t = 100 then continue;
 
-    Entity_Hitbox(e, other);
+    other := Entity_Hitbox(e);
 
     //if e^.t = 17 then begin
     //  writeln('checking against type 17', ' ', deltaX, ' ', deltaY);
@@ -510,6 +512,104 @@ begin
   end;
   entityTraceResultX := endX;
   entityTraceResultY := endY;
+end;
+
+function GetTileReject(bb, other: TBoundingBox; delta: TVector2; tile: PTile): TVector2;
+var
+  adj: TVector2;
+begin
+  Result.x := 0;
+  Result.y := 0;
+
+  if delta.x > 0 then
+  begin
+    if bb.right > other.left then
+    begin
+      Result.x := other.left - bb.right;
+    end;
+  end
+  else
+  begin
+    if bb.left < other.right then
+    begin
+      Result.x := other.right - bb.left;
+    end;
+  end;
+end;
+
+procedure SimpleBoxMove(self: PEntity; delta: TVector2);
+var
+  bb, bb0, other: TBoundingBox;
+  tx0, tx1, ty0, ty1, tx, ty: integer;
+  maxAdjX, maxAdjY: integer;
+  tile: PTile;
+  adj, adj1: TVector2;
+  didAdjust: boolean;
+
+begin
+  adj.x := 9999;
+  adj.y := 9999;
+  bb := Entity_Hitbox(self);
+  bb0 := bb;
+
+  Inc(bb.left, delta.x);
+  Inc(bb.right, delta.x);
+  Inc(bb.top, delta.y);
+  Inc(bb.bottom, delta.y);
+
+  { Move to pixel space }
+
+  bb.left := fix32ToInt(bb.left);
+  bb.right := fix32ToInt(bb.right);
+  bb.top := fix32ToInt(bb.top);
+  bb.bottom := fix32ToInt(bb.bottom);
+
+  tx0 := bb.left div 24;
+  tx1 := bb.right div 24;
+  ty0 := bb.top div 24;
+  ty1 := bb.bottom div 24;
+
+  for ty := ty0 to ty1 do
+  begin
+    for tx := tx0 to tx1 do
+    begin
+      tile := Map_TileAt(tx, ty);
+      if not Assigned(tile) then continue;
+
+      other.left := tx * 24;
+      other.right := tx * 24 + 24;
+      other.top := ty * 24;
+      other.bottom := ty * 24 + 24;
+
+      if tile^.tile <> 0 then
+      begin
+        bb := bb0;
+        adj1 := GetTileReject(bb, other, delta, tile);
+        if (adj1.x <> 0) or (adj1.y <> 0) then
+        begin
+          didAdjust := True;
+        end;
+        if abs(adj1.x) < abs(adj.x) then adj.x := adj1.x;
+        if abs(adj1.y) < abs(adj.y) then adj.y := adj1.y;
+      end;
+
+    end;
+  end;
+
+  if didAdjust then
+  begin
+    writeln('adjust ', adj.x, ' ', adj.y);
+    //Inc(delta.X, intToFix32(adj.x));
+    //Inc(delta.Y, intToFix32(adj.y));
+    Inc(self^.x, delta.x);
+    Inc(self^.y, delta.y);
+  end
+  else
+  begin
+    Inc(self^.x, delta.x);
+    Inc(self^.y, delta.y);
+  end;
+
 end;
 
 end.

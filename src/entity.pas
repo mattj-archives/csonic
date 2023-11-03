@@ -1,7 +1,5 @@
 unit entity;
 
-{$mode tp}
-
 interface
 
 uses
@@ -16,7 +14,7 @@ procedure Entity_SetState(Data: Pointer; state: entityStates);
 procedure GetBoxAdjustment(this, other: TBoundingBox; delta: TVector2;
   var adjVector: TVector2);
 
-procedure Entity_Hitbox(Data: Pointer; var bb: TBoundingBox);
+function Entity_Hitbox(Data: Pointer): TBoundingBox;
 
 procedure Entity__Init;
 
@@ -288,14 +286,14 @@ begin
 end;
 
 
-procedure Entity_Hitbox(Data: Pointer; var bb: TBoundingBox);
+function Entity_Hitbox(Data: Pointer): TBoundingBox;
 var
   e: PEntity absolute Data;
 begin
-  bb.left := e^.x;
-  bb.right := e^.x + intToFix32(24);
-  bb.top := e^.y;
-  bb.bottom := e^.y + intToFix32(24);
+  Result.left := e^.x;
+  Result.right := e^.x + intToFix32(24);
+  Result.top := e^.y;
+  Result.bottom := e^.y + intToFix32(24);
 
   if (e^.t = 17) or (e^.t = 18) then
   begin
@@ -304,19 +302,19 @@ begin
     //bb.bottom := e^.y + intToFix32(24);
     //bb.top := bb.bottom - intToFix32(8);
 
-    bb.left := e^.x;
-    bb.right := e^.x + intToFix32(24);
-    bb.bottom := e^.y + intToFix32(24);
-    bb.top := bb.bottom - intToFix32(7);
+    Result.left := e^.x;
+    Result.right := e^.x + intToFix32(24);
+    Result.bottom := e^.y + intToFix32(24);
+    Result.top := Result.bottom - intToFix32(7);
 
   end;
 
   if (e^.t = 72) then
   begin
-    bb.left := e^.x + intToFix32(8);
-    bb.right := e^.x + intToFix32(16);
-    bb.bottom := e^.y + intToFix32(24);
-    bb.top := bb.bottom - intToFix32(5);
+    Result.left := e^.x + intToFix32(8);
+    Result.right := e^.x + intToFix32(16);
+    Result.bottom := e^.y + intToFix32(24);
+    Result.top := Result.bottom - intToFix32(5);
   end;
 end;
 

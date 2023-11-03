@@ -173,7 +173,7 @@ Begin
       else begin
            DrawState(fix32ToInt(e^.x - G.camera.x), fix32ToInt(e^.y - G.camera.y), e^.state, e^.direction);
       end;
-      Entity_Hitbox(e, bb);
+      bb := Entity_Hitbox(e);
 
       Inc(bb.bottom, intToFix32(-1));
       Inc(bb.right, intToFix32(-1));

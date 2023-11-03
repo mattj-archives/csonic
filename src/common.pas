@@ -17,7 +17,6 @@ const
   COLLISION_ENEMY = $0004;
 
 type
-
   TVector2 = record
     x, y: longint;
   end;
@@ -120,6 +119,11 @@ type
     camera: TVector2;
   end;
 
+  entityTypes = (
+    ENTITY_TYPE_SPRING0 = 17,
+    ENTITY_TYPE_BOX_RING = 38,
+    ENTITY_TYPE_RING = 43
+    );
 
 var
   G: TGlobals;

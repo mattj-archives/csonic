@@ -66,28 +66,29 @@ procedure Player_Jump(self: PEntity);
 begin
   if gPlayer.velY <> 0 then
   begin
-    // writeln('cant jump, vel is ', gPlayer.velY);
+    writeln('cant jump, vel is ', gPlayer.velY);
     Exit;
   end;
 
   if playerInAir then
   begin
-    // writeln('cant jump, player is in air');
+    writeln('cant jump, player is in air');
     Exit;
   end;
 
   gPlayer.velY := -intToFix32(13);
+  playerInAir := True;
   Player_SetMode(Spinning);
 end;
 
-procedure Player_HitEntity(self, e: PEntity; Result: THitResult);
+procedure Player_HitEntity(self, e: PEntity; traceInfo: THitResult);
 var
   explode: PEntity;
   bbOther: TBoundingBox;
 begin
-  if Result.hitType <> 2 then Exit;
+  if traceInfo.hitType <> 2 then Exit;
 
-  Entity_Hitbox(e, bbOther);
+  bbOther := Entity_Hitbox(e);
 
   writeln(Format('Player_HitEntity type: %d idx:%d', [e^.t, e^.idx]));
 
@@ -106,12 +107,26 @@ begin
     Entity_SetState(e, STATE_SPRING2_USE);
   end;
 
-  if (e^.t = 38) then
+
+  if e^.t = Ord(ENTITY_TYPE_RING) then
+  begin
+    // writeln('touch ring');
+    e^.flags := 0;
+    Exit;
+  end;
+
+  if e^.t = 44 then
+  begin
+    e^.flags := 0;
+  end;
+
+  if e^.t = Ord(ENTITY_TYPE_BOX_RING) then
   begin
     if mode = SonicModes.Spinning then
     begin
 
-      if gPlayer.velY > 0 then gPlayer.velY := intToFix32(-12);
+      //if gPlayer.velY > 0 then gPlayer.velY := intToFix32(-12);
+      gPlayer.velY := fix32Mul(gPlayer.velY, floatToFix32(-1.1));
 
       explode := SpawnEntity(e^.x, e^.y, 100);
       // writeln('explode at ', e^.x, ' ', e^.y);
@@ -125,7 +140,8 @@ begin
   begin
     if mode = SonicModes.Spinning then
     begin
-      if Result.velY > 0 then gPlayer.velY := intToFix32(-12);
+      //if traceInfo.velY > 0 then gPlayer.velY := intToFix32(-12);
+      gPlayer.velY := fix32Mul(gPlayer.velY, floatToFix32(-1.1));
 
       explode := SpawnEntity(e^.x, e^.y, 100);
       // writeln('explode at ', e^.x, ' ', e^.y);
@@ -147,8 +163,14 @@ var
   e, explode: PEntity;
   adjustBox: boolean;
   adjVector, playerVel: TVector2;
+  traceInfo: THitResult;
 
 begin
+
+  traceInfo := InitTraceInfo(COLLISION_LEVEL or COLLISION_ENEMY, self);
+  traceInfo.velX := gPlayer.velX;
+  traceInfo.velY := gPlayer.velY;
+  traceInfo.hitType := 2;
 
   this.left := self^.x;
   this.right := this.left + intToFix32(24);
@@ -169,24 +191,15 @@ begin
 
     adjustBox := False;
 
-    Entity_Hitbox(e, other);
+    other := Entity_Hitbox(e);
 
     if this.left >= other.right then continue;
     if this.right <= other.left then continue;
     if this.top >= other.bottom then continue;
     if this.bottom <= other.top then continue;
 
-    if e^.t = 43 then
-    begin
-      // writeln('touch ring');
-      e^.flags := 0;
-    end;
-
-    if e^.t = 44 then
-    begin
-      e^.flags := 0;
-    end;
-
+    Player_HitEntity(self, e, traceInfo);
+{
     if e^.t = 72 then
     begin
       if mode = SonicModes.Spinning then
@@ -201,7 +214,7 @@ begin
         adjustBox := True;
       end;
     end;
-
+}
     if adjustBox then
     begin
       GetBoxAdjustment(this, other, playerVel, adjVector);
@@ -212,6 +225,8 @@ begin
 end;
 
 procedure DebugMove(self: PEntity);
+var
+  delta: TVector2;
 begin
   if I_IsKeyDown(kUp) then
   begin
@@ -243,24 +258,201 @@ begin
   if gPlayer.velY < 0 then Inc(gPlayer.velY, intToFix32(1));
   if gPlayer.velY > 0 then Dec(gPlayer.velY, intToFix32(1));
 
-  Inc(self^.x, gPlayer.velX);
-  Inc(self^.y, gPlayer.velY);
+  delta.x := gPlayer.velX;
+  delta.y := gPlayer.velY;
+  SimpleBoxMove(self, delta);
+end;
+
+var
+  initialSensor: THitresult;
+
+procedure AirMove(self: PEntity);
+var
+  finalSensor, sensorYResult2: THitResult;
+const
+  GRAVITY = 1 shl FRAC_BITS;
+  MAX_Y_VEL = 12 shl FRAC_BITS;
+begin
+  Inc(gPlayer.velY, GRAVITY);
+
+  if gPlayer.velY > MAX_Y_VEL then gPlayer.velY := MAX_Y_VEL;
+  //if gPlayer.velY > 1 then gPlayer.velY := 1;
+  finalSensor := initialSensor;
+  sensorYResult2 := initialSensor;
+
+  if gPlayer.velY > 0 then
+  begin
+    //SensorRay(self^.x, self^.y + intToFix32(24), 0, gPlayer.velY, finalSensor); { should this be 23? }
+    //SensorRay(self^.x + intToFix32(23), self^.y + intToFix32(24), 0, gPlayer.velY, sensorYResult2); { should this be 23? }
+
+    SensorRay(self^.x, self^.y + intToFix32(16),
+      0, intToFix32(6) + gPlayer.velY, finalSensor); { should this be 23? }
+    SensorRay(self^.x + intToFix32(23), self^.y + intToFix32(16),
+      0, intToFix32(6) + gPlayer.velY, sensorYResult2); { should this be 23? }
+
+    if sensorYResult2.y < finalSensor.y then
+      finalSensor := sensorYResult2;
+
+    //endY := self^.y + intToFix32(24) + gPlayer.velY;   // was 23
+  end
+  else
+  begin
+    SensorRay(self^.x, self^.y, 0, gPlayer.velY, finalSensor);
+    SensorRay(self^.x + intToFix32(23), self^.y, 0, gPlayer.velY, sensorYResult2);
+
+    if sensorYResult2.y > finalSensor.y then
+      finalSensor := sensorYResult2;
+
+    //endY := self^.y + gPlayer.velY;
+  end;
+
+  if gPlayer.velY > 0 then
+    self^.y := finalSensor.y - intToFix32(23)   // was 23
+  else
+    self^.y := finalSensor.y;
+
+  gPlayer.groundEntity := nil;
+
+  //writeln('falling hitType ', finalSensor.hitType);
+  if (finalSensor.hitType = 2) and (gPlayer.velY > 0) then
+  begin
+    gPlayer.groundEntity := finalSensor.entity;
+  end;
+
+  if finalSensor.hitType <> 0 then
+  begin
+    //if gPlayer.velY > 0 then
+    //begin
+    //  playerInAir := False;
+    //  //writeln('hit while in air, no longer in air');
+    //end;
+
+    // Could "velY" be filled in during the call to SensorRay?
+    finalSensor.velY := gPlayer.velY;
+
+    // Hit something
+    //gPlayer.velY := 0;
+
+    if finalSensor.hitType = 2 then
+    begin
+      Player_HitEntity(self, finalSensor.entity, finalSensor);
+      { TODO: Player may have been bounced! }
+      writeln('player velY after hit ', gPlayer.velY);
+    end;
+
+    // If the player has been bounced back upwards again, then stay in the air
+
+  end;
+end;
+
+procedure GroundCheck(self: PEntity);
+var
+  initialSensor, sensorYResult, sensorYResult2: THitResult;
+begin
+
+  initialSensor := InitTraceInfo(COLLISION_LEVEL, self);
+  initialSensor.velX := gPlayer.velX;
+  initialSensor.velY := gPlayer.velY;
+
+  if gPlayer.invincFramesTime = 0 then initialSensor.collisionMask :=
+      initialSensor.collisionMask or COLLISION_ENEMY;
+
+  // Updates whether or not player is on the ground
+  playerInAir := True;
+
+  if gPlayer.velY < 0 then Exit;
+
+  sensorYResult := initialSensor;
+  sensorYResult2 := initialSensor;
+
+  SensorRay(self^.x, self^.y + intToFix32(23), 0, intToFix32(2), sensorYResult);  { should this be 23? }
+  SensorRay(self^.x + intToFix32(23), self^.y + intToFix32(23), 0, intToFix32(2), sensorYResult2);  { should this be 23? }
+
+  { TODO: Touch entities hit by gravity }
+
+  //writeln('Ground check: ', sensorYResult, ' ', sensorYResult2, ' adj ', adj, adj2);
+
+  if (sensorYResult.y <> self^.y + intToFix32(23)) and (sensorYResult2.y <> self^.y + intToFix32(23)) then     // was 23
+  begin
+    gPlayer.groundEntity := nil;
+    //writeln('player in air');
+    Exit;
+  end
+  else
+  begin
+    //writeln('GroundCheck: Player on ground');
+    gPlayer.velY := 0;
+    // may need to set groundentity here
+  end;
+
+  playerInAir := False;
+
+end;
+
+procedure UpdateMode;
+begin
+
+  case mode of
+    SonicModes.Running:
+    begin
+      if gPlayer.velX = 0 then
+      begin
+        // If we're not in the air and not running, set to standing
+
+        if not playerInAir then Player_SetMode(SonicModes.Standing);
+      end;
+    end;
+    SonicModes.Standing:
+    begin
+      if gPlayer.velX <> 0 then
+      begin
+        Player_SetMode(SonicModes.Running);
+      end
+      else
+      begin
+        if Timer_GetTicks - modeTime > 1000 then
+        begin
+          Player_SetMode(SonicModes.Waiting);
+        end;
+      end;
+    end;
+    SonicModes.Waiting:
+    begin
+      if gPlayer.velX <> 0 then
+      begin
+        Player_SetMode(SonicModes.Running);
+      end;
+    end;
+    SonicModes.Spinning:
+    begin
+      if not playerInAir then
+      begin
+        if gPlayer.velX <> 0 then
+        begin
+          Player_SetMode(Running);
+        end
+        else
+        begin
+          Player_SetMode(Standing);
+        end;
+      end;
+    end;
+  end;
 
 end;
 
 procedure Player_Update(self: PEntity);
 var
-  delta: TVector2;
   playerWasInAir: boolean;
   finalSensor, sensorXResult, sensorYResult, sensorYResult2: THitResult;
-  initialSensor: THitResult;
 
 const
   MAX_X_VEL = 9 shl FRAC_BITS;
   X_ACCEL = 2 shl FRAC_BITS;
-  MAX_Y_VEL = 12 shl FRAC_BITS;
-  GRAVITY = 1 shl FRAC_BITS;
+
 begin
+
+  traceEntitySkip := self;
 
   if gPlayer.debugMode then
   begin
@@ -275,8 +467,6 @@ begin
     modeTime := Timer_GetTicks;
   end;
 
-  delta.x := 0;
-  delta.y := 0;
   playerWasInAir := playerInAir;
 
   if I_IsKeyDown(kLf) then
@@ -291,6 +481,10 @@ begin
     if gPlayer.velX > MAX_X_VEL then gPlayer.velX := MAX_X_VEL;
   end;
 
+  if gPlayer.invincFramesTime > 0 then Dec(gPlayer.invincFramesTime);
+
+  GroundCheck(self);
+
   if I_IsKeyDown(kSpace) then
   begin
     Player_Jump(self);
@@ -301,140 +495,28 @@ begin
   if gPlayer.velX < 0 then Inc(gPlayer.velX, intToFix32(1));
   if gPlayer.velX > 0 then Dec(gPlayer.velX, intToFix32(1));
 
-  if gPlayer.velY <> 0 then playerInAir := True;
+  //  if gPlayer.velY <> 0 then playerInAir := True;
 
   { TODO: Check below player to see if still in air, or trace down, or whatever }
   { Do gravity move. If moving down and hit something, then no longer in air }
 
-  delta.y := gPlayer.velY;
-
-  traceEntitySkip := self;
-
   // check what's below us, if we're not moving up
 
-  if gPlayer.invincFramesTime > 0 then Dec(gPlayer.invincFramesTime);
-
   initialSensor := InitTraceInfo(COLLISION_LEVEL, self);
+  initialSensor.velX := gPlayer.velX;
+  initialSensor.velY := gPlayer.velY;
 
   if gPlayer.invincFramesTime = 0 then initialSensor.collisionMask :=
       initialSensor.collisionMask or COLLISION_ENEMY;
 
   if playerInAir then
   begin
-    Inc(gPlayer.velY, GRAVITY);
-
-    if gPlayer.velY > MAX_Y_VEL then gPlayer.velY := MAX_Y_VEL;
-    //if gPlayer.velY > 1 then gPlayer.velY := 1;
-    finalSensor := initialSensor;
-    sensorYResult2 := initialSensor;
-
-    if gPlayer.velY > 0 then
-    begin
-      //SensorRay(self^.x, self^.y + intToFix32(24), 0, gPlayer.velY, finalSensor); { should this be 23? }
-      //SensorRay(self^.x + intToFix32(23), self^.y + intToFix32(24), 0, gPlayer.velY, sensorYResult2); { should this be 23? }
-
-      SensorRay(self^.x, self^.y + intToFix32(16),
-        0, intToFix32(6) + gPlayer.velY, finalSensor); { should this be 23? }
-      SensorRay(self^.x + intToFix32(23), self^.y + intToFix32(16),
-        0, intToFix32(6) + gPlayer.velY, sensorYResult2); { should this be 23? }
-
-      if sensorYResult2.y < finalSensor.y then
-      begin
-        finalSensor := sensorYResult2;
-      end;
-
-      //endY := self^.y + intToFix32(24) + gPlayer.velY;   // was 23
-    end
-    else
-    begin
-      SensorRay(self^.x, self^.y, 0, gPlayer.velY, finalSensor);
-      SensorRay(self^.x + intToFix32(23), self^.y, 0, gPlayer.velY, sensorYResult2);
-
-      if sensorYResult2.y > finalSensor.y then
-      begin
-        finalSensor := sensorYResult2;
-      end;
-
-      //endY := self^.y + gPlayer.velY;
-    end;
-{
-    SensorY(self^.x, self^.y + intToFix32(11), endY, sensorYResult);
-    finalSensor := sensorYResult;
-    adj := (sensorYResult.y - endY);
-
-    SensorY(self^.x + intToFix32(23), self^.y + intToFix32(11), endY, sensorYResult2);
-    adj2 := (sensorYResult2.y - endY);
-
-    // Does the 2nd trace push back more?
-
-    if gPlayer.velY > 0 then
-    begin
-      if sensorYResult2.y < sensorYResult.y then
-      begin
-        finalSensor := sensorYResult2;
-      end;
-      //if (adj2 < adj) then adj := adj2;
-    end
-    else
-    begin
-      //if (adj2 > adj) then adj := adj2;
-
-      if sensorYResult2.y > sensorYResult.y then
-      begin
-        finalSensor := sensorYResult2;
-      end;
-    end;
-}
-    // writeln('in air, velY ', gPlayer.velY, ' adj ', adj);
-    // writeln('Falling,', self^.y + 11, ' -> ', endY);
-    // writeln('         sensorYResult: ', sensorYResult, ', original start was ', self^.y + 11, ', diff from endY: ', sensorYResult - endY);
-
-    //Entity_MoveBy(self, 0, gPlayer.velY, Result);
-    //Inc(self^.y, gPlayer.velY + adj);
-    if gPlayer.velY > 0 then
-    begin
-      self^.y := finalSensor.y - intToFix32(23);   // was 23
-    end
-    else
-    begin
-      self^.y := finalSensor.y;
-    end;
-
-    gPlayer.groundEntity := nil;
-
-    //writeln('falling hitType ', finalSensor.hitType);
-    if (finalSensor.hitType = 2) and (gPlayer.velY > 0) then
-    begin
-      gPlayer.groundEntity := finalSensor.entity;
-    end;
-
-    if finalSensor.hitType <> 0 then
-    begin
-      if gPlayer.velY > 0 then
-      begin
-        playerInAir := False;
-        //writeln('hit while in air, no longer in air');
-      end;
-      finalSensor.velY := gPlayer.velY;
-
-      // Hit something
-      gPlayer.velY := 0;
-
-      if finalSensor.hitType = 2 then
-      begin
-        Player_HitEntity(self, finalSensor.entity, finalSensor);
-        { TODO: Player may have been bounced! }
-      end;
-
-      // If the player has been bounced back upwards again, then stay in the air
-      //if gPlayer.velY < 0 then
-      //begin
-      //playerInAir := True;
-      //end;
-    end;
+    AirMove(self);
+    GroundCheck(self);
   end
   else
   begin
+
     { Player not in air }
 
     //if gPlayer.velY >= 0 then
@@ -449,33 +531,8 @@ begin
     SensorY(self^.x + intToFix32(23), self^.y + intToFix32(11), endY, sensorYResult2);
     adj2 := (sensorYResult2.y - endY);}
 
-    sensorYResult := initialSensor;
-    sensorYResult2 := initialSensor;
 
-    SensorRay(self^.x, self^.y + intToFix32(23), 0,
-      intToFix32(2), sensorYResult);
-    { should this be 23? }
-    SensorRay(self^.x + intToFix32(23), self^.y + intToFix32(23), 0,
-      intToFix32(2), sensorYResult2);
-    { should this be 23? }
-
-
-
-    { TODO: Touch entities hit by gravity }
-
-    //writeln('Ground check: ', sensorYResult, ' ', sensorYResult2, ' adj ', adj, adj2);
-
-    if (sensorYResult.y <> self^.y + intToFix32(23)) and
-      (sensorYResult2.y <> self^.y + intToFix32(23)) then     // was 23
-    begin
-      gPlayer.groundEntity := nil;
-      if not playerInAir then
-      begin
-        playerInAir := True;
-        // writeln('player is now in air, ', gPlayer.velY);
-      end;
-    end;
-
+{
     if sensorYResult.hitType = 2 then
     begin
       Player_HitEntity(self, sensorYResult.entity, sensorYResult);
@@ -486,7 +543,7 @@ begin
       begin
         Player_HitEntity(self, sensorYResult2.entity, sensorYResult2);
       end;
-    end;
+    end;}
 
     //if gPlayer.velY < 0 then begin
     //playerInAir:=true;
@@ -596,52 +653,7 @@ begin
     if gPlayer.velX < 0 then self^.direction := 3;
   end;
 
-  case mode of
-    SonicModes.Running:
-    begin
-      if gPlayer.velX = 0 then
-      begin
-        // If we're not in the air and not running, set to standing
-
-        if not playerInAir then Player_SetMode(SonicModes.Standing);
-      end;
-    end;
-    SonicModes.Standing:
-    begin
-      if gPlayer.velX <> 0 then
-      begin
-        Player_SetMode(SonicModes.Running);
-      end
-      else
-      begin
-        if Timer_GetTicks - modeTime > 1000 then
-        begin
-          Player_SetMode(SonicModes.Waiting);
-        end;
-      end;
-    end;
-    SonicModes.Waiting:
-    begin
-      if gPlayer.velX <> 0 then
-      begin
-        Player_SetMode(SonicModes.Running);
-      end;
-    end;
-    SonicModes.Spinning:
-    begin
-      if not playerInAir then
-      begin
-        if gPlayer.velX <> 0 then
-        begin
-          Player_SetMode(Running);
-        end
-        else
-        begin
-          Player_SetMode(Standing);
-        end;
-      end;
-    end;
-  end;
+  UpdateMode;
 
   Player_Touch(self);
 

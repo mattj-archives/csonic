@@ -90,6 +90,11 @@ begin
         e := SpawnEntity(x, y, object_type);
         Entity_SetState(e, STATE_SPRING2_IDLE);
       end;
+      ord(ENTITY_TYPE_BOX_RING):
+      begin
+        e := SpawnEntity(x, y, object_type);
+        Entity_SetState(e, entityStates.STATE_BOX_RING1);
+      end;
       43:
       begin
         e := SpawnEntity(x, y, object_type);

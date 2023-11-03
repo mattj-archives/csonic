@@ -171,7 +171,6 @@ begin
         BlockRead(f, tc, sizeof(integer));
 
         e := SpawnEntity(x * 24, y * 24, tn);
-        Entity_SetState(e, STATE_MOSQU_IDLE);
       end;
     end;
   end;

@@ -245,6 +245,7 @@ var
   self: PEntityMosquito absolute Data;
 begin
   self^.collision := $0004;
+  Entity_SetState(self, STATE_MOSQU_IDLE);
 end;
 
 procedure EntityType_RM_Init(var info: TEntityInfo);
