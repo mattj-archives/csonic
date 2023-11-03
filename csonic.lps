@@ -39,7 +39,6 @@
         <CursorPos Y="29"/>
         <UsageCount Value="269"/>
         <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
         <Filename Value="engine\src\sdl\gfx_sdl.pas"/>
@@ -74,7 +73,6 @@
         <CursorPos X="19" Y="12"/>
         <UsageCount Value="269"/>
         <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
         <Filename Value="engine\src\sdl\sys.pas"/>
@@ -153,7 +151,7 @@
         <UnitName Value="Sensor"/>
         <IsVisibleTab Value="True"/>
         <EditorIndex Value="12"/>
-        <TopLine Value="570"/>
+        <TopLine Value="560"/>
         <CursorPos X="29" Y="590"/>
         <UsageCount Value="310"/>
         <Loaded Value="True"/>
@@ -185,7 +183,6 @@
         <CursorPos X="43" Y="36"/>
         <UsageCount Value="228"/>
         <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
         <Filename Value="src\map.pas"/>
@@ -196,7 +193,6 @@
         <CursorPos X="32" Y="93"/>
         <UsageCount Value="216"/>
         <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
         <Filename Value="engine\src\buffer.pas"/>
@@ -250,7 +246,7 @@
     <OtherDefines Count="1">
       <Define0 Value="SDL2"/>
     </OtherDefines>
-    <JumpHistory HistoryIndex="28">
+    <JumpHistory HistoryIndex="27">
       <Position>
         <Filename Value="src\player.pas"/>
         <Caret Line="506" TopLine="492"/>
@@ -329,10 +325,6 @@
       </Position>
       <Position>
         <Filename Value="src\player.pas"/>
-        <Caret Line="194" Column="29" TopLine="273"/>
-      </Position>
-      <Position>
-        <Filename Value="src\player.pas"/>
         <Caret Line="263" Column="30" TopLine="229"/>
       </Position>
       <Position>
@@ -370,7 +362,7 @@
     </JumpHistory>
     <RunParams>
       <FormatVersion Value="2"/>
-      <Modes ActiveMode="default">
+      <Modes ActiveMode="Mac">
         <Mode Name="default">
           <local>
             <WorkingDirectory Value="C:\Users\Matt\dos\csonic"/>

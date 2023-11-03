@@ -9,9 +9,11 @@ procedure SensorX(y, startX, endX: longint; var Result: THitResult);
 procedure SensorY(x, startY, endY: longint; var Result: THitResult);
 
 function InitTraceInfo(collisionMask: shortint; ignoreEntity: PEntity): THitResult;
-function EntityTrace(startX, startY, endX, endY: longint; var traceInfo: THitResult): integer;
+function EntityTrace(startX, startY, endX, endY: longint;
+  var traceInfo: THitResult): integer;
 
-procedure SensorRay(startX, startY: longint; deltaX, deltaY: longint; var Result: THitResult);
+procedure SensorRay(startX, startY: longint; deltaX, deltaY: longint;
+  var Result: THitResult);
 
 procedure SimpleBoxMove(self: PEntity; delta: TVector2);
 
@@ -301,7 +303,8 @@ begin
 
 end;
 
-procedure SensorRay(startX, startY: longint; deltaX, deltaY: longint; var Result: THitResult);
+procedure SensorRay(startX, startY: longint; deltaX, deltaY: longint;
+  var Result: THitResult);
 var
   originalStartX, originalStartY, originalEndX, originalEndY: longint;
 begin
@@ -399,7 +402,8 @@ end;
 
 { Trace a line against entity hitboxes. Set traceEntitySkip to skip a specific entity }
 
-function EntityTrace(startX, startY, endX, endY: longint; var traceInfo: THitResult): integer;
+function EntityTrace(startX, startY, endX, endY: longint;
+  var traceInfo: THitResult): integer;
 var
   deltaX, deltaY, i: longint;
   e: PEntity;
@@ -514,30 +518,57 @@ begin
   entityTraceResultY := endY;
 end;
 
+function ShortestNonZeroAxis(v: TVector2): integer;
+begin
+  Result := 0;
+
+  if v.x = 0 then
+  begin
+    Result := 1;
+    Exit;
+  end;
+
+  if v.y = 0 then
+  begin
+    Exit;
+  end;
+
+  if (abs(v.x) < abs(v.y)) then
+  begin
+    Result := 0;
+    Exit;
+  end;
+
+  Result := 1;
+
+{
+  if (abs(v.y) < abs(v.x)) and (v.y <> 0) and (v.x <> 0) then
+  begin
+    Result := 1;
+    Exit;
+  end;
+}
+end;
+
 function GetTileReject(bb, other: TBoundingBox; delta: TVector2; tile: PTile): TVector2;
-var
-  adj: TVector2;
+
 begin
   Result.x := 0;
   Result.y := 0;
+{
+  writeln(Format('GetTileReject (%d %d -> %d %d) vs tile (%d %d -> %d %d), delta %d %d',
+    [bb.left, bb.top, bb.right, bb.bottom, other.left, other.top,
+    other.right, other.bottom, delta.x, delta.y]));
+}
+  if (delta.x > 0) and (bb.right > other.left) then Result.x := other.left - bb.right;
+  if (delta.x < 0) and (bb.left < other.right) then Result.x := other.right - bb.left;
 
-  if delta.x > 0 then
-  begin
-    if bb.right > other.left then
-    begin
-      Result.x := other.left - bb.right;
-    end;
-  end
-  else
-  begin
-    if bb.left < other.right then
-    begin
-      Result.x := other.right - bb.left;
-    end;
-  end;
+  if (delta.y > 0) and (bb.bottom > other.top) then Result.y := other.top - bb.bottom;
+  if (delta.y < 0) and (bb.top < other.bottom) then Result.y := other.bottom - bb.top;
+
 end;
 
-procedure SimpleBoxMove(self: PEntity; delta: TVector2);
+procedure SimpleBoxMove1D(self: PEntity; delta: TVector2);
 var
   bb, bb0, other: TBoundingBox;
   tx0, tx1, ty0, ty1, tx, ty: integer;
@@ -546,9 +577,11 @@ var
   adj, adj1: TVector2;
   didAdjust: boolean;
 
+  axis: integer;
 begin
-  adj.x := 9999;
-  adj.y := 9999;
+
+  adj.x := 0;
+  adj.y := 0;
   bb := Entity_Hitbox(self);
   bb0 := bb;
 
@@ -558,7 +591,6 @@ begin
   Inc(bb.bottom, delta.y);
 
   { Move to pixel space }
-
   bb.left := fix32ToInt(bb.left);
   bb.right := fix32ToInt(bb.right);
   bb.top := fix32ToInt(bb.top);
@@ -581,33 +613,165 @@ begin
       other.top := ty * 24;
       other.bottom := ty * 24 + 24;
 
+      if bb.bottom <= other.top then continue;
+      if bb.right <= other.left then continue;
+
       if tile^.tile <> 0 then
       begin
-        bb := bb0;
         adj1 := GetTileReject(bb, other, delta, tile);
+
+        if delta.x <> 0 then
+        begin
+          if (abs(adj1.x) > abs(adj.x)) then adj.x := adj1.x;
+        end
+        else
+        begin
+          if (abs(adj1.y) > abs(adj.y)) then adj.y := adj1.y;
+        end;
+      end;
+    end;
+  end;
+
+
+  if (adj.x <> 0) or (adj.y <> 0) then
+  begin
+    //writeln(Format('Final adjust for delta: %d %d = %d %d, delta', [delta.x, delta.y, adj.x, adj.y]));
+
+
+    Inc(delta.X, intToFix32(adj.x));
+    Inc(delta.Y, intToFix32(adj.y));
+  end;
+
+  Inc(self^.x, delta.x);
+  Inc(self^.y, delta.y);
+end;
+
+procedure SimpleBoxMove(self: PEntity; delta: TVector2);
+var
+  bb, bb0, other: TBoundingBox;
+  tx0, tx1, ty0, ty1, tx, ty: integer;
+  maxAdjX, maxAdjY: integer;
+  tile: PTile;
+  adj, adj1: TVector2;
+  didAdjust: boolean;
+
+  axis: integer;
+
+begin
+
+  if (delta.x = 0) and (delta.y = 0) then Exit;
+
+  //writeln(Format('SimpleBoxMove, delta: %d %d', [delta.x, delta.y]));
+
+  if (delta.x <> 0) then SimpleBoxMove1D(self, Vector2Make(delta.x, 0));
+  if (delta.y <> 0) then SimpleBoxMove1D(self, Vector2Make(0, delta.y));
+  Exit;
+
+  adj.x := 0;
+  adj.y := 0;
+  bb := Entity_Hitbox(self);
+  bb0 := bb;
+
+  Inc(bb.left, delta.x);
+  Inc(bb.right, delta.x);
+  Inc(bb.top, delta.y);
+  Inc(bb.bottom, delta.y);
+
+  { Move to pixel space }
+  bb.left := fix32ToInt(bb.left);
+  bb.right := fix32ToInt(bb.right);
+  bb.top := fix32ToInt(bb.top);
+  bb.bottom := fix32ToInt(bb.bottom);
+
+  tx0 := bb.left div 24;
+  tx1 := bb.right div 24;
+  ty0 := bb.top div 24;
+  ty1 := bb.bottom div 24;
+
+  for ty := ty0 to ty1 do
+  begin
+    for tx := tx0 to tx1 do
+    begin
+      tile := Map_TileAt(tx, ty);
+      if not Assigned(tile) then continue;
+
+      other.left := tx * 24;
+      other.right := tx * 24 + 24;
+      other.top := ty * 24;
+      other.bottom := ty * 24 + 24;
+
+      if bb.bottom <= other.top then continue;
+      if bb.right <= other.left then continue;
+
+      if tile^.tile <> 0 then
+      begin
+
+        adj1 := GetTileReject(bb, other, delta, tile);
+
+
+        axis := ShortestNonZeroAxis(adj1);
+        writeln(Format(' Result: %d %d, shortest axis: %d, type: %d',
+          [adj1.x, adj1.y, axis, tile^.tile]));
+        // Get the smallest non-zero magnitude
+
+        // Find the smallest possible adjustment to move out
+
+        if axis = 0 then
+        begin
+          writeln('X magnitude is smallest');
+          if (abs(adj1.x) > abs(adj.x)) then adj.x := adj1.x;
+        end;
+
+        if axis = 1 then
+        begin
+          writeln('Y magnitude is smallest');
+          if (abs(adj1.y) > abs(adj.y)) then adj.y := adj1.y;
+        end;
+
+
+
+{
         if (adj1.x <> 0) or (adj1.y <> 0) then
         begin
           didAdjust := True;
         end;
         if abs(adj1.x) < abs(adj.x) then adj.x := adj1.x;
-        if abs(adj1.y) < abs(adj.y) then adj.y := adj1.y;
+        if abs(adj1.y) < abs(adj.y) then adj.y := adj1.y;}
       end;
 
     end;
   end;
 
-  if didAdjust then
+  if (adj.x <> 0) or (adj.y <> 0) then
   begin
-    writeln('adjust ', adj.x, ' ', adj.y);
-    //Inc(delta.X, intToFix32(adj.x));
-    //Inc(delta.Y, intToFix32(adj.y));
+
+    axis := ShortestNonZeroAxis(adj);
+    writeln('Final adjust ', adj.x, ' ', adj.y, ' shortest axis: ', axis);
+{
+    if axis = 0 then
+    begin
+      Inc(delta.X, intToFix32(adj.x));
+    end
+    else
+    begin
+      Inc(delta.Y, intToFix32(adj.y));
+    end;
+}
+
+    Inc(delta.X, intToFix32(adj.x));
+    Inc(delta.Y, intToFix32(adj.y));
+
+
+
     Inc(self^.x, delta.x);
     Inc(self^.y, delta.y);
   end
   else
   begin
+    writeln('no adjust');
     Inc(self^.x, delta.x);
     Inc(self^.y, delta.y);
+
   end;
 
 end;
