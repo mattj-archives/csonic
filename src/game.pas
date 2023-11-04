@@ -180,10 +180,12 @@ Begin
 
       //bb.right := (bb.right - G.camera.x) - 1;
 
+      {
       DrawWorldLine(bb.left, bb.top, bb.right, bb.top);
       DrawWorldLine(bb.left, bb.bottom, bb.right, bb.bottom);
       DrawWorldLine(bb.left, bb.top, bb.left, bb.bottom);
       DrawWorldLine(bb.right, bb.top, bb.right, bb.bottom);
+      }
 
      { R_DrawLine(
                  fix32ToInt(bb.left - G.camera.x), bb.bottom,
@@ -197,7 +199,7 @@ Begin
            bb.right,  fix32ToInt(bb.top - G.camera.y),
            bb.right, bb.bottom, 255, 255, 255, 255);
                                                                 }
-      if Assigned(G.entityInfo[e^.t].debugDrawProc) then G.entityInfo[e^.t].debugDrawProc(e);
+      //if Assigned(G.entityInfo[e^.t].debugDrawProc) then G.entityInfo[e^.t].debugDrawProc(e);
     End;
 
   R_DrawText(0, 0, 'Player: ');
@@ -410,7 +412,7 @@ begin
 
   //map[13 * 168 + 6].tile := 1;
   //e := SpawnEntity(3 * 24, 4 * 24, -1);
-  e := SpawnEntity(intToFix32(7 * 24), intToFix32(10 * 24), 1);
+  e := SpawnEntity(intToFix32(7 * 24), intToFix32(7 * 24), 1);
   gPlayer.ent := e;
   Entity_SetState(e, STATE_PLAYER_STAND1);
 

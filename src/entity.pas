@@ -20,7 +20,7 @@ procedure Entity__Init;
 
 implementation
 
-uses Sensor, app, player, enemy, util;
+uses Sensor, app, player, enemy, util, powerup;
 
 procedure Entity__Init;
 begin
@@ -28,6 +28,7 @@ begin
   EntityType_RM_Init(G.entityInfo[70]);
   EntityType_Mosquito_Init(G.entityInfo[71]);
   EntityType_BPot_Init(G.entityInfo[72]);
+  EntityType_Ring_Init(G.entityInfo[ord(ENTITY_TYPE_RING)]);
 end;
 
 function SpawnEntity(x, y: longint; entityType: integer): PEntity;
@@ -289,6 +290,7 @@ end;
 function Entity_Hitbox(Data: Pointer): TBoundingBox;
 var
   e: PEntity absolute Data;
+  ring: PEntityRing absolute Data;
 begin
   Result.left := e^.x;
   Result.right := e^.x + intToFix32(24);
@@ -302,11 +304,22 @@ begin
     //bb.bottom := e^.y + intToFix32(24);
     //bb.top := bb.bottom - intToFix32(8);
 
-    Result.left := e^.x;
-    Result.right := e^.x + intToFix32(24);
-    Result.bottom := e^.y + intToFix32(24);
-    Result.top := Result.bottom - intToFix32(7);
+      Result.left := e^.x;
+      Result.right := e^.x + intToFix32(24);
+      Result.bottom := e^.y + intToFix32(24);
+      Result.top := Result.bottom - intToFix32(7);
 
+
+
+  end;
+
+  if e^.t = ord(ENTITY_TYPE_RING) then begin
+    if ring^.isBouncing then begin
+      Result.left := e^.x + intToFix32(7);
+      Result.right := e^.x + intToFix32(18);
+      Result.top := e^.y + intToFix32(7);
+      Result.bottom := e^.y + intToFix32(18);
+    end;
   end;
 
   if (e^.t = 72) then

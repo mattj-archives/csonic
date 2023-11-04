@@ -38,7 +38,6 @@ type
   end;
 
   PEntityBPot = ^TEntityBPot;
-
   TEntityBPot = record
     {$include entity.inc}
     vy: integer;
@@ -49,6 +48,12 @@ type
     {$include entity.inc}
   end;
 
+  PEntityRing = ^TEntityRing;
+  TEntityRing = record
+    {$include entity.inc}
+    isBouncing: boolean;
+    vel: TVector2;
+  end;
 
   PEntityMosquito = ^TEntityMosquito;
 
@@ -122,7 +127,8 @@ type
   entityTypes = (
     ENTITY_TYPE_SPRING0 = 17,
     ENTITY_TYPE_BOX_RING = 38,
-    ENTITY_TYPE_RING = 43
+    ENTITY_TYPE_RING = 43,
+    ENTITY_TYPE_RING2 = 100
     );
 
 var

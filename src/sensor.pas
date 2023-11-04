@@ -15,7 +15,7 @@ function EntityTrace(startX, startY, endX, endY: longint;
 procedure SensorRay(startX, startY: longint; deltaX, deltaY: longint;
   var Result: THitResult);
 
-procedure SimpleBoxMove(self: PEntity; delta: TVector2);
+procedure SimpleBoxMove(self: PEntity; delta: TVector2; var Result: THitResult);
 
 var
   entityTraceResultX, entityTraceResultY: longint;
@@ -345,7 +345,7 @@ begin
 
   if entityTraceResult <> nil then
   begin
-    writeln('entityTrace hit something');
+    //writeln('entityTrace hit something');
     if (deltaX <> 0) then
     begin
       if deltaX > 0 then
@@ -551,7 +551,11 @@ begin
 end;
 
 function GetTileReject(bb, other: TBoundingBox; delta: TVector2; tile: PTile): TVector2;
-
+var
+  idx0, idx1, idx: integer;
+  h: longint;
+  adj: integer;
+  collide: boolean;
 begin
   Result.x := 0;
   Result.y := 0;
@@ -560,15 +564,133 @@ begin
     [bb.left, bb.top, bb.right, bb.bottom, other.left, other.top,
     other.right, other.bottom, delta.x, delta.y]));
 }
-  if (delta.x > 0) and (bb.right > other.left) then Result.x := other.left - bb.right;
-  if (delta.x < 0) and (bb.left < other.right) then Result.x := other.right - bb.left;
+  idx0 := bb.left - other.left;
+  if idx0 < 0 then idx0 := 0;
 
-  if (delta.y > 0) and (bb.bottom > other.top) then Result.y := other.top - bb.bottom;
-  if (delta.y < 0) and (bb.top < other.bottom) then Result.y := other.bottom - bb.top;
+  idx1 := (bb.right - 1) - other.left;
+  if idx1 > 23 then idx1 := 23;
 
+  //writeln('idx: ', idx0, ' to ', idx1);
+
+  if (delta.x > 0) then
+  begin
+    if tile^.tile = 1 then
+    begin
+      if (bb.right > other.left) then Result.x := other.left - bb.right;
+      Exit;
+    end;
+
+    if tile^.tile = 4 then
+    begin
+      // If the height at this X position enters the box, then set the adjustment and exit
+
+      for idx := idx0 to idx1 do
+      begin
+
+        if tile^.description < 576 then
+          collide := bb.bottom > (other.bottom - heights[tile^.description][idx])
+        else
+          collide := bb.top < (other.top + heights[tile^.description][idx]);
+
+        if collide then
+        begin
+          Result.x := (other.left + idx) - bb.right;
+          Exit;
+        end;
+      end;
+    end;
+  end;
+
+  if (delta.x < 0) then
+  begin
+    if tile^.tile = 1 then
+    begin
+      if (bb.left < other.right) then Result.x := other.right - bb.left;
+      Exit;
+    end;
+
+    if tile^.tile = 4 then
+    begin
+      // If the height at this X position enters the box, then set the adjustment and exit
+
+      for idx := idx1 downto idx0 do
+      begin
+        if tile^.description < 576 then
+          collide := bb.bottom > (other.bottom - heights[tile^.description][idx])
+        else
+          collide := bb.top < (other.top + heights[tile^.description][idx]);
+
+        if collide then
+        begin
+          Result.x := (other.left + idx) - bb.left + 1;
+          Exit;
+        end;
+      end;
+    end;
+  end;
+
+  if (delta.y > 0) then
+  begin
+    if tile^.tile = 1 then
+    begin
+      if (bb.bottom > other.top) then Result.y := other.top - bb.bottom;
+    end;
+
+    if tile^.tile = 4 then
+    begin
+
+      // For now, don't bother with downward motions into ceilings
+      if tile^.description >= 576 then Exit;
+
+      for idx := idx0 to idx1 do
+      begin
+
+        if heights[tile^.description][idx] = 0 then continue;
+
+        h := other.bottom - heights[tile^.description][idx];
+
+        if bb.bottom >= h then
+        begin
+          adj := h - bb.bottom;
+          if adj < Result.y then Result.y := adj;
+        end;
+      end;
+    end;
+  end;
+
+
+  if (delta.y < 0) then
+  begin
+    if tile^.tile = 1 then
+    begin
+      if (bb.top < other.bottom) then Result.y := other.bottom - bb.top;
+    end;
+
+    if tile^.tile = 4 then
+    begin
+
+      // For now, don't bother with upward motions into floors
+      if tile^.description < 576 then Exit;
+
+      for idx := idx0 to idx1 do
+      begin
+
+        if heights[tile^.description][idx] = 0 then continue;
+
+        h := other.top + heights[tile^.description][idx];
+
+        if bb.top <= h then
+        begin
+          adj := h - bb.top;
+          if adj > Result.y then Result.y := adj;
+        end;
+      end;
+
+    end;
+  end;
 end;
 
-procedure SimpleBoxMove1D(self: PEntity; delta: TVector2);
+procedure SimpleBoxMove1D(self: PEntity; delta: TVector2; var Result: THitResult);
 var
   bb, bb0, other: TBoundingBox;
   tx0, tx1, ty0, ty1, tx, ty: integer;
@@ -632,21 +754,26 @@ begin
     end;
   end;
 
+  // TODO: Check vs entities
 
   if (adj.x <> 0) or (adj.y <> 0) then
   begin
     //writeln(Format('Final adjust for delta: %d %d = %d %d, delta', [delta.x, delta.y, adj.x, adj.y]));
 
+    if delta.x <> 0 then Result.x := adj.x;
+    if delta.y <> 0 then Result.y := adj.y;
 
     Inc(delta.X, intToFix32(adj.x));
     Inc(delta.Y, intToFix32(adj.y));
   end;
 
+
+
   Inc(self^.x, delta.x);
   Inc(self^.y, delta.y);
 end;
 
-procedure SimpleBoxMove(self: PEntity; delta: TVector2);
+procedure SimpleBoxMove(self: PEntity; delta: TVector2; var Result: THitResult);
 var
   bb, bb0, other: TBoundingBox;
   tx0, tx1, ty0, ty1, tx, ty: integer;
@@ -659,12 +786,15 @@ var
 
 begin
 
+  Result.x := 0;
+  Result.y := 0;
+
   if (delta.x = 0) and (delta.y = 0) then Exit;
 
   //writeln(Format('SimpleBoxMove, delta: %d %d', [delta.x, delta.y]));
 
-  if (delta.x <> 0) then SimpleBoxMove1D(self, Vector2Make(delta.x, 0));
-  if (delta.y <> 0) then SimpleBoxMove1D(self, Vector2Make(0, delta.y));
+  if (delta.x <> 0) then SimpleBoxMove1D(self, Vector2Make(delta.x, 0), result);
+  if (delta.y <> 0) then SimpleBoxMove1D(self, Vector2Make(0, delta.y), result);
   Exit;
 
   adj.x := 0;

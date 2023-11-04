@@ -226,7 +226,7 @@ end;
 
 procedure DebugMove(self: PEntity);
 var
-  delta: TVector2;
+  delta: TVector2; result: THitResult;
 begin
   if I_IsKeyDown(kUp) then
   begin
@@ -260,7 +260,7 @@ begin
 
   delta.x := gPlayer.velX;
   delta.y := gPlayer.velY;
-  SimpleBoxMove(self, delta);
+  SimpleBoxMove(self, delta, result);
 end;
 
 var

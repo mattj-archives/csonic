@@ -138,6 +138,11 @@
         <Filename Value="engine\src\buffer.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
+      <Unit>
+        <Filename Value="src\powerup.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Powerup"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -148,7 +153,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);engine\src\inc"/>
-      <Libraries Value="C:\lazarus\fpc\3.2.2\units\SDL2\"/>
+      <Libraries Value="C:\lazarus\fpc\3.2.2\units\SDL2"/>
       <OtherUnitFiles Value="src;engine\src;engine\src\sdl;engine\external\sdl2;src\res"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
