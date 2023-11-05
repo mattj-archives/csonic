@@ -38,6 +38,7 @@ type
   end;
 
   PEntityBPot = ^TEntityBPot;
+
   TEntityBPot = record
     {$include entity.inc}
     vy: integer;
@@ -49,10 +50,14 @@ type
   end;
 
   PEntityRing = ^TEntityRing;
+
   TEntityRing = record
     {$include entity.inc}
     isBouncing: boolean;
     vel: TVector2;
+    time: integer;
+    flash: boolean;
+    elapsedBounceTime: integer;
   end;
 
   PEntityMosquito = ^TEntityMosquito;
@@ -80,6 +85,7 @@ type
   EntityUpdateProc = procedure(Data: Pointer);
   EntityDebugDrawProc = procedure(Data: Pointer);
   EntityDrawProc = procedure(Data: Pointer);
+  EntityCollideFunc = procedure(Data: Pointer; otherEntity: PEntity);
 
   TEntityInfo = record
     initProc: EntityInitProc;
@@ -87,7 +93,7 @@ type
     updateProc: EntityUpdateProc;
     debugDrawProc: EntityDebugDrawProc;
     drawProc: EntityDrawProc;
-
+    collideFunc: EntityCollideFunc;
   end;
 
   TEntityState = record
@@ -122,9 +128,11 @@ type
     entities: array[1..MAX_ENTITIES] of TEntity;
     entityInfo: array[0..256] of TEntityInfo;
     camera: TVector2;
+    debugDraw: Boolean;
   end;
 
   entityTypes = (
+    ENTITY_TYPE_PLAYER = 1,
     ENTITY_TYPE_SPRING0 = 17,
     ENTITY_TYPE_BOX_RING = 38,
     ENTITY_TYPE_RING = 43,

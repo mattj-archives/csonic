@@ -15,7 +15,7 @@ function EntityTrace(startX, startY, endX, endY: longint;
 procedure SensorRay(startX, startY: longint; deltaX, deltaY: longint;
   var Result: THitResult);
 
-procedure SimpleBoxMove(self: PEntity; delta: TVector2; var Result: THitResult);
+procedure SimpleBoxMove(self: PEntity; delta: TVector2; var traceInfo: THitResult);
 
 var
   entityTraceResultX, entityTraceResultY: longint;
@@ -345,7 +345,7 @@ begin
 
   if entityTraceResult <> nil then
   begin
-    //writeln('entityTrace hit something');
+    // writeln('entityTrace hit something');
     if (deltaX <> 0) then
     begin
       if deltaX > 0 then
@@ -377,6 +377,7 @@ begin
       if deltaY > 0 then
       begin
         { Moving down }
+        writeln('entityTrace hit something moving down');
         if entityTraceResultY < Result.y then
         begin
           Result.y := entityTraceResultY;
@@ -767,13 +768,11 @@ begin
     Inc(delta.Y, intToFix32(adj.y));
   end;
 
-
-
   Inc(self^.x, delta.x);
   Inc(self^.y, delta.y);
 end;
 
-procedure SimpleBoxMove(self: PEntity; delta: TVector2; var Result: THitResult);
+procedure SimpleBoxMove(self: PEntity; delta: TVector2; var traceInfo: THitResult);
 var
   bb, bb0, other: TBoundingBox;
   tx0, tx1, ty0, ty1, tx, ty: integer;
@@ -786,15 +785,15 @@ var
 
 begin
 
-  Result.x := 0;
-  Result.y := 0;
+  traceInfo.x := 0;
+  traceInfo.y := 0;
 
   if (delta.x = 0) and (delta.y = 0) then Exit;
 
   //writeln(Format('SimpleBoxMove, delta: %d %d', [delta.x, delta.y]));
 
-  if (delta.x <> 0) then SimpleBoxMove1D(self, Vector2Make(delta.x, 0), result);
-  if (delta.y <> 0) then SimpleBoxMove1D(self, Vector2Make(0, delta.y), result);
+  if (delta.x <> 0) then SimpleBoxMove1D(self, Vector2Make(delta.x, 0), traceInfo);
+  if (delta.y <> 0) then SimpleBoxMove1D(self, Vector2Make(0, delta.y), traceInfo);
   Exit;
 
   adj.x := 0;

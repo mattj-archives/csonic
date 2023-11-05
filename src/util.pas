@@ -13,9 +13,9 @@ function intToFix32(val: longint): longint; {$ifndef WASM} inline; {$endif}
 function fix32Mul(val1, val2: longint): longint; {$ifndef WASM} inline; {$endif}
 function floatToFix32(val: single): longint;
 function Vector2Make(x, y: longint): TVector2;
-
+procedure Log(const fmt: string; const args: array of const);
 implementation
-
+uses sysutils;
 function fix32ToInt(val: longint): longint; {$ifndef WASM} inline;
 {$endif}
 begin
@@ -55,4 +55,8 @@ begin
   Result.y := y;
 end;
 
+procedure Log(const fmt: string; const args: array of const);
+begin
+  writeln(Format(fmt, args));
+end;
 end.

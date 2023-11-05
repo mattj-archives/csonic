@@ -11,6 +11,7 @@ Procedure G_Draw;
 procedure DrawWorldLine(x0, y0, x1, y1: longint);
 procedure DrawWorldRay(x0, y0, dx, dy: longint);
 Procedure DrawState(x, y: integer; state: entityStates; direction: integer);
+procedure Entity_Draw(Data: Pointer);
 
 Var 
   isPaused: boolean;
@@ -136,6 +137,13 @@ Begin
   If Assigned(img) Then R_DrawSprite(x, y, img^);
 End;
 
+procedure Entity_Draw(Data: Pointer);
+var self: PEntity absolute Data;
+begin
+  DrawState(fix32ToInt(self^.x - G.camera.x), fix32ToInt(self^.y - G.camera.y),
+    self^.state, self^.direction);
+end;
+
 Procedure G_Draw;
 alias: 'G_Draw';
 
@@ -170,9 +178,9 @@ Begin
       //writeln('draw entity ', i, ' type ', e^.t);
       if Assigned(e^.info^.drawProc) then
          e^.info^.drawProc(e)
-      else begin
-           DrawState(fix32ToInt(e^.x - G.camera.x), fix32ToInt(e^.y - G.camera.y), e^.state, e^.direction);
-      end;
+      else
+        Entity_Draw(e);
+
       bb := Entity_Hitbox(e);
 
       Inc(bb.bottom, intToFix32(-1));
@@ -180,12 +188,13 @@ Begin
 
       //bb.right := (bb.right - G.camera.x) - 1;
 
-      {
+      if G.debugDraw then
+        begin
       DrawWorldLine(bb.left, bb.top, bb.right, bb.top);
-      DrawWorldLine(bb.left, bb.bottom, bb.right, bb.bottom);
-      DrawWorldLine(bb.left, bb.top, bb.left, bb.bottom);
-      DrawWorldLine(bb.right, bb.top, bb.right, bb.bottom);
-      }
+        DrawWorldLine(bb.left, bb.bottom, bb.right, bb.bottom);
+        DrawWorldLine(bb.left, bb.top, bb.left, bb.bottom);
+        DrawWorldLine(bb.right, bb.top, bb.right, bb.bottom);
+      end;
 
      { R_DrawLine(
                  fix32ToInt(bb.left - G.camera.x), bb.bottom,
@@ -203,15 +212,18 @@ Begin
     End;
 
   R_DrawText(0, 0, 'Player: ');
+
   R_DrawText(42, 0, IntToStr(gPlayer.ent^.x));
   R_DrawText(42, 9, IntToStr(gPlayer.ent^.y));
 
   R_DrawText(80, 0, IntToStr(gPlayer.velX));
-  R_DrawText(80, 9, IntTOStr(gPlayer.velY));
+  R_DrawText(80, 9, IntToStr(gPlayer.velY));
 
-  If playerInAir Then R_DrawText(0, 18, 'In air');
-  If isPaused Then R_DrawText(0, 27, 'Paused');
-  If gPlayer.debugMode Then R_DrawText(0, 36, 'Debug mode');
+  R_DrawText(0, 18, Format('Rings: %d', [gPlayer.numRings]));
+
+  If playerInAir Then R_DrawText(0, 27, 'In air');
+  If isPaused Then R_DrawText(0, 36, 'Paused');
+  If gPlayer.debugMode Then R_DrawText(0, 45, 'Debug mode');
 
   //R_DrawSprite(0, 0, renderedTiles^);
   R_SwapBuffers;
@@ -304,6 +316,9 @@ Begin
       gPlayer.velX := 0;
       gPlayer.velY := 0;
     End;
+
+  if I_WasKeyPressed(kE) then G.debugDraw:= not G.debugDraw;
+
 
   If isPaused Then
     Begin
@@ -412,10 +427,11 @@ begin
 
   //map[13 * 168 + 6].tile := 1;
   //e := SpawnEntity(3 * 24, 4 * 24, -1);
-  e := SpawnEntity(intToFix32(7 * 24), intToFix32(7 * 24), 1);
+  e := SpawnEntity(intToFix32(7 * 24), intToFix32(7 * 24), ord(ENTITY_TYPE_PLAYER));
   gPlayer.ent := e;
   Entity_SetState(e, STATE_PLAYER_STAND1);
 
+  gPlayer.numRings:=0;
   for i := 0 to 1 do
   begin
     //e := SpawnEntity(24 * (6 + i), 14 * 24, 38);

@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="right-down" width="64" height="24" tilewidth="24" tileheight="24" infinite="0" nextlayerid="9" nextobjectid="82">
+<map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="right-down" width="64" height="24" tilewidth="24" tileheight="24" infinite="0" nextlayerid="9" nextobjectid="90">
    <tileset firstgid="1" source="Height.tsx"/>
    <tileset firstgid="1208" source="object.tsx"/>
    <tileset firstgid="1530" version="1.8" tiledversion="1.8.2" name="TEST_rendered" tilewidth="24" tileheight="24" tilecount="256" columns="16" backgroundcolor="#00000000">
@@ -61,5 +61,11 @@
       <object id="79" gid="1251" x="216.0" y="144.0" width="24.0" height="24.0"/>
       <object id="80" gid="1251" x="192.0" y="144.0" width="24.0" height="24.0"/>
       <object id="81" gid="1251" x="168.0" y="144.0" width="24.0" height="24.0"/>
+      <object id="83" gid="1278" x="359.342" y="222.743" width="24.0" height="24.0"/>
+      <object id="85" gid="1336" x="96.0" y="216.0" width="24.0" height="24.0"/>
+      <object id="86" gid="1336" x="72.0" y="216.0" width="24.0" height="24.0"/>
+      <object id="87" gid="1336" x="48.0" y="264.0" width="24.0" height="24.0"/>
+      <object id="88" gid="1336" x="24.0" y="264.0" width="24.0" height="24.0"/>
+      <object id="89" gid="1336" x="24.0" y="264.0" width="24.0" height="24.0"/>
    </objectgroup>
 </map>
